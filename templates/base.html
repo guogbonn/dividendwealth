@@ -1,0 +1,302 @@
+{% load staticfiles%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+
+
+
+
+      <!-- Font Awesome -->
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
+      <!-- Bootstrap core CSS -->
+      <link href="{% static "dist/css/bootstrap.min.css" %}" rel="stylesheet">
+      <!-- Material Design Bootstrap -->
+      <link href="{% static "dist/css/mdb-pro.min.css" %}" rel="stylesheet">
+      <!-- semantic Ui -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/dropdown.css">
+
+      <link rel="stylesheet" href="{% static "css/steppers.min.css" %}">
+
+      <title>Dividend Wealth</title>
+      <link rel="shortcut icon" type="image/jpg"href="{% static "img/logo.jpg" %}">
+      {% block head_title %}{% endblock %}
+      {% block extra_head %}
+      {% endblock %}
+
+  <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+  <link href="{% static "css/github.css" %}" rel="stylesheet">
+
+  <!-- for chartit -->
+  {% load chartit%}
+  <!-- jquery needs to be version one -->
+  <!-- <script
+    src="https://code.jquery.com/jquery-1.12.4.min.js"
+    integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+    crossorigin="anonymous"></script> -->
+
+
+      <style type="text/css">
+
+
+      .button-boder-radius{
+        border-radius: .28571429rem;
+      }
+      #button-line-height{
+        line-height: 2;
+      }
+
+      .nav-scroller {
+        height:400px;
+        overflow-y: scroll;
+          -webkit-overflow-scrolling: touch;
+      }
+      .nav-scroller::-webkit-scrollbar {
+        display: none;
+      }
+
+      #bootstrap-overrides a:focus,#bootstrap-overrides a:hover, #bootstrap-overrides a   { /* 100+1=101 priority score, yay! */
+        line-height: 2;
+        color: inherit !important;
+        text-decoration: none  !important;
+      }
+
+      .black-text, .md-toast-close-button:focus, .md-toast-close-button:hover {
+    color: #e7e7e7!important;
+}
+
+
+      </style>
+
+
+</head>
+<body class="fixed-sn black-skin">
+
+
+
+
+  <!--Double navigation-->
+  <!-- SideNav slide-out button -->
+<div class="mb-5">
+  <!-- Sidebar navigation -->
+  <div id="slide-out" class="side-nav sn-bg-4 ">
+    <ul class="custom-scrollbar">
+      <!-- Logo -->
+      <li>
+        <div class="logo-wrapper waves-light">
+          <a href="#"><img src="{% static "img/logo.jpg" %}" alt="My image" class="img-fluid flex-center"></a>
+        </div>
+      </li>
+      <!--/. Logo -->
+      <!--Social-->
+      <li>
+        <ul class="social">
+          <li><a href="#" class="icons-sm fb-ic"><i class="fab fa-facebook-f"> </i></a></li>
+          <li><a href="#" class="icons-sm pin-ic"><i class="fab fa-pinterest"> </i></a></li>
+          <li><a href="#" class="icons-sm gplus-ic"><i class="fab fa-google-plus-g"> </i></a></li>
+          <li><a href="#" class="icons-sm tw-ic"><i class="fab fa-twitter"> </i></a></li>
+        </ul>
+      </li>
+      <!--/Social-->
+      <!--Search Form-->
+
+      <!--/.Search Form-->
+      <!-- Side navigation links -->
+<li>
+        <ul class="collapsible collapsible-accordion button-line-height nav-scroller">
+
+            <li >
+              <div id="bootstrap-overrides" >
+                <a href="{%url 'core:membership_choice'%}"   class="cancela btn btn-primary btn-sm button-boder-radius button-line-height waves-effect waves-light hoverable">Wealth Partner</a>
+              </div>
+            </li>
+
+              {% if request.user.is_authenticated%}
+              <li>
+                <a href="{% url 'core:user_dashboard'%}" class="waves-effect arrow-r">
+                    <i class="fas fa-chart-pie mr-3"></i>Dashboard</a>
+              </li>
+
+          {%endif%}
+
+             <li>  <a href="#" class="waves-effect arrow-r">
+                 <i class="fas fa-table mr-3"></i>Monthly Dividend Generator</a>
+            </li>
+
+         <li><a href="{% url 'core:feed' %}" class="waves-effect arrow-r">
+           <i class="fas fa-map mr-3"></i>Discover</a></li>
+
+
+        </ul>
+      </li>
+
+      <!--/. Side navigation links -->
+    </ul>
+    <div class="sidenav-bg mask-strong"></div>
+  </div>
+  <!--/. Sidebar navigation -->
+
+  <!-- Navbar -->
+
+  <nav class="navbar fixed-top navbar-toggleable-md navbar-expand-sm scrolling-navbar double-nav">
+    <!-- SideNav slide-out button -->
+
+      <button href="#" style="display:inline"  data-activates="slide-out" class="visible-lg button-collapse black-text navbar-toggler"><i class="fas fa-bars"></i></button>
+
+
+    <!-- Breadcrumb-->
+    <div class="mr-auto">
+      <p>Dividend Wealth</p>
+    </div>
+    <!-- <a href="#" data-activates="slide-out" class="btn  black-text button-collapse mt-5"><i
+        class="fas fa-bars"></i></a> -->
+    <ul class="nav navbar-nav nav-flex-icons ml-auto">
+
+
+      {% if request.user.is_authenticated%}
+      <li class="nav-item">
+          <span class="clearfix d-none d-sm-inline-block">
+            <a href="{%url 'core:membership_choice'%}" class="btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light hoverable">Wealth Partner</a>
+          </span>
+
+      </li>
+      <li class="nav-item" data-toggle="modal" data-target="#Dividend_Wealth_Notification">
+        <a class="nav-link waves-effect">
+          {% block notification_bell%}
+          {%endblock notification_bell%}
+          <i class="bell outline icon"></i>
+
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="{%url 'core:user_account' username=request.user.username %}"><i class="fas fa-user"></i></a>
+      </li>
+      <!-- allaut tags to login and out -->
+      <li class="nav-item" style="display:inline">
+        <a class="nav-link waves-effect" href="{%url 'account_logout'%}">
+          <span class="clearfix d-none d-sm-inline-block"> Logout </span>
+        </a>
+      </li>
+      {%else%}
+      <li class="nav-item" style="display:inline">
+        <a class="nav-link waves-effect" href="{%url 'account_login'%}">
+          <span class="clearfix d-none d-sm-inline-block"> Login </span>
+        </a>
+      </li>
+      <li class="nav-item" style="display:inline">
+        <a class="nav-link waves-effect" href="{%url 'account_signup'%}">
+          <span class="clearfix d-none d-sm-inline-block"> Sign Up </span>
+        </a>
+      </li>
+      {%endif%}
+      </li>
+    </ul>
+  </nav>
+  <!-- /.Navbar -->
+
+<!--/.Double navigation-->
+
+</div>
+
+
+  {% if messages %}
+    <div class="mt-5  pt-4">
+    <!-- mbd tags template  -->
+      <!-- from djago messages -->
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+        </div>
+        {% endfor %}
+    </div>
+          {% endif %}
+  <!-- Navbar -->
+
+
+
+  {%block jqeury%}
+  {%block other_content%}
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+  <!-- for chartit -->
+
+
+
+
+{% if request.user.is_authenticated%}
+
+{% endif%}
+
+
+
+  {% block content  %}
+  {% endblock content %}
+
+
+
+
+  {% block extra_body %}
+  {% endblock %}
+
+
+
+  {%endblock other_content%}
+  {%endblock jqeury%}
+
+
+      <!--Footer-->
+      <!--Footer-->
+
+      <!--/.Footer-->
+
+
+      <!-- SCRIPTS -->
+      <!-- JQuery -->
+
+
+      <!-- Initializations -->
+
+      <script src="{% static "highlight.pack.js" %}"></script>
+      <script>hljs.initHighlightingOnLoad();
+      </script>
+      <!-- JQuery -->
+
+
+<script type="text/javascript" src="{% static "dist/js/jquery-3.4.1.min.js" %}"></script>
+<!-- Bootstrap tooltips -->
+<script type="text/javascript"  src="{% static "dist/js/popper.min.js" %}"></script>
+<!-- Bootstrap core JavaScript -->
+<script type="text/javascript"  src="{% static "dist/js/bootstrap.min.js" %}"></script>
+<!-- MDB core JavaScript -->
+<script type="text/javascript" src="{% static "dist/js/mdb.min.js" %}">
+</script>
+<script type="text/javascript"  src="{% static "js/steppers.min.js" %}"></script>
+
+<script type="text/javascript">
+// SideNav Initialization
+        $(".button-collapse").sideNav();
+        $(document).ready(function () {
+      $('.stepper').mdbStepper();
+      })
+
+</script>
+<!-- semantic ui -->
+<script  type="text/javascript" src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+<script  type="text/javascript"src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/dropdown.js"></script>
+
+
+
+</body>
+</html>

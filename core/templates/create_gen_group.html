@@ -1,0 +1,953 @@
+{%extends "base.html" %}
+
+{% block content  %}
+{% load staticfiles%}
+{% load custom_tags %}
+
+{%load crispy_forms_tags%}
+<style type="text/css">
+  .active:before {
+      background-color: #222222 !important;
+  }
+
+.done:before{
+  background-color: #2ad1a3 !important;
+}
+.lever:after{
+  background-color: #2ad1a3 !important;
+}
+.lever{
+
+    background-color: #222222 !important;
+}
+  .inputfile {
+  	width: 0.1px;
+  	height: 0.1px;
+  	opacity: 0;
+  	overflow: hidden;
+  	position: absolute;
+  	z-index: -1;
+  }
+
+
+    /*http://jsfiddle.net/yHNEv/ */
+  .img-wrap {
+      position: relative;
+      font-size: 0;
+  }
+  .img-wrap .close {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      z-index: 100;
+      background-color: #FFF;
+      padding: 5px 2px 2px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      opacity: .2;
+      text-align: center;
+      font-size: 22px;
+      line-height: 10px;
+      border-radius: 50%;
+      opacity: 1;
+  }
+  .img-wrap:hover .close {
+
+  }
+  .button-boder-radius{
+    border-radius: .28571429rem;
+  }
+
+  #group_price{
+    width: 80px;
+  }
+  .cancela,.cancela:link,.cancela:visited,.cancela:hover,.cancela:focus,.cancela:active{
+    color: inherit;
+    text-decoration: none;
+}
+  .tag-overflow {
+
+      overflow-x: scroll;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tag-overflow::-webkit-scrollbar {
+      display: none;
+    }
+    .button-overflow{
+      overflow: visible;
+    }
+    .button-boder-radius{
+      border-radius: .28571429rem;
+    }
+
+    .payment, .payment:hover{
+      background-color: #111111 !important;
+      color: #fff;
+    }
+    strong {
+    font-weight: bold !important;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+ul.stepper li a {
+    padding: .5rem !important;
+
+}
+</style>
+<script src="https://cdn.tiny.cloud/1/tbhnsqwyavxuvwuvscht2y73qvdxklees9eg7mqp0kaorne2/tinymce/5/tinymce.min.js"></script>
+<script>
+
+
+     tinymce.init({
+       selector: 'textarea#group_rules',
+       height: 500,
+       menubar: ["view","format"],
+     content_css: ['{% static "dist/css/bootstrap.min.css" %}', '{% static "dist/css/mdb-pro.min.css" %}'],
+      importcss_append: true,
+       plugins: [
+         'advlist autolink lists link image charmap print preview anchor',
+         'searchreplace visualblocks code fullscreen',
+         'insertdatetime media table paste code help wordcount',
+         "lists",
+         "preview",
+         "importcss",
+       ],
+       toolbar: 'undo redo | formatselect | ' +
+
+       ' removeformat | help'+ 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image'+ "numlist bullist"+"preview"
+
+     });
+
+tinymce.init({
+  selector: 'textarea#group_value_prop',
+  height: 500,
+  menubar: ["view","format"],
+  content_css: ['{% static "dist/css/bootstrap.min.css" %}', '{% static "dist/css/mdb-pro.min.css" %}'],
+  importcss_append: true,
+
+  plugins: [
+    'advlist autolink lists link image charmap print preview anchor',
+    'searchreplace visualblocks code fullscreen',
+    'insertdatetime media table paste code help wordcount',
+    "lists",
+    "preview",
+     "importcss",
+
+  ],
+  toolbar: 'undo redo | formatselect | ' +
+
+  ' removeformat | help'+ 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image'+ "numlist bullist" +"preview"
+
+});
+
+   </script>
+
+<!-- Default form login -->
+<section class="pt-5">
+  <div class="container px-0 ">
+    <form id="group_create_form_ele" class=" col-12 px-0 mx-0"  action="{% url 'core:create-group'%}" method="post"  enctype="multipart/form-data">
+      {%csrf_token%}
+      <input name="edit_group"  id="" type="hidden"  value="{{current_group.slug}}" >
+
+      {% if edit_group == "true" %}
+        <p class="h4 mb-2 text-center">Edit Group</p>
+      {%else%}
+      <p class="h4 mb-2 text-center">Create Group</p>
+      {%endif%}
+        <ul class="stepper parallel col-12 pr-0 mx-0 mb-0 pt-3 pb-0 mt-2">
+            <li class="step active">
+              <div  id="part1" class="step-title waves-effect waves-dark"><h4>General Group Info</h4></div>
+              <div class="step-new-content">
+                <div class="row">
+                  <div class="mr-auto">
+                    <label for="group_title_input">Group Name</label>
+                    <input name="group_create_form" type="text" id="group_title_input" class="form-control mb-0 z-depth-1" value="">
+                    <small id="group_name_vali" style="display:none" class=" pt-2 mt-0 text-danger"></small>
+                    {% if edit_group == "true"%}
+                        <div class="my-4">
+                          <label for="button"> Group Picture</label>
+                            <i id='button' class="file image large icon mt-2"></i>
+                            <small id="group_name_vali_pic" style="display:none" class=" pt-2 mt- mb-4 text-danger"></small>
+
+                                  <input name="group_image" id="post_photo_upload_button_1" type="file" class="inputfile" accept="image/x-png,image/gif,image/jpeg">
+
+                                  <div class="img-wrap">
+                                    <span style ="display:none" id="post_image_field_1_close"  onclick="delete_uploaded_img(post_image_field_1)" class="close">&times;</span>
+                                    <img  style ="display:none" id="post_image_field_1" class="ui small image my-2 mx-2 hoverable rounded" src="" default_img="false" data-toggle="modal" data-target="#picture_modal_screen" onclick="blow_up_image(this)"
+                                       alt="example placeholder avatar">
+
+                                       <span style ="display:inline" id="default_group_pic_close"  onclick="rid_default_image()" class="close">&times;</span>
+                                       <img  style ="display:inline" id="image_defalt_group_pictrue" class="ui small image my-2 mx-2 hoverable rounded" src="{{current_group.group_picture.url}}" default_img="false" data-toggle="modal" data-target="#picture_modal_screen" onclick="blow_up_image(this)"
+                                          alt="example placeholder avatar">
+                                  </div>
+                        </div>
+                    {%else%}
+                        <div class="my-4">
+                          <label for="button"> Group Picture</label>
+                            <i id='button' class="file image large icon mt-2"></i>
+                            <small id="group_name_vali_pic" style="display:none" class=" pt-2 mt- mb-4 text-danger"></small>
+
+                                  <input name="group_image" id="post_photo_upload_button_1" type="file" class="inputfile" accept="image/x-png,image/gif,image/jpeg">
+
+                                  <div class="img-wrap">
+                                    <span style ="display:none" id="post_image_field_1_close"  onclick="delete_uploaded_img(post_image_field_1)" class="close">&times;</span>
+                                    <img  style ="display:none" id="post_image_field_1" class="ui small image my-2 mx-2 hoverable rounded" src="" default_img="false" data-toggle="modal" data-target="#picture_modal_screen" onclick="blow_up_image(this)"
+                                       alt="example placeholder avatar">
+                                  </div>
+                        </div>
+                    {%endif%}
+
+
+
+                    <label for="group_title_input">Group Description</label>
+                    <textarea name="group_create_form" id="group_description_input"  class="form-control  mb-0 z-depth-1" ></textarea>
+                    <small id="group_name_vali_des" style="display:none" class=" pt-2 mt-0 mb-4  text-danger"></small>
+                    <div class="mt-4">
+
+
+                    <label for="group_category_input">Category <small>(press enter after each entry)</small></label>
+                    <input id="group_category_input_choice"  class="form-control mb-0 z-depth-1" >
+                    <small id="group_name_vali_cat" style="display:none" class=" pt-2 mt-0 text-danger"></small>
+                      </div>
+                    <input id="group_category_input"  name="group_create_form"  type="hidden" name="" value="">
+
+
+                  </div>
+
+
+
+                </div>
+                <div id="category_container" width="100" class=" d-flex justify-content-start tag-overflow  mt-0">
+                  {%for cat in current_group.groupcategories_set.all%}
+                <a onclick="remove_category(this)" class="my-0 pt-3 px-0 ml-0  mr-1 cancela "><div class="ui small label mr-2 mt-0  pr-1"><div class="media-body mx-0 my-0 px-0 py-0 d-flex justify-content-start"><p class="my-0 category_specific_name">{{cat.category.description}}</p><i class="small close icon ml-1 mr-0 "></i></div></div></a>
+                  {%endfor%}
+                </div>
+                <div class="step-actions">
+                  <button class="waves-effect waves-dark btn btn-sm btn-primary next-step  button-boder-radius hoverable">CONTINUE</button>
+                </div>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-title waves-effect waves-dark"><h4>Rules/Guidelines</h4></div>
+              <div class="step-new-content pr-0 ml-0">
+
+                  <div class=" mx-0  col-sm-12 col-lg-12  pr-0">
+                    <div class="row mx-0 pr-0">
+                      <div class=" col-sm-12 col-lg-6 mx-0 pr-0">
+
+                        <div class="d-flex justify-content-between">
+                          <p class="mt-4  pt-1">Value Proposition</p>
+
+                          <div class="align-items-center pt-4 ">
+                          <div class=" px-1 py-1 waves-effect waves-dark btn-sm btn  button-boder-radius  hoverable payment ">
+                            <a  data-toggle="modal" data-target="#template_guidelines" class="help">help</a>
+
+                          </div>
+                            </div>
+                        </div>
+
+                        <textarea id="group_value_prop" name="group_create_form" >
+                          {%if edit_group == "true"%}
+                          {{current_group.value_proposition|safe}}
+                          {%else%}
+                          <h4 data-mce-style="text-align: center;" style="text-align: center;" ><strong >Value Proposition</strong></h4>
+
+                          <p><strong>WHAT WE OFFER</strong>&nbsp;</p>
+                          <p></p>
+
+
+                          <p><strong>WHY US</strong></p>
+
+                          <p></p>
+                          <p><strong>WE SHARE OUR ...</strong></p>
+
+                          <p></p>
+                          <p><strong>TESTIMONIALS</strong> &nbsp;</p>
+                          <p></p>
+
+                            <p><strong>ABOUT ME:</strong>&nbsp;</p>
+                            <p></p>
+                            <p><strong>DISCLAIMER: The discussions held here are for educational purposes only, and are not intended to be Trading/Financial advice</strong></p>
+                            {%endif%}
+
+                                            </textarea>
+
+                      </div>
+                      <div class=" col-sm-12 col-lg-6">
+
+
+                        <div class="d-flex justify-content-between">
+                            <p class="mt-4">Rules/Guidelines/Style</p>
+
+                          <div class="align-items-center pt-3 ">
+                          <div class=" px-1 py-1 waves-effect waves-dark btn-sm btn  button-boder-radius  hoverable payment ">
+                            <a  data-toggle="modal" data-target="#template_guidelines_rules" class="help">help</a>
+
+                          </div>
+                            </div>
+                        </div>
+                        <textarea id="group_rules" name="group_create_form">
+                          {%if edit_group == "true"%}
+                          {{current_group.rules_guidlines|safe}}
+                          {%else%}
+                        <p><strong>Style</strong></p>
+                        <p></p>
+                        <p><strong>Guidelines</strong><strong>&nbsp;</strong></p>
+                        <p></p>
+                        <p><strong>Rules</strong></p>
+                        <p></p>
+                        <p><strong>DISCLAIMER: The discussions held here are for educational purposes only, and are not intended to be Trading/Financial advice</strong></p>
+                        {%endif%}
+                        </textarea>
+                      </div>
+                    </div>
+
+                    <div class="step-actions ml-2 pl-1">
+                      <button class="waves-effect waves-dark btn-sm btn btn-primary button-boder-radius next-step hoverable">CONTINUE</button>
+                      <button id="back_button" class="waves-effect waves-dark btn-sm btn  button-boder-radius previous-step hoverable payment ">BACK</button>
+                    </div>
+                  </div>
+
+              </div>
+            </li>
+            <li class="step">
+              <div id="part3" class="step-title waves-effect waves-dark"><h4>Payments</h4></div>
+              <div class="step-new-content">
+                <div class="row">
+                  <div class=" col-12 ml-auto">
+                    <!-- Material checked -->
+                    <input name="group_create_form" id="collect_payments_hidden" type="hidden"  value="">
+                   <input name="group_create_form" id="subscription_or_onetime_choice_hidden" type="hidden"  value="">
+                   <input type="hidden" name="group_create_form" value="" id="hiddenprice">
+
+                      <div id="payment_switch" data-toggle="collapse" data-parent="#accordionEx" href="#collapseOne1" aria-expanded="false"
+                        aria-controls="collapseOne1" class="switch  my-4" onclick="change_hidden_choice_input_collect_payments()">
+                        <h3>Monotize the Group</h3>
+                        <label>
+                          Free Group
+                          <input  id="monotize_input"  type="checkbox"  name="group_create_form"  value="">
+                          <span  class="lever"></span> Collect Payments
+                        </label>
+
+                      </div>
+
+                      <div class="accordion md-accordion" id="accordionEx" role="tablist" aria-multiselectable="true">
+                            <div  id="collapseOne1" class="collapse" role="tabpanel" aria-labelledby="headingOne1" data-parent="#accordionEx" >
+                              <h3>Payment Method</h3>
+
+                                <div id="payment_method_switch" class="switch my-4" >
+                                <label>
+                                  Subcription based
+                                  <input  id="subscription_or_onetime_choice" type="checkbox" onclick="subscription_or_one_time_fee()" value="" >
+                                  <span class="lever"></span> One Time fee
+                                </label>
+                              </div>
+
+                              <div class=" col-4 my-4 ml-0 pl-0">
+                                <div class="d-flex justify-content-start">
+
+
+
+                                        <div class="d-flex align-items-center">
+
+                                            <label for="group_price">$</label>
+                                        </div>
+
+                                        <input  id="group_price" class="form-control ml-0 py-0 pr-2" type="number" min="2" step="0.01" pattern='^\d+(?:\.\d{0,2})$' placeholder="2.00">
+
+                                      <div class="d-flex align-items-center pr-2">
+                                        <small id="payment_method_description">/montly fee</small>
+                                      </div>
+                                </div>
+                                <small id="group_name_vali_price" style="display:none" class=" pt-2 mt-0 text-danger"></small>
+
+                              </div>
+                              <p  id="payment_discription" class="mt-4 note note-success">With the sucbription based method members in your group will pay the monthly fee specified. A 20% platform maintaince fee will be levied on the collected payment.</p>
+
+                            </div>
+                      </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </li>
+
+          </ul>
+
+
+    </form>
+    <div class="ml-3 pl-2 mt-0 mb-5" >
+      <button onclick="submit_group_form()" class="waves-effect waves-dark btn-sm  btn btn-primary ml-5  mt-0 button-boder-radius hoverable">SUBMIT</button>
+
+    </div>
+
+  </div>
+
+
+  <div class="modal fade" style="z-index:1000000000" id="template_guidelines" tabindex="-1" role="dialog" aria-labelledby="picture_modal"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div  class="modal-content">
+        <div style = "display:none" class="modal-header">
+          <h5 style = "display:none" class="modal-title" id="picture_modal"></h5>
+        </div>
+        <div class="modal-body">
+          <button type="button"  class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h1 data-mce-style="text-align: center;" style="text-align: center;" ><strong >Value Proposition</strong></h1>
+          <p><strong>WHAT WE OFFER</strong>&nbsp;</p>
+
+
+          <div class="remove-text-items">
+          <p><em>Let potential members know what your group can provide for them. Ex...</em></p><ul><li data-mce-style="text-align: left;" style="text-align: left;"><em>A simple and solid performance strategy using grey box systems that trigger alerts to traders with entry, stop, and a target trail. 1-3 trades per day max. This is not a volume service but a clearly defined and refined choices.</em></li><li><p><em>Real -time daily analysis of equities I'm trading (as well as markets micro &amp; macro) I let the charts &amp; experience dictate setups; not news , analysts, or other outside factors. Through years of proficiency in chart/tape reading I am able to capture short term profits consistently. I will be providing exactly what I'm seeing at each moment throughout the day. This requires tremendous effort.</em></p></li><li><p><em>Real-time earnings report analysis each Qtr on certain major names while I'm playing them live</em></p></li><li><p><em>Weekly Q&amp;A within reason depending on size of user list</em><em><br data-mce-bogus="1"></em></p></li></ul>
+            </div>
+
+
+          <p><strong>WHY US</strong></p>
+
+          <div class="remove-text-items">
+          <p><em>Let them know why your group is a great pick! Ex...</em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>Not only do we deliver trades, but we teach traders how to find additional trading opportunities with our technology.</em><em></em></p>
+          </div>
+
+
+          <p><strong>WE SHARE OUR ...</strong></p>
+          <div class="remove-text-items">
+          <p><em>Let them know what experience, techniques, files, or resources you have. Ex...</em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>Traders learn the process and the protocol for trading as well as getting trades that are easy to follow. This makes for stronger traders which means more successful execution in trading.</em></p>
+          </div>
+
+
+          <p><strong>Testimonials</strong> &nbsp;</p>
+
+          <div class="remove-text-items">
+          <p><em>When you get some you can add them here!</em></p>
+          </div>
+
+
+            <p><strong>About You:</strong>&nbsp;</p>
+            <div class="remove-text-items">
+            <p><em>Build trust and credibility right of the bat by letting potential members know who you are. Ex...</em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>I worked on Wall Street for 9 years at 2 of the most prestigious banks until I left my career to day trade full time. I have been involved with trading markets for 17 years (scalping almost a decade) I'm a Professional trader and have a community proven track record for consistent, accurate analysis.</em><em></em></p>
+          </div>
+
+
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="modal fade" style="z-index:1000000000" id="template_guidelines_rules" tabindex="-1" role="dialog" aria-labelledby="picture_modal"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div  class="modal-content">
+        <div style = "display:none" class="modal-header">
+          <h5 style = "display:none" class="modal-title" id="picture_modal"></h5>
+        </div>
+        <div class="modal-body">
+          <button type="button"  class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+
+          <p><strong>Style</strong></p>
+
+          <div class="remove-text-items">
+            <p><em>Tell us what type of conversations you'll be having. Ex....</em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>Group is good for fast paced conversation.&nbsp;</em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>Group is good for slower pace and deeper discussion.&nbsp;</em></p>
+          </div>
+
+
+          <p><strong>Guidelines</strong><strong>&nbsp;</strong></p>
+
+          <div class="remove-text-items">
+              <p><em>Let members know what times you will be in the group. Let members know what level you will answer questions at. Let members know what you expect as far as appropriate conduct. Ex....</em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>In room 9am EST until 4pm. In addition to intraday real-time analysis I do a pre-market rundown DAILY &amp; a weekly Q&amp;A session post bell on Monday. There are some very strong traders in room so plenty to leverage against.<br></em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>The spirit here is sharing information that helps investors in these names. Content should be factual and backed by some thinking. </em><em>For example posting a new ticker and an emoji with no commentary is unhelpful. If you have an idea share your thinking - preferably with data and/or links.</em></p>
+          </div>
+
+
+          <p><strong>Rules</strong></p>
+
+          <div class="remove-text-items">
+            <p><em>Let users know explicitly what is not acceptable. ex....&nbsp;</em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>If you muddy the water with irrelevant posts and advertising other services you will be banned. Please respect the people here who are interested in IPO stocks!</em></p><p style="padding-left: 40px;" data-mce-style="padding-left: 40px;"><em>1) Room is NOT about fielding user questions on demand intraday. You are here for my community proven reputation with real-time analysis/commentary on what im watching &amp; playing that day.<br>2) No self-promotion, spam, or solicitation.<br>3) Posting or promoting content or activities that are illegal, offensive, violent or vulgar is strictly prohibited.<br>4) Posters exhibiting hostile and deceptive behavior will be banned at my discretion. This includes any hint of stock manipulation or the like which I will report to the SEC myself.<br></em></p><p><br></p>
+          </div>
+
+
+          <p><strong>DISCLAIMER: The discussions held here are for educational purposes only, and are not intended to be trading advice</strong></p>
+
+
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="modal fade" style="z-index:1000000000" id="picture_modal_screen" tabindex="-1" role="dialog" aria-labelledby="picture_modal"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div  class="modal-content">
+        <div style = "display:none" class="modal-header">
+          <h5 style = "display:none" class="modal-title" id="picture_modal"></h5>
+        </div>
+        <div class="modal-body">
+          <button type="button"  class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <img id="picture_modal_display" class="ui centered large rounded image" src="" alt="">
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- script for toggling display of the form -->
+  <script type="text/javascript">
+//Section is for submittg form
+
+      //group edit
+      {%if edit_group == "true"%}
+
+
+     document.addEventListener("DOMContentLoaded", function(event) {
+      group_type="{{current_group.group_type}}"
+      console.log(group_type)
+      update_Categorory_string()
+      document.getElementById('group_title_input').value = "{{current_group.title}}"
+      document.getElementById('group_title_input').style.display = "none"
+      document.getElementById('group_description_input').textContent = "{{current_group.description}}"
+      // group name
+      // document.getElementById('group_title_input').disabled = true
+      //group price
+        document.getElementById('group_price').disabled = true
+     if (group_type == 'f') {
+       document.getElementById('monotize_input').disabled = true;
+       document.getElementById('subscription_or_onetime_choice').disabled = true;
+     }
+     if (group_type == 's') {
+      //click collect Payments
+      document.getElementById('payment_switch').click()
+      document.getElementById('monotize_input').checked = true
+       document.getElementById('collect_payments_hidden').value = "on"
+       document.getElementById('monotize_input').disabled = true;
+         document.getElementById('subscription_or_onetime_choice').disabled = true;
+      //change price
+      document.getElementById('group_price').value = "{{current_group.price|price_convert}}"
+      document.getElementById('hiddenprice').value = "{{current_group.price|price_convert}}"
+
+     }
+     if (group_type == 'o') {
+      //click collect Payments
+      document.getElementById('payment_switch').click()
+      document.getElementById('monotize_input').checked = true
+      document.getElementById('collect_payments_hidden').value = "on"
+      document.getElementById('monotize_input').disabled = true;
+
+      //click OneTime fee
+      document.getElementById('payment_method_switch').click()
+      document.getElementById('subscription_or_onetime_choice').checked = true
+      document.getElementById('subscription_or_onetime_choice_hidden').value = "on"
+      document.getElementById('subscription_or_onetime_choice').disabled = true;
+
+
+      //change price
+      document.getElementById('group_price').value = "{{current_group.price|price_convert}}"
+      document.getElementById('hiddenprice').value = "{{current_group.price|price_convert}}"
+     }
+
+     });
+       {%endif%}
+
+function submit_group_form() {
+// validation
+chosen_group_name=document.getElementById('group_title_input').value.toLowerCase()
+group_description = document.getElementById('group_description_input').value
+group_picture = document.getElementById('post_image_field_1').src
+group_category = document.getElementById('group_category_input').value
+group_payment = document.getElementById('group_price').value
+console.log("initial",group_payment)
+
+group_payment = parseFloat(group_payment) * 100
+console.log("change",group_payment)
+
+  group_name = [
+  {%for name in group_names%}
+  "{{name}}",
+  {%endfor%}
+  ]
+
+  {% if edit_group == "true" %}
+
+  {%else%}
+  for (var i = 0; i < group_name.length; i++) {
+    if (group_name[i] == chosen_group_name ) {
+      document.getElementById('group_name_vali').style.display="inline"
+      document.getElementById('group_name_vali').textContent = "Please choose another name, this name is taken"
+      document.getElementById('group_title_input').style.borderColor = "#ff3547"
+      $('#part1').click()
+      return
+    }
+  }
+  {%endif%}
+
+
+  if ('' == chosen_group_name ) {
+    document.getElementById('group_name_vali').style.display="inline"
+    document.getElementById('group_name_vali').textContent = "This feild cannot be empty"
+    document.getElementById('group_title_input').style.borderColor = "#ff3547"
+    $('#part1').click()
+
+    return
+  }
+  {% if edit_group == "true" %}
+
+  {%else%}
+  if (document.getElementById('post_image_field_1').attributes['default_img'].value=="false") {
+    document.getElementById('group_name_vali_pic').style.display="inline"
+    document.getElementById('group_name_vali_pic').textContent = "Please add a cover photo"
+    $('#part1').click()
+    return
+  }
+  {%endif%}
+
+  if (''==group_description) {
+    document.getElementById('group_name_vali_des').style.display="inline"
+    document.getElementById('group_name_vali_des').textContent = "This feild cannot be empty"
+    document.getElementById('group_description_input').style.borderColor = "#ff3547"
+    $('#part1').click()
+    return
+  }
+  if (''==group_category) {
+    document.getElementById('group_name_vali_cat').style.display="inline"
+    document.getElementById('group_name_vali_cat').textContent = "This feild cannot be empty"
+    document.getElementById('group_category_input_choice').style.borderColor = "#ff3547"
+    $('#part1').click()
+    return
+
+}
+
+// validate the payment will sumetimes roud up numbers by 1cent
+validate_payment = document.getElementById('collect_payments_hidden').value
+console.log("should we validate payment",validate_payment)
+if (validate_payment != "") {
+
+    group_payment=Math.ceil(group_payment)
+
+    if (group_payment % 1 ==0) {
+          console.log("ok")
+          console.log("finaloutput",group_payment)
+          // number has to to be greater or equal to two
+          if (group_payment >= 200) {
+            document.getElementById('hiddenprice').value =group_payment
+
+          }else {
+            document.getElementById('group_name_vali_price').style.display="inline"
+            document.getElementById('group_name_vali_price').textContent = "Please enter a price greater than $2"
+            document.getElementById('group_price').style.borderColor = "#ff3547"
+            $('#part3').click()
+            return
+          }
+
+    }else {
+      console.log("not good")
+      console.log("finaloutput",group_payment)
+      document.getElementById('group_name_vali_price').style.display="inline"
+      document.getElementById('group_name_vali_price').textContent = "Please enter a valid price"
+      document.getElementById('group_price').style.borderColor = "#ff3547"
+      $('#part3').click()
+      return
+    }
+}
+
+   document.getElementById('group_create_form_ele').submit()
+
+}
+//Section is for proccesing if for displaying respective information for either subscription or lifetime fee
+function subscription_or_one_time_fee() {
+      if ( document.getElementById('subscription_or_onetime_choice').checked == true) {
+        document.getElementById('payment_method_description').textContent = "/admission fee"
+        document.getElementById('payment_discription').textContent =   "Members will pay a one time addmission fee on entry. A 20% platform maintaince fee will be levied on the collected payment."
+        document.getElementById('subscription_or_onetime_choice_hidden').value  = 'admission'
+
+      }else {
+        document.getElementById('payment_method_description').textContent = "/montly fee"
+        document.getElementById('payment_discription').textContent =   "With the sucbription based method members in your group will pay the monthly fee specified. A 20% platform maintaince fee will be levied on the collected payment."
+        document.getElementById('subscription_or_onetime_choice_hidden').value  =''
+
+  }
+}
+
+function change_hidden_choice_input_collect_payments() {
+  if (document.getElementById('monotize_input').checked == true) {
+    document.getElementById('collect_payments_hidden').value = 'payments'
+  }else {
+    document.getElementById('collect_payments_hidden').value = ''
+  }
+
+}
+//Section is for processing category inputs
+
+document.addEventListener("DOMContentLoaded", function(event) {
+  document.querySelector('#group_category_input_choice').addEventListener('keydown',function(e){
+    if (e.keyCode != 13) {
+      k=09209
+    }else {
+
+          e.preventDefault()
+
+          var category_name = this.value
+          this.value = ''
+          add_new_category(category_name)
+          update_Categorory_string()
+    }
+
+
+    if (e.keyCode != 32) {
+        k=09209
+    }else {
+      e.preventDefault()
+
+      var category_name = this.value
+      this.value = ''
+      add_new_category(category_name)
+      update_Categorory_string()
+    }
+
+
+  })
+
+});
+
+function add_new_category(name) {
+  //I learned how to use insertAdjacentHTML 12/31/19
+  word_of_god = '<a onclick="remove_category(this)" class="my-0 pt-3 px-0 ml-0  mr-1 cancela "><div class="ui small label mr-2 mt-0  pr-1"><div class="media-body mx-0 my-0 px-0 py-0 d-flex justify-content-start"><p class="my-0 category_specific_name">' +name +'</p><i class="small close icon ml-1 mr-0 "></i></div></div></a>'
+  document.getElementById('category_container').insertAdjacentHTML('beforeend',word_of_god)
+
+}
+
+function fetch_category_array() {
+  var categories = []
+
+  document.querySelectorAll('.category_specific_name').forEach(function(e){
+     name = e.textContent
+    if (name== '') {
+      return;
+    }
+    categories.push(name)
+  })
+  return categories;
+}
+
+
+
+
+function update_Categorory_string() {
+  categories = fetch_category_array()
+  document.getElementById('group_category_input').value = categories.join(',')
+}
+function remove_category(element) {
+  element.parentNode.removeChild(element);
+  update_Categorory_string()
+}
+
+//Section For processing group image
+$('#button').click(function(){
+        //check every file button starting from the first one to see if there is no value
+      //https://stackoverflow.com/questions/25793880/how-to-check-if-input-file-is-empty-in-jquery
+                  //loop through the file input buttons
+
+                  //specific to  create group page
+                  not_needed_pictrue_element = document.getElementById('default_group_pic_close')
+                  if (not_needed_pictrue_element) {
+                    not_needed_pictrue_element.style.display = "none"
+                    document.getElementById('image_defalt_group_pictrue').style.display = "none"
+                  }
+
+                  for ( i = 1; i < 5; i++) {
+                    num = String(i)
+                    file_input_button = "post_photo_upload_button_" + num
+                    //find the button that is empty click on the button
+                        if( document.getElementById(file_input_button).files.length == 0 ){
+                          //$(file_input_button).trigger("click");
+                          console.log(file_input_button)
+                        document.getElementById(file_input_button).click()
+                          break
+                            }
+                      }
+     })
+     $('#post_photo_upload_button_1').change(function(){
+       button_clicked =document.getElementById('post_photo_upload_button_1')
+        readURL(button_clicked)
+
+     })
+     function readURL(input) {
+       //reading file if any
+         if (input.files && input.files[0]) {
+             var reader = new FileReader();
+
+             // console.log(input.files[0])
+             // console.log(input.files)
+
+             // check if image space is free then put image there
+             //getting button id
+             button_id = input.id
+             //split button id
+             button_id=button_id.split("_")
+
+             for (var i = 1; i < 5; i++) {
+               // get counter
+               num = String(i)
+               // get the element id of space picture should be added to
+               image_space =  button_id[0]+"_image_field_" + num
+               // get the close id of the image
+               close_icon = image_space +"_"+ "close"
+
+             // get the element of space picture should be added to
+             elem =  document.getElementById(image_space)
+               // get the close element of the image
+             close_icon_element = document.getElementById(close_icon)
+             // console.log(close_icon)
+             // console.log(close_icon_element);
+
+             // check to see if the element where we want to put the picture is clear
+                if(elem.getAttribute('src') == ""){
+                     // console.log("space free");
+                     reader.onload = function(e) {
+                       // console.log(e)
+                       // load the picture space with the picture url
+                         $(elem).attr('src', e.target.result)
+                         // make photo visible
+                         elem.style.display = "inline"
+                         //console.log(close_icon)
+
+                       //  $(close_icon).show();
+
+                         //make close icon visible
+                         close_icon_element.style.display = "flex"
+                         // set the a element variable on the photo space so we can match the photo with it's button
+                         elem.setAttribute('file_name',input.value);
+                         document.getElementById('post_image_field_1').setAttribute('default_img',"true");
+
+                         // console.log(elem)
+                         // console.log(input.value)
+
+                     };
+                     break
+               }
+             }
+
+
+             reader.readAsDataURL(input.files[0]);
+         }
+     }
+
+     //getting the element that contains the uploaded picture display and deleleteing the img url
+     function delete_uploaded_img(clicked_id){
+     // due to legacy I had to start this way
+     // put the element of the the photo space needed to be manipulated in variable
+       element= clicked_id
+     //get the id of the photo space
+       element_id= element.id
+       //split the  photo space id
+       button_id=element_id.split("_")
+
+       //get the close icon id for the specific photo
+       close_icon_id =element_id + "_close"
+       //get the close icon element for the specific photo
+       close_icon_element = document.getElementById(close_icon_id)
+       //get the url of the photo that needs to be deleted
+       photo_to_delete =document.getElementById(element_id).src
+
+
+       for ( i = 1; i < 5; i++) {
+         //counter
+         num = String(i)
+         //get the file button that contains the photo
+         file_input_button = button_id[0] +"_photo_upload_button_" + num
+         //console.log(file_input_button)
+
+         //find the button that contains the picture from stored value set in url read function
+         if( document.getElementById(file_input_button).value == element.attributes["file_name"].value){
+           //console.log(  document.getElementById(file_input_button).files)
+           //get rid of the file value
+           document.getElementById(file_input_button).value = ''
+           //get rid of the picture source from image space
+           element.src = ''
+           document.getElementById('post_image_field_1').setAttribute('default_img',"false");
+
+           //get rid of picture source from created variable
+           element.setAttribute('file_name','');
+           //hide the picture space
+           element.style.display = "none"
+           // hide the close icon
+           close_icon_element.style.display = "none"
+           // console.log(  document.getElementById(file_input_button).files)
+           // console.log(element)
+
+           break
+             }
+           }
+     }
+
+     function blow_up_image(element) {
+       //clear display
+      display_element =document.getElementById('picture_modal_display')
+     display_element.src = ' '
+       // put element in display
+       console.log(element.src)
+       display_element.src = element.src
+     }
+     //Section For processing group image
+
+
+     //Section is for removing error tags
+     document.addEventListener("DOMContentLoaded", function(event) {
+       //Group Title
+       document.querySelector('#group_title_input').addEventListener('focus',function(e){
+         display = document.getElementById('group_name_vali').style.display
+         if (display != "none") {
+           document.getElementById('group_title_input').style.borderColor = "rgb(206, 212, 218)"
+           document.getElementById('group_name_vali').style.display="none"
+         }
+       })
+       //Group picture
+       document.querySelector('#button').addEventListener('click',function(e){
+         display = document.getElementById('group_name_vali_pic').style.display
+         if (display != "none") {
+           document.getElementById('group_name_vali_pic').style.display="none"
+         }
+       })
+       //Group Description
+       document.querySelector('#group_description_input').addEventListener('click',function(e){
+         display = document.getElementById('group_name_vali_des').style.display
+         if (display != "none") {
+           document.getElementById('group_description_input').style.borderColor = "rgb(206, 212, 218)"
+           document.getElementById('group_name_vali_des').style.display="none"
+         }
+       })
+       //Category
+       document.querySelector('#group_category_input_choice').addEventListener('focus',function(e){
+         display = document.getElementById('group_name_vali_cat').style.display
+         if (display != "none") {
+           document.getElementById('group_category_input_choice').style.borderColor = "rgb(206, 212, 218)"
+           document.getElementById('group_name_vali_cat').style.display="none"
+         }
+       })
+       //Price
+       document.querySelector('#group_price').addEventListener('click',function(e){
+
+         display = document.getElementById('group_name_vali_price').style.display
+         if (display != "none") {
+           document.getElementById('group_price').style.borderColor = "rgb(206, 212, 218)"
+           document.getElementById('group_name_vali_price').style.display="none"
+         }
+       })
+     });
+
+     //Section is for removing default group picture when editing
+     function rid_default_image() {
+       pic= document.getElementById('image_defalt_group_pictrue')
+       pic.src = " "
+       pic.style.display= "none"
+       document.getElementById('default_group_pic_close').style.display = "none"
+
+     }
+
+  </script>
+
+
+{% endblock %}

@@ -1,0 +1,2734 @@
+{%extends "base.html" %}
+<!-- scroller -->
+<!-- https://benfrain.com/playground/scroller.html -->
+
+{% block notification_bell%}
+{%if user.notification_count == 0 %}
+<span id="Dividend_Wealth_Notification_Bell_count" style="display:none" class="badge red z-depth-1 mr-1"> {{user.notification_count}}</span>
+{%else%}
+<span id="Dividend_Wealth_Notification_Bell_count" class="badge red z-depth-1 mr-1"> {{user.notification_count}}</span>
+{%endif%}
+{%endblock%}
+
+
+
+{% block content  %}
+{%load crispy_forms_tags%}
+{% load custom_tags %}
+<style>
+  .post-body {
+    width:100%;
+  }
+
+  .group-img {
+    max-height: 100%;
+    height: auto;
+    width: 110px; /* ie8 */
+}
+
+  .cancela,.cancela:link,.cancela:visited,.cancela:hover,.cancela:focus,.cancela:active{
+    color: inherit;
+    text-decoration: none;
+}
+
+.parent {
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.image1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+}
+.image2 {
+  position: absolute;
+  top: 90px;
+  left: 10px;
+}
+
+.admin-callout{
+  color:white;
+  /* mix-blend-mode: difference; */
+}
+strong {
+font-weight: bold !important;
+}
+.autocomplete {
+  position: relative;
+  display: inline-block;
+}
+
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  /*position the autocomplete items to be the same width as the container:*/
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+/*when hovering an item:*/
+.autocomplete-items div:hover {
+  background-color: #e9e9e9;
+}
+
+/*when navigating through the items using the arrow keys:*/
+.autocomplete-active {
+  background-color: DodgerBlue !important;
+  color: #ffffff;
+}
+
+
+textarea.test,textarea.test:focus,textarea.test:active
+{
+width: 100%;
+height: 100%;
+border-color: Transparent;
+outline:0px !important;
+-webkit-appearance:none;
+box-shadow: none;
+}
+
+
+.modal-dialog.modal-notify.modal-info .fas {
+    color: #3ad2a8!important;
+}
+.modal-dialog.modal-notify.modal-info .modal-header {
+    background-color:  #3ad2a8!important;
+}
+.straight-line-text{
+  white-space:nowrap;
+
+}
+.card-header, .black-skin .form-header {
+    background-color: #3ad2a8!important;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    color: #ffffff!important;
+    background-color: #3ad2a8!important;
+}
+.nav-item-theme, .nav-item-theme:hover  {
+    color: #222222!important;
+    text-decoration: none;
+}
+
+.nav-item-theme, .nav-item-theme:hover  {
+    color: #222222!important;
+    text-decoration: none;
+}
+
+.nav-tags-top{
+  color: #222222!important;
+}
+.group-list-img{
+  height: 120px;
+  width: 120px;
+  border-radius: .28571429rem;
+  object-fit:cover;
+
+}
+
+.profile-img-constraint{
+  max-height: 28px!important;
+  max-width: 28px!important;
+  object-fit:cover;
+}
+
+.group__container {
+  max-height:480px;
+  overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+.group__container::-webkit-scrollbar {
+  display: none;
+}
+
+.card-header, .black-skin .form-header {
+background-color: #2ad1a3!important;
+    color: #ffffff!important;
+}
+[slider] {
+  width: 300px;
+  position: relative;
+  height: 5px;
+  margin: 45px 0 10px 0;
+}
+
+[slider] > div {
+  position: absolute;
+   left: 15px;
+  right: 15px;
+  height: 5px;
+}
+[slider] > div > [inverse-left] {
+  position: absolute;
+  left: 0;
+  height: 5px;
+  border-radius: 10px;
+  background-color: #CCC;
+  margin: 0 7px;
+}
+
+[slider] > div > [inverse-right] {
+  position: absolute;
+  right: 0;
+  height: 5px;
+  border-radius: 10px;
+  background-color: #CCC;
+  margin: 0 7px;
+}
+
+
+[slider] > div > [range] {
+  position: absolute;
+  left: 0;
+  height: 5px;
+  border-radius: 14px;
+  background-color: #3ad2a8;
+}
+
+[slider] > div > [thumb] {
+  position: absolute;
+  top: -7px;
+  z-index: 2;
+  height: 28px;
+  width: 28px;
+  text-align: left;
+  margin-left: -11px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  background-color: #FFF;
+  border-radius: 50%;
+  outline: none;
+
+}
+
+[slider] > input[type=range] {
+  position: absolute;
+  pointer-events: none;
+  -webkit-appearance: none;
+  z-index: 3;
+  height: 14px;
+  top: -2px;
+  width: 100%;
+  opacity: 0;
+}
+
+div[slider] > input[type=range]:focus::-webkit-slider-runnable-track {
+  background: transparent;
+  border: transparent;
+}
+
+div[slider] > input[type=range]:focus {
+  outline: none;
+}
+
+div[slider] > input[type=range]::-webkit-slider-thumb {
+  pointer-events: all;
+  width: 28px;
+  height: 28px;
+  border-radius: 0px;
+  border: 0 none;
+  background: red;
+  -webkit-appearance: none;
+}
+
+div[slider] > input[type=range]::-ms-fill-lower {
+  background: transparent;
+  border: 0 none;
+}
+
+div[slider] > input[type=range]::-ms-fill-upper {
+  background: transparent;
+  border: 0 none;
+}
+
+div[slider] > input[type=range]::-ms-tooltip {
+  display: none;
+}
+
+[slider] > div > [sign] {
+  opacity: 0;
+  position: absolute;
+  margin-left: -11px;
+  top: -39px;
+  z-index:3;
+  background-color: #3ad2a8;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 28px;
+  -webkit-border-radius: 28px;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  text-align: center;
+}
+
+[slider] > div > [sign]:after {
+  position: absolute;
+  content: '';
+  left: 0;
+  border-radius: 16px;
+  top: 19px;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top-width: 16px;
+  border-top-style: solid;
+  border-top-color: #3ad2a8;
+}
+
+[slider] > div > [sign] > span {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+[slider]:hover > div > [sign] {
+  opacity: 1;
+}
+
+.podbar {
+    bottom:0;
+    position:fixed;
+    z-index:150;
+    _position:absolute;
+    _top:expression(eval(document.documentElement.scrollTop+
+        (document.documentElement.clientHeight-this.offsetHeight)));
+    height:50px;
+}
+
+.user-card{
+   min-width: 165px;
+  max-height: 300px;
+  min-height: 300px
+}
+.user-card-img{
+  height:100px;
+  object-fit:cover;
+}
+
+.parent-user {
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.image1-user {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+}
+.image2-user {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+
+  border:2px solid  #ffffff;
+}
+
+.avatar-user {
+  vertical-align: middle;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit:cover;
+
+}
+
+.card-body-avatar {
+position: relative;
+    top: 120px;
+
+  border-radius: 50%;
+
+}
+
+.profile-overflow {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+  .profile-overflow::-webkit-scrollbar {
+    display: none;
+  }
+
+  .profile-scroller {
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+      max-height:620px;
+    }
+    .profile-scroller::-webkit-scrollbar {
+      display: none;
+    }
+    .unchecked-notification{
+      background-color: #edf6f4 !important;
+    }
+    .dividend_wealth_member_tag_img{
+      vertical-align: middle;
+      width: 13.5px;
+      height: 13.5px;
+      border-radius: 50%;
+      object-fit:cover;
+    }
+
+  .profile-card-horizontal-overflow {
+      overflow-x: scroll;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+    }
+    .profile-card-horizontal-overflow::-webkit-scrollbar {
+      display: none;
+    }
+    .group-card{
+      max-width: 300px;
+      max-height: 500px;
+    }
+    .group-card-img{
+      height:160px;
+        object-fit:cover;
+    }
+</style>
+
+<!-- turn of other blue outline elements of bootstrap4
+https://stackoverflow.com/questions/8622686/how-come-i-cant-remove-the-blue-textarea-border-in-twitter-bootstrap-->
+<!-- textarea:hover,
+input:hover,
+textarea:active,
+input:active,
+textarea:focus,
+input:focus,
+button:focus,
+button:active,
+button:hover,
+label:focus,
+.btn:active,
+.btn.active -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.rawgit.com/mervick/emojionearea/master/dist/emojionearea.min.js"></script>
+<script src="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/js/jquery.atwho.min.js"></script>
+<script src="https://cdn.rawgit.com/ichord/Caret.js/master/dist/jquery.caret.min.js"></script>
+<link href="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/css/jquery.atwho.css" rel="stylesheet">
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" type="text/css"/>
+
+<div class="container pt-2">
+  <div class="podbar">
+    <div  id="alert_footer"class=" ">
+    </div>
+    </div>
+        <div class="row">
+            <!-- Blog Entries Column -->
+            <div class="col-md-9 pb-3">
+
+                <ul class=" pt-3 nav nav-pills mb-3 d-flex justify-content-around" id="pills-tab" role="tablist">
+
+                    <li class="nav-item">
+                      <a class="nav-item-theme nav-link active text-center" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="true" >Groups</a>
+                    </li>
+                    <li class="nav-item ">
+                      <a class="nav-item-theme nav-link " id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="false" >News</a>
+                    </li>
+                    <li class="nav-item ">
+                      <a class="nav-item-theme nav-link text-center" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false">Members</a>
+                    </li>
+                    <li class="nav-item ">
+                      <a class="nav-item-theme nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-feed" role="tab" aria-controls="pills-contact" aria-selected="false">Stocks</a>
+                    </li>
+                </ul>
+
+          <div class="tab-content  px-0 py-0" id="pills-tabContent">
+
+            <div class="tab-pane fade show active" id="pills-profile" rolse="tabpanel" aria-labelledby="pills-profile-tab">
+              <!--/////////////////////////////////////////////////////Groups -->
+
+              <div class="container" style="height:300px">
+              <form id="group_filter_form"  action="{% url 'core:feed'  %}" autocomplete="off" method="get" >
+
+
+                  <h4 class="text-center">Group Filter</h4>
+                <select  name="group_filter_catagories"  id="group_category_input"class="mdb-select md-form" multiple searchable="Search here..">
+                      {%for cat in list_of_group_categories%}
+
+                      <option value="{{cat}}" >{{cat}}</option>
+                      {%endfor%}
+                    </select>
+                    <label for="group_category_input">Categories</label>
+
+                    <select name="group_filter_credentials"  id="admin_credentials"class="mdb-select md-form" multiple searchable="Search here..">
+                          {%for cred in list_of_credentials%}
+                          <option value="{{cred}}" >{{cred}}</option>
+                          {%endfor%}
+                    </select>
+                        <label for="admin_credentials">Admin Credential</label>
+<p class="mb-0">Price Range: <strong>$<span id="display_price_range_min"> 0</span></strong>   - <strong>$<span id="display_price_range_max">100</span></strong> </p>
+                        <div slider id="slider-distance" class="md-form" >
+                          <div>
+                            <div inverse-left style="width:70%;"></div>
+                            <div inverse-right style="width:70%;"></div>
+                            <div range style="left:0%;right:0%;"></div>
+                            <span id="price_min" thumb style="left:0%;"></span>
+                            <span id="price_max" thumb style="left:100%;"></span>
+                            <div sign style="left:0%;">
+                              <span id="min_sign_price">0</span>
+                            </div>
+                            <div sign style="left:100%;">
+                              <span id="max_sign_price">100</span>
+                            </div>
+                          </div>
+                          <input id="input_min_price_group_filter"  type="range" value="0" max="100" min="0" step="1" oninput="
+                          this.value=Math.min(this.value,this.parentNode.childNodes[3].value-1);
+                          let value = (this.value/parseInt(this.max))*100
+                          var children = this.parentNode.childNodes[1].childNodes;
+                          children[1].style.width=value+'%';
+                          children[5].style.left=value+'%';
+                          children[7].style.left=value+'%';children[11].style.left=value+'%';
+                        " />
+
+                          <input id="input_max_price_group_filter" type="range" value="100" max="100" min="0" step="1" oninput="
+                          this.value=Math.max(this.value,this.parentNode.childNodes[3].value-(-1));
+                          let value = (this.value/parseInt(this.max))*100
+                          var children = this.parentNode.childNodes[1].childNodes;
+                          children[3].style.width=(100-value)+'%';
+                          children[5].style.right=(100-value)+'%';
+                          children[9].style.left=value+'%';children[13].style.left=value+'%';
+                          children[13].childNodes[1].innerHTML=this.value;" />
+                        </div>
+
+                        <input id="group_filter_hidden_min_price" type="hidden" name="group_filter_hidden_min_price_name" value="">
+                        <input id="group_filter_hidden_max_price" type="hidden" name="group_filter_hidden_max_price_name" value="">
+
+                        <button id="reset_group_filter" class=" btn  btn-sm button-boder-radius button-overflow waves-effect waves-light mt-4  hoverable float-right">Reset</button>
+                        <button id="group_filter_submit_button" type="submit"  class=" btn btn-primary  btn-sm button-boder-radius button-overflow waves-effect waves-light mt-4  hoverable float-right">Filter <i class="filter icon"></i></button>
+
+                          </form>
+
+              </div>
+
+              <div class="accordion group__container" id="accordionGroups">
+              {%for group in group_list%}
+              <div group_pk="{{group.pk}}"  id="group{{group.pk}}">
+
+
+              <div class="mb-1 media rounded border border-light list-group-item-action" >
+                <div class=" media-body col-12">
+
+                    <div class="d-flex justify-content-start">
+
+                      <div class="my-3 mr-1  px-0 col-md-3 parent">
+                          <img  src="{{group.group_picture.url}}" class="group-list-img image1  rgba-stylish-slight" alt="...">
+                          {%if group.creator.profile_pic%}
+                          <div class="d-flex justify-content-start image2">
+                              <p class="pt-2 pr-3 admin-callout"> <strong>Admin:</strong></p>
+                              <img class="ui fluid avatar image  mx-0 " src="{{group.creator.profile_pic.url}}" >
+                          </div>
+
+                        {%else%}
+                        {%load static%}
+                        <div class="d-flex justify-content-start image2">
+                            <p class="pt-2  pr-3 admin-callout" style="color:white;"> <strong>Admin:</strong></p>
+                            <img class="ui fluid avatar image  mr-0 "  src=" {% static "img/default-profile-picture-gmail-2.png" %}" >
+                        </div>
+                        {%endif%}
+                      </div>
+                      <div class=" px-0 mx-0 col-md-9 my-3">
+                                  <div class="d-flex justify-content-between">
+                                    <h5 class="m-0">{{group.title|title}}</h5>
+                                    <div class="d-flex justify-content-end pr-3">
+                                      <div class="d-flex justify-content-start pr-3">
+                                        <i class="users icon float-right"></i> <p  style="color:#22222;font-family:Icons;font-style:normal;font-weight: 400;">{{group.member_count}}</p>
+                                      </div>
+
+                                   </div>
+                                </div>
+
+                                    <div class="pt-1"style="width:100%;">{{group.description}} </div>
+                                    {%if group.group_type != "f" %}
+                                        <p class="pt-2 mb-0"><strong>
+                                          {%if group.group_type == 's'%}${{group.price|price_convert}}/Monthly Fee{%endif%}
+                                          {%if group.group_type == 'o'%}${{group.price|price_convert}}/Addmision Fee{%endif%}
+                                        </strong></p>
+                                        <a href="{{group.landing_page}}" class=" btn btn-primary btn-sm  button-boder-radius hoverable">Join Group</a>
+                                    {%else%}
+                                      <p  class=" pt-2 mb-0"><strong>Free</strong></p>
+                                    <a href="{{group.get_absolute_url}}"  class=" btn btn-primary btn-sm  button-boder-radius hoverable">Join Group</a>
+                                    {%endif%}
+                                    <span data-toggle="collapse" group_pk="{{group.pk}}" onclick="load_group_metrics(this)" data-target="#collapseGroup{{group.pk}}" aria-expanded="false" aria-controls="collapseGroup{{group.pk}}">
+                                    <p class="text-decoration-none pt-2">Learn More</p>
+                                  </span>
+                            </div>
+                    </div>
+
+                            </div>
+                 </div>
+
+                 <div id="collapseGroup{{group.pk}}" class="collapse" aria-labelledby="group{{group.pk}}" data-parent="#accordionGroups">
+                   <div class="card-body">
+
+
+
+                      <div class="">
+                            <h4>Group Metrics:</h4>
+                            <h4>{{group.posts_today}}</h4>
+                            <p>New posts today</p>
+                            <p><strong>{{group.posts_last_thirty_days}}</strong> in the last <strong>30</strong> days</p>
+                            <hr>
+                            <h4>{{group.group_activeness}}%</h4>
+                              <p>Avg percentage of time in a day members spend in group</p>
+                            <hr>
+                            <h4>{{group.avg_members_online}}</h4>
+                              <p>Avg num Members online</p>
+                            <hr>
+                            <h4>{{group.avg_member_joining_a_week}}</h4>
+                              <p>Members joined this week</p>
+                            <hr>
+                            <h5><strong>Admin and Moderators:</strong></h5>
+                            <div class="d-flex justify-content-start">
+                              {% for member in group.group_members %}
+
+                                  {% if member.userprofile.profile_pic %}
+                                    <img class="ui mini avatar image mr-1 profile-img-constraint" src="{{member.userprofile.profile_pic.url}}"><span></span>
+                                  {%else%}
+                                    <img class="ui mini avatar image profile-img-constraint" src="{% static "img/default-profile-picture-gmail-2.png" %}"><span></span>
+                                  {%endif%}
+                              {% endfor %}
+                            </div>
+                      </div>
+                      <div class="my-2">
+                            <h4>Description:</h4>
+                              <p>{{group.description}}</p>
+                      </div>
+                      <div class="mt-2">
+                      <h4 class="mt-1 text-center">Value Proposition:</h4>
+                    {{group.value_proposition|safe}}
+                    </div>
+                 </div>
+                 </div>
+                   </div>
+                 {%endfor%}
+
+                 <!-- div underneath for accordion functionality -->
+                 </div>
+
+                 <h4 class="text-center">Featured Groups</h4>
+               <div class="profile-card-horizontal-overflow">
+                 <div class="d-flex justify-content-start">
+                 {%for group in group_list_2%}
+                 <!-- stocks -->
+                 <div  class="mr-3 my-2"  >
+                 <!-- Card Light -->
+                 <div style="min-width: 250px" class="card group-card mx-2">
+                   <!-- Card image -->
+                   <div class="view overlay">
+                     <img class="card-img-top group-card-img" src="{{group.group_picture.url}}" alt="Card image cap">
+                     <!-- <img class="card-img-top" src="https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20%28131%29.jpg" alt="Card image cap"> -->
+                     <a>
+                       <div class="mask rgba-white-slight"></div>
+                     </a>
+                   </div>
+                   <!-- Card content -->
+                   <div class="card-body">
+                     <!-- Social shares button -->
+                     <a class="activator waves-effect waves-light mr-4"><i class="fas fa-share-alt"></i></a>
+                     <!-- Title -->
+                     <h4 class="card-title">{{group.title|title}}</h4>
+                     <hr>
+                     <!-- Text -->
+                     <p class="card-text">{{group.description}}</p>
+                     <!-- Link -->
+                     <!-- Button -->
+                     {%if group.group_type != "f" %}
+                         <p><strong>
+                           {%if group.group_type == 's'%}${{group.price|price_convert}}/Monthly Fee{%endif%}
+                           {%if group.group_type == 'o'%}${{group.price|price_convert}}/Addmision Fee{%endif%}
+                         </strong></p>
+                         <a href="{{group.landing_page}}" class=" btn btn-primary btn-sm  hoverable">Join Group</a>
+                     {%else%}
+                       <p><strong>Free</strong></p>
+                     <a href="{{group.get_absolute_url}}"  class=" btn btn-primary btn-sm  hoverable">Join Group</a>
+                     {%endif%}
+                     <a  slug="{{group.slug}}" onClick="populate_similiar_group_modal(this)"  class="black-text d-flex justify-content-end" style="color: #000!important;"><h5>Learn More <i class="fas fa-angle-double-right"></i></h5></a>
+                   </div>
+                 </div>
+                 <!-- Card Light -->
+                 </div>
+                 {%endfor%}
+                 </div>
+
+               </div>
+
+            </div>
+                  <div class="tab-pane fade " id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+
+
+                        <!--Carousel Wrapper-->
+                    <div id="carousel-example-2" class="card-spacing carousel slide carousel-fade" data-ride="carousel">
+
+                      <div class="carousel-inner" role="listbox">
+                        {%for article in article_list_carousel%}
+                        <div class="carousel-item {%if forloop.counter == 1%}active{%endif%}" style="border-radius: .28571429rem;">
+                          <a href="{{article.url}}">
+                          <div class="view" style="border-radius: .28571429rem;">
+                            <img class="d-block w-100" src="{{article.urltoimage}}"  width="30" height="250" style="object-fit:cover;border-radius: .28571429rem;"
+                              alt="{%if forloop.counter == 1%}}First slide{%endif%}{%if forloop.counter == 2%}}Second slide{%endif%}{%if forloop.counter == 3%}}Third slide{%endif%}">
+                            <div class="mask rgba-black-light"></div>
+                          </div>
+                          <div class="carousel-caption">
+                            <h3 class="h3-responsive">{{article.title|truncatewords:11}}</h3>
+                            <p>{{article.description|truncatewords:30}}</p>
+                          </div>
+                            </a>
+                        </div>
+                        {%endfor%}
+                      </div>
+                      <a class="carousel-control-prev" href="#carousel-example-2" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                      </a>
+                      <a class="carousel-control-next" href="#carousel-example-2" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                      </a>
+                    </div>
+                    <div class="form my-2">
+                      <div   class=" pl-0 col-md-5 d-flex justify-content-center">
+                        <!-- Default input -->
+                        <input id="article_query_feild" name="q" type="search" placeholder="Search..." aria-label="Search" class="form-control" autocomplete="off" spellcheck="false">
+                        <button onclick="load_queried_articles()" class="btn  btn-primary btn-sm my-0 search-bar p waves-effect waves-light"  style="border-radius: .28571429rem;">
+                      <i class="fas fa-search"></i>
+                      </button>
+                      </div>
+                    </div>
+                    <div class="row " >
+                      {% for article in article_list_featured%}
+                      <div id="featured_article_{{forloop.counter}}" class="col-md-6" height="460">
+                        <a href="{{article.url}}">
+                        <div class="view overlay rounded z-depth-1-half mb-3">
+                          <img src="{{article.urltoimage}}"  alt="Sample post image" width="397" height="194"  style="object-fit:cover;border-radius: .28571429rem;">
+                            <div  class="mask rgba-white-slight waves-effect waves-light"></div>
+                        </div>
+                            </a>
+                        <div class="news-data">
+                          <a href="" class="light-blue-text">
+                            <h6>
+                            </h6>
+                          </a>
+                          <p>
+                            <strong>
+                              <i class="far fa-clock"></i> {{article.published}}</strong>
+                          </p>
+                        </div>
+                        <h3>
+                          <a>
+                            <strong>{{article.title|truncatewords:11}}</strong>
+                          </a>
+                        </h3>
+                        <p> {{article.description|truncatewords:52}}
+                          <a href="{{article.url}}"><i class="fas fa-angle-right float-right"></i></a>
+                        </p>
+                        <hr>
+                      </div>
+                      {%endfor%}
+                    </div>
+                    <div class="group__container" id="news_container">
+                      <div class="row px-0 mx-0">
+                      <div id="first_half_scroller" class="col-md-6  " >
+                        {%for article in article_list_scroller1%}
+                        <div class="d-flex justify-content-start mb-2">
+                          <div class="mt-2">
+                              <a href ="{{article.url}}">
+                            <div class="view overlay rounded z-depth-1">
+                              <img src="{{article.urltoimage}}"  height="100" width="100"  alt="Minor sample post image" style="object-fit:cover;border-radius: .28571429rem;">
+                                <div  class="mask rgba-white-slight waves-effect waves-light"></div>
+                            </div>
+                              </a>
+                          </div>
+                          <div class=" pl-1" height="150" >
+                            {%if article.author %}
+                            {% if article.author != "None"%}
+                            <p class="dark-grey-text my-0" style="width:60;">
+                              <strong>By: {{article.author|truncatewords:2}}</strong>
+                            </p>
+                            {%endif%}
+                            {%endif%}
+                            <p class="my-0">
+                              <strong> {{article.source}}</strong>
+                            </p>
+                            <p class="px-1" style="width:60;">{{article.description|truncatewords:20}}</p>
+                          </div>
+                          </div>
+                                      {%endfor%}
+                      </div>
+                      <div id="second_half_scroller" class="col-md-6  " >
+                        {%for article in article_list_scroller2%}
+                        <div class="d-flex justify-content-start mb-2">
+                          <div class="mt-2">
+                              <a href ="{{article.url}}">
+                            <div class="view overlay rounded z-depth-1">
+                              <img src="{{article.urltoimage}}"  height="100" width="100"  alt="Minor sample post image" style="object-fit:cover;border-radius: .28571429rem;">
+                                <div  class="mask rgba-white-slight waves-effect waves-light"></div>
+                            </div>
+                              </a>
+                          </div>
+                          <div class=" pl-1" height="150" >
+                            {%if article.author %}
+                            {% if article.author != "None"%}
+                            <p class="dark-grey-text my-0" style="width:60;">
+                              <strong>By: {{article.author|truncatewords:2}}</strong>
+                            </p>
+                            {%endif%}
+                            {%endif%}
+                            <p class="my-0" style="width:60;">
+                              <strong> {{article.source}}</strong>
+                            </p>
+                            <p class="px-1" style="width:60;">{{article.description|truncatewords:20}}
+                            </p>
+                          </div>
+                          </div>
+                          {%endfor%}
+                      </div>
+                            </div>
+                    </div>
+                </div>
+            <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
+
+              <div class="container" style="height:220px">
+              <form id="profile_filter_form"  action="{% url 'core:feed'  %}" autocomplete="off" method="get" >
+                  <h4 class="text-center">Member Filter</h4>
+                <select  name="profile_filter_catagories"  id="profile_financial_role_input"class="mdb-select md-form" multiple searchable="Search here..">
+                      {%for role in financial_roles%}
+                      <option value="{{role}}" >{{role}}</option>
+                      {%endfor%}
+                    </select>
+                    <label for="profile_financial_role_input">Financial Role</label>
+
+                    <select name="profile_filter_credentials"  id="profile_credentials_input"class="mdb-select md-form" multiple searchable="Search here..">
+                          {%for cred in list_of_credentials%}
+                          <option value="{{cred}}" >{{cred}}</option>
+                          {%endfor%}
+                    </select>
+                        <label for="profile_credentials_input">Credential</label>
+
+
+
+                        <button id="reset_profile_filter" class=" btn  btn-sm button-boder-radius button-overflow waves-effect waves-light mt-4  hoverable float-right">Reset</button>
+                        <button id="profile_filter_submit_button" type="submit"  class=" btn btn-primary  btn-sm button-boder-radius button-overflow waves-effect waves-light mt-4  hoverable float-right">Filter <i class="filter icon"></i></button>
+                          </form>
+              </div>
+
+              <div id="profile_list_scroller" class="row mt-0 mx-0 px-0 profile-scroller">
+                {% for profile in profile_list%}
+                <div class="col-md-4 mt-1 mb-2 col-sm-6 col-6 mx-0 px-1 " user_pk="{{profile.pk}}">
+                  <div  class="card user-card hoverable parent-user px-0 mx-0"   style="border-radius: .28571429rem;">
+                              <!-- Card image -->
+
+                              <div class="view overlay image1-user">
+
+                                {%if profile.background_pic%}
+                                <img class="card-img-top user-card-img" src="{{profile.background_pic.url}}" alt="Card image cap">
+                                {%else%}
+                                <img class="card-img-top user-card-img" src="{{default_background_url}}" alt="Card image cap">
+                                {%endif%}
+                                <!-- <img class="card-img-top" src="https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20%28131%29.jpg" alt="Card image cap"> -->
+                                <a href="#">
+                                  <div class="mask rgba-white-slight waves-effect waves-light"></div>
+                                </a>
+                              </div>
+                              {%if profile.profile_pic%}
+
+                              <img class="image2-user avatar-user" src="{{profile.profile_pic.url}}" alt="Card image cap">
+                              {%else%}
+                              <img class="image2-user avatar-user" src="{{default_profile_pic_url}}" alt="Card image cap">
+                              {%endif%}
+                              <!-- Card content -->
+                              <div class="card-body"  style="border-radius: .28571429rem;">
+                                <!-- Social shares button -->
+                                <!-- Title -->
+                                <div class=" card-body-avatar">
+                                  <a class="cancela" href="#">
+                                  <h4 class="card-title text-center mb-1 profile-overflow">{%if profile.first_name%}{{profile.first_name}}{%endif%} {%if profile.last_name%}{{profile.last_name}}{%endif%}</h4>
+                                  <div class="d-flex justify-content-center">
+                                    <p class="card-text text-center mb-0">@{{profile.user.username}}</p>
+                                    {%if profile.current_dividend_wealth_member%}
+                                    <img src="{{dividend_member_tag}}" alt="" class="dividend_wealth_member_tag_img">
+                                    {%endif%}
+
+                                  </div>
+                                  {% if request.user.is_authenticated%}
+                                  {%if profile.user.username|is_user_a_follower:user_username == "true"%}
+                                  <p class="card-text text-center mb-0" ><b>Follows You</b></p>
+                                  {%endif%}
+                                  {%endif%}
+                                  </a>
+                                  <hr class="mt-1">
+                                  <!-- Text -->
+                                  <p class="card-text text-center mb-1 profile-overflow">{{profile.user_financial_role}}</p>
+                                  <p class="card-text text-center my-0 profile-overflow">{{profile.user_financial_credentials}}</p>
+
+                                  <div class="d-flex justify-content-center">
+                                    <a id="profile_{{profile.user.username}}" onclick="user_relationship(this)" user_username="{{profile.user.username}}"  class=" btn btn-primary btn-sm  hoverable waves-effect waves-light"style="border-radius: .28571429rem;">  {% if request.user.is_authenticated%}{{profile.user.username|user_follow:user_username}}{%else%}Follow{%endif%}</a>
+                                  </div>
+                                </div>
+
+
+                              </div>
+                            </div>
+                </div>
+                {%endfor %}
+              </div>
+
+            </div>
+            <div class="tab-pane fade" id="pills-feed" role="tabpanel" aria-labelledby="pills-contact-tab">.w..
+
+
+            </div>
+          </div>
+          </div>
+
+          <!-- Sidebar Widgets Column -->
+          <div class="col-md-3 ">
+            <div class="card my-4">
+              <div class="card-header "><div class="d-flex justify-content-end"><p>Wealth Tip</p></div></div>
+              <div class="card-body">
+                <blockquote class=" text-center">
+  <p class="mb-0"><b><q>Leisure and work bring different results. If a man wants leisure and gets it - then he has no cause to complain. But he cannot have both leisure and the results of work.</q></b></p>
+  <p class="blockquote-footer mb-3">My Life and Work <cite title="Source Title">Henry Ford</cite></p>
+</blockquote>
+              </div>
+            </div>
+
+        <!-- Categories Widget -->
+            <div class="card my-4">
+          <div class="card-header "><div class="d-flex justify-content-end"><p>Featured Members</p></div></div>
+              <div class="card-body profile-card-horizontal-overflow">
+                <div class="d-flex justify-content-start">
+                  {% for profile in featured_members%}
+                  <div class=" ">
+                    <div  class="card user-card hoverable parent-user px-0 ml-2 {% if forloop.last%}mr-2{%endif%}"   style="border-radius: .28571429rem; max-width:165px">
+                                <!-- Card image -->
+
+                                <div class="view overlay image1-user">
+
+                                  {%if profile.background_pic%}
+                                  <img class="card-img-top user-card-img" src="{{profile.background_pic.url}}" alt="Card image cap">
+                                  {%else%}
+                                  <img class="card-img-top user-card-img" src="{{default_background_url}}" alt="Card image cap">
+                                  {%endif%}
+                                  <!-- <img class="card-img-top" src="https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20%28131%29.jpg" alt="Card image cap"> -->
+                                  <a href="#">
+                                    <div class="mask rgba-white-slight waves-effect waves-light"></div>
+                                  </a>
+                                </div>
+                                {%if profile.profile_pic%}
+
+                                <img class="image2-user avatar-user" src="{{profile.profile_pic.url}}" alt="Card image cap">
+                                {%else%}
+                                <img class="image2-user avatar-user" src="{{default_profile_pic_url}}" alt="Card image cap">
+                                {%endif%}
+                                <!-- Card content -->
+                                <div class="card-body"  style="border-radius: .28571429rem;">
+                                  <!-- Social shares button -->
+                                  <!-- Title -->
+                                  <div class=" card-body-avatar">
+                                    <a class="cancela" href="#">
+                                    <h4 class="card-title text-center mb-1 profile-overflow">{%if profile.first_name%}{{profile.first_name}}{%endif%} {%if profile.last_name%}{{profile.last_name}}{%endif%}</h4>
+                                    <div class="d-flex justify-content-center">
+                                      <p class="card-text text-center mb-0">@{{profile.user.username}}</p>
+                                      {%if profile.current_dividend_wealth_member%}
+                                      <img src="{{dividend_member_tag}}" alt="" class="dividend_wealth_member_tag_img">
+                                      {%endif%}
+
+                                    </div>
+                                    {% if request.user.is_authenticated%}
+                                    {%if profile.user.username|is_user_a_follower:user_username == "true"%}
+                                    <p class="card-text text-center mb-0" ><b>Follows You</b></p>
+                                    {%endif%}
+                                    {%endif%}
+                                    </a>
+                                    <hr class="mt-1">
+                                    <!-- Text -->
+                                    <p class="card-text text-center mb-1 profile-overflow">{{profile.user_financial_role}}</p>
+                                    <p class="card-text text-center my-0 profile-overflow">{{profile.user_financial_credentials}}</p>
+
+                                    {%if user_authenticated == "true"%}
+                                    {%if user_username != profile.user.username%}
+                                    <div class="d-flex justify-content-center">
+                                      <a id="profile_{{profile.user.username}}" onclick="user_relationship(this)" user_username="{{profile.user.username}}"  class="profile_{{profile.user.username}} btn btn-primary btn-sm  hoverable waves-effect waves-light"style="border-radius: .28571429rem;">  {% if request.user.is_authenticated%}{{profile.user.username|user_follow:user_username}}{%else%}Follow{%endif%}</a>
+                                    </div>
+                                    {%endif%}
+                                      {%else%}
+                                      <div class="d-flex justify-content-center">
+                                        <a id="profile_{{profile.user.username}}" onclick="user_relationship(this)" user_username="{{profile.user.username}}"  class="profile_{{profile.user.username}} btn btn-primary btn-sm  hoverable waves-effect waves-light"style="border-radius: .28571429rem;">  {% if request.user.is_authenticated%}{{profile.user.username|user_follow:user_username}}{%else%}Follow{%endif%}</a>
+                                      </div>
+                                    {%endif%}
+
+                                  </div>
+
+
+                                </div>
+                              </div>
+                  </div>
+                  {%endfor %}
+
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+
+        </div>
+  </div>
+
+
+
+<div class="hide_load_stopping_el" style="display:none">
+</div>
+
+<!-- notification modal -->
+<button id="Dividend_Wealth_Notification_button" style="display:none" data-toggle="modal" data-target="#Dividend_Wealth_Notification" data-whatever="@mdo" class="fluid ui button mt-2 mb-2">modal</button>
+<div class="modal fade" id="Dividend_Wealth_Notification" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button id="Dividend_Wealth_Notification_modal_button_close"  type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+                    <!-- Grid column -->
+                        <div class="col-12">
+                          <div class="d-flex justify-content-center">
+                              <h3 class="mb-2">Notifications</h3>
+                              </div>
+                              <hr class="my-1">
+                              <div id="Dividend_Wealth_Notification_modal_container" class="notification_modal">
+                                {%if user_notifications%}
+                                {%for item in user_notifications %}
+                                <div id="Notification{{item.pk}}" class="">
+                                      <!-- 2 id -->
+                                          <div class="mb-1 media list-group-item-action {% if item.checked == False %} unchecked-notification {%endif%} rounded border border-light my-1 container-fluid" id="2">
+                                                    <div class="ml-0 px-0">
+                                                          <div class="media-body my-3 mx-0">
+                                                                    <div class="d-flex justify-content-start">
+                                                                      <a href="{{object.get_absolute_url}}" class="cancela">
+                                                                                    {%load static%}
+                                                                                {%if item.action_user.profile_pic%}
+                                                                              <img class="ui fluid avatar image  mr-1" src="{{item.action_user.profile_pic.url}}" >
+                                                                              {%else%}
+                                                                                <img class="ui fluid avatar image  mr-1"  src=" {% static "img/default-profile-picture-gmail-2.png" %}" >
+                                                                              {%endif%}
+                                                                                    <span>  <p class="notification-user-name" >@{{item.action_user.user.username}}</p></span>
+                                                                          </a>
+                                                                          </div>
+                                                                          <a post_id="{{item.post_id}}"  type_note="{{item.type}}" action_note="{{item.action}}" notification_url="{{item.url}}" notification_pk="{{item.pk}}" onclick="notification_aknowledge(this)" class="cancela notification-place">
+                                                                        <div class="my-1 text-left container" > <p class="notification-action-statement">{{item.action_statement}}</p></div>
+                                                                        <span class="text-right text-muted"><div class="d-flex justify-content-start"><p class="notification-time-posted mb-0">{{item.date_created|timesince}}</p>  <p class="mb-0">  - </p>  <i  class="eye icon mb-0"></i> </div>   </span>
+                                                                    </a>
+                                                                </div>
+                                                          </div>
+                                                    </div>
+                                             </div>
+                                          {%endfor%}
+                                          {%else%}
+                                          <p id="No_notification">No Notificatiions At The Moment</p>
+                                          {%endif%}
+                              </div>
+                                    </div>
+  <!-- Grid column -->
+                            </div>
+        </div>
+    </div>
+  </div>
+  <!-- notification modal -->
+
+
+  <!-- similar group modal -->
+
+  <button id="Similar_Groups_modal_open_button" style="display:none" type="button" data-toggle="modal" data-target="#Similar_Groups_modal" name="button"></button>
+  <!--Similar groups modal  -->
+  <div class="modal fade" id="Similar_Groups_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button id="Similar_Groups_modal_button"  type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div id="Similar_Groups_modal_contents" class="modal-body">
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- similar group modal -->
+
+
+<div class="modal fade left modal-sm" id="member_alert_large_screen_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-toggle="modal"
+  aria-hidden="true" data-backdrop="false">
+  <!-- Add class .modal-side and then add class .modal-top-right (or other classes from list above) to set a position to the modal -->
+  <div class="modal-dialog modal-side modal-bottom-left" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title w-100" id="myModalLabel">Modal title</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="hiding_container">
+
+
+<!-- Hiding Notification element  -->
+<div id="Example_Notification" class="">
+<!-- 2 id -->
+<div class="mb-1 media list-group-item-action unchecked-notification rounded border border-light my-1 container-fluid" id="2">
+<div class="ml-0 px-0">
+    <div class="media-body my-3 mx-0">
+
+
+              <div class="d-flex justify-content-start">
+                <a class="cancela">
+
+
+                        <img class="ui fluid avatar image  mr-1 example_action_user_profile_pic" src="">
+
+                              <span>  <p class="notification-user-name example_action_username ">@guogbonn</p></span>
+                    </a>
+                    </div>
+                    <a post_id="" type_note="" action_note="" notification_pk=""  notification_url="" onclick="notification_aknowledge(this)" class="cancela example-notification-place">
+
+                  <div class="my-1 text-left container"> <p class="example-notification-action-statement" >liked your post: back onlinie</p></div>
+                  <span class="text-right text-muted"><div class="d-flex justify-content-start"><p class="example-notification-time-posted mb-0">7&nbsp;minutes</p>  <p class="mb-0">  - </p>  <i class="eye icon mb-0"></i> </div>   </span>
+
+              </a>
+
+          </div>
+    </div>
+</div>
+</div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<script type="text/javascript">
+
+    // Material Select Initialization
+    document.addEventListener("DOMContentLoaded", function(event) {
+
+      // calibrate group filter price
+      document.getElementById('max_sign_price').textContent = {{max_group_price}}
+      document.getElementById('display_price_range_max').textContent = {{max_group_price}}
+
+      // infinite scroll groups
+      document.getElementById('accordionGroups').addEventListener("scroll", function (event) {
+          console.log("scrolling");
+            group_alert_header=  document.getElementById('pills-profile-tab')
+        if (group_alert_header.attributes["aria-selected"].value == "true") {
+         isScrolledToBottom = this.scrollHeight - this.clientHeight <= this.scrollTop + 1;
+
+              if (isScrolledToBottom) {
+                // get the last group
+                // if there is no files there will be an error
+                if (document.getElementById('stop_group_loading')) {
+                  console.log("stopping element")
+
+                  return
+                }
+                console.log(document.getElementById('accordionGroups'))
+
+                  group_pk_att=document.getElementById("accordionGroups").lastElementChild.attributes["group_pk"].value
+
+                  document.getElementById("accordionGroups").insertAdjacentHTML('beforeEnd', '<div class="d-flex justify-content-center"><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div></div>');
+                      $.ajax({
+                          url:"{% url 'core:feed' %}",
+
+                          data: {
+                            'group_infinite_scroll': group_pk_att
+                          },
+                           dataType: 'json', //have to add in the data type
+                          success: function (data) {
+                            document.getElementById("accordionGroups").lastElementChild.parentNode.removeChild(document.getElementById("accordionGroups").lastElementChild);
+                            group_list = JSON.parse(data["group_list_collection"]);
+
+                            if (data["get_more"] == "false") {
+                              stop_group_loading_el = '<p style="display:none" id="stop_group_loading">'
+                               document.getElementsByClassName('hide_load_stopping_el')[0].insertAdjacentHTML('beforeEnd',stop_group_loading_el );
+                            }
+                            if (group_list.length == 0) {
+                              console.log("nothing element")
+
+                              return
+                            }
+                            console.log(document.getElementById("group-files-scroll-content"))
+                            for (var group_obj = 0; group_obj < group_list.length; group_obj++) {
+                                       group_object=JSON.parse(group_list[group_obj])
+
+                             if (group_object['user_profile_pic_url'] != "false") {
+                               group_object['user_profile_pic_url'] = group_object['user_profile_pic_url']
+                             }else {
+                               group_object['user_profile_pic_url'] = " /static/img/default-profile-picture-gmail-2.png"
+                             }
+
+                            group_element=' <div group_pk="'+group_object["group_pk"]+'" id="group'+group_object["group_pk"]+'"> <div class="mb-1 media rounded border border-light list-group-item-action"> <div class=" media-body col-12"> <div class="d-flex justify-content-start"> <div class="my-3 mr-1 px-0 col-md-3 parent"> <img src="'+group_object["group_picture"]+'" class="group-list-img image1 rgba-stylish-slight" alt="..."> <div class="d-flex justify-content-start image2"> <p class="pt-2 pr-3 admin-callout"> <strong>Admin:</strong></p><img class="ui fluid avatar image mx-0 " src="'+group_object["user_profile_pic_url"]+'"> </div></div><div class=" px-0 mx-0 col-md-9 my-3"> <div class="d-flex justify-content-between"> <h5 class="m-0">'+group_object["group_title"]+'</h5> <div class="d-flex justify-content-end pr-3"> <div class="d-flex justify-content-start pr-3"> <i class="users icon float-right"></i> <p style="color:#22222;font-family:Icons;font-style:normal;font-weight: 400;">'+group_object["group_membeer_count"]+'</p></div></div></div><div class="pt-1" style="width:100%;">'+group_object["group_description"]+' </div><p class=" pt-2 mb-0"><strong>'+group_object["group_price"]+''+group_object["price_description"]+'</strong></p><a href="'+group_object["group_url"]+'" class=" btn btn-primary btn-sm button-boder-radius hoverable waves-effect waves-light">Join Group</a> <span data-toggle="collapse" data-target="#collapseGroup'+group_object["group_pk"]+'" group_pk="'+group_object["group_pk"]+'" onclick="load_group_metrics(this)" aria-expanded="false" aria-controls="collapseGroup'+group_object["group_pk"]+'"> <p class="text-decoration-none pt-2">Learn More</p></span> </div></div></div></div><div id="collapseGroup'+group_object["group_pk"]+'" class="collapse" aria-labelledby="group'+group_object["group_pk"]+'" data-parent="#accordionGroups"> </div></div>'
+                            document.getElementById("accordionGroups").insertAdjacentHTML('beforeEnd', group_element);
+
+
+                          }
+                        }
+                          })
+                        }
+                      }
+                    })
+
+
+    // Material Select Initialization
+// https://stackoverflow.com/questions/4753946/html5-slider-with-two-inputs-possible
+    $(document).ready(function() {
+    $('.mdb-select').materialSelect();
+    });
+
+    // setting poportioin for prices
+    var max_price={{max_group_price}}
+    var   ratio=max_price/100;
+    // observer for slider element that gets rid of element that pops up
+    var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutationRecord) {
+      if (document.getElementsByClassName('value')[0]) {
+          document.getElementsByClassName('value')[0].style.display="none"
+      }
+      if (document.getElementsByClassName('value')[1]) {
+          document.getElementsByClassName('value')[1].style.display="none"
+      }
+      // porportianalize
+      var  price1 =parseInt(document.getElementById("price_min").style.left )
+        porportional_num1=ratio * price1
+        // no decimal when price is 0
+        if (price1 == 0) {
+          porportional_num1 = 0
+        }else {
+          porportional_num1=porportional_num1.toFixed(2)
+        }
+      //Dont let the minimum value to be larger than the max value
+        max_int=document.getElementById('display_price_range_max').textContent
+        max_int=parseInt(max_int)
+
+      if (porportional_num1 >= max_int) {
+        document.getElementById('display_price_range_min').textContent =   max_int
+        document.getElementById('min_sign_price').innerHTML = porportional_num1.toString()
+      }else {
+        document.getElementById('display_price_range_min').textContent = porportional_num1.toString()
+        document.getElementById('min_sign_price').innerHTML = porportional_num1.toString()
+
+      }
+    });
+});
+  var target = document.getElementById('price_min');
+// observer for slider element that gets rid of element that pops up
+observer.observe(target, { attributes : true, attributeFilter : ['style'] });
+
+
+
+var observer = new MutationObserver(function(mutations) {
+mutations.forEach(function(mutationRecord) {
+  if (document.getElementsByClassName('value')[0]) {
+      document.getElementsByClassName('value')[0].style.display="none"
+  }
+  if (document.getElementsByClassName('value')[1]) {
+      document.getElementsByClassName('value')[1].style.display="none"
+  }
+
+
+var  price =parseInt(document.getElementById('max_sign_price').textContent)
+  porportional_num=ratio * price
+  porportional_num=porportional_num.toFixed(2)
+  document.getElementById('display_price_range_max').textContent =   porportional_num.toString()
+document.getElementById('max_sign_price').textContent= porportional_num.toString()
+});
+});
+
+var target = document.getElementById('price_max');
+observer.observe(target, { attributes : true, attributeFilter : ['style'] });
+
+// doument ready above
+    });
+// load group Metrics
+function load_group_metrics(e) {
+  // get group pk
+  group_pk=  e.attributes["group_pk"].value
+  // check if there is a child element
+  collapse_element = "collapseGroup"+group_pk
+console.log(collapse_element)
+  if (document.getElementById(collapse_element).lastElementChild) {
+  console.log(document.getElementById(collapse_element).lastElementChild)
+  }else {
+    document.getElementById(collapse_element).insertAdjacentHTML('beforeEnd', '<div class="d-flex justify-content-center"><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div></div>');
+    $.ajax({
+        url:"{% url 'core:feed' %}",
+
+        data: {
+          'load_group_metrics': group_pk
+        },
+         dataType: 'json', //have to add in the data type
+        success: function (data) {
+          document.getElementById(collapse_element).lastElementChild.parentNode.removeChild(document.getElementById(collapse_element).lastElementChild);
+          group_list = JSON.parse(data["group_metric_list_collection"]);
+          for (var group_obj = 0; group_obj < group_list.length; group_obj++) {
+                     group_object=JSON.parse(group_list[group_obj])
+            admin_picture_list = []
+           for (var i = 0; i < group_object["administrators"].length; i++) {
+             if ( i % 2 === 0) {
+               // even
+               if ( group_object["administrators"][i] != "false") {
+                 admin_picture= '<img class="ui mini avatar image mr-1 profile-img-constraint" src="'+group_object["administrators"][i]+'"><span></span>'
+               }else {
+                 url= " /static/img/default-profile-picture-gmail-2.png"
+                 admin_picture= '<img class="ui mini avatar image mr-1 profile-img-constraint" src="'+url+'"><span></span>'
+               }
+                admin_picture_list.push(admin_picture);
+             }else {
+               x=2
+               // odd
+               // put user url here
+             }
+           }
+           admin_picture_list=admin_picture_list.join("");
+          group_element=' <div class="card-body"> <div class=""> <h4>Group Metrics:</h4> <h4>'+group_object["group_post_today"]+'</h4> <p>New posts today</p><p><strong>'+group_object["group_post_thirty_days"]+'</strong> in the last <strong>30</strong> days</p><hr> <h4>'+group_object["group_activeness"]+'%</h4> <p>Avg percentage of time in a day members spend in group</p><hr> <h4>'+group_object["group_avg_mem_online"]+'</h4> <p>Avg num Members online</p><hr> <h4>'+group_object["group_members_joined_week"]+'</h4> <p>Members joined this week</p><hr> <h5><strong>Admin and Moderators:</strong></h5> <div class="d-flex justify-content-start"> '+admin_picture_list+' </div></div><div class="my-2"> <h4>Description:</h4> <p>'+group_object["group_description"]+'</p></div><div class="mt-2"> <h4 class="mt-1 text-center">Value Proposition:</h4> '+group_object["group_value_proposition"]+' </div></div>'
+          document.getElementById(collapse_element).insertAdjacentHTML('beforeEnd', group_element);
+        }
+      }
+        })
+  }
+}
+// submiting filter form
+$("form#group_filter_form").submit(function(e) {
+e.preventDefault();
+//check if form inputs are valid
+//get price balues
+document.getElementById('group_filter_hidden_min_price').value=document.getElementById('display_price_range_min').textContent
+document.getElementById('group_filter_hidden_max_price').value=document.getElementById('display_price_range_max').textContent
+//https://stackoverflow.com/questions/20516166/bootstrap-multiselect-get-selected-values
+// values for categories
+    var selected = $('#group_category_input').find("option:selected");
+    var arrSelected = [];
+    selected.each(function(){
+       arrSelected.push($(this).val());
+    });
+    // values for credentials
+    var selected = $('#admin_credentials').find("option:selected");
+    var arrSelected1 = [];
+    selected.each(function(){
+       arrSelected1.push($(this).val());
+    });
+    if (arrSelected.length == 0) {
+      arrSelected = ["select all"];
+    }
+    if (arrSelected1.length == 0) {
+      arrSelected1 = ["select all"];
+    }
+if ( document.getElementById('stop_group_loading')) {
+   document.getElementById('stop_group_loading').parentNode.removeChild( document.getElementById('stop_group_loading'));
+}
+document.getElementById('accordionGroups').innerHTML = ''
+document.getElementById("accordionGroups").insertAdjacentHTML('beforeEnd', '<div class="d-flex justify-content-center"><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div></div>');
+$.ajax({
+
+  url:"{% url 'core:feed' %}",
+  data: {
+    'group_filter_catagories': arrSelected,
+    'group_filter_credentials': arrSelected1,
+    'min_price':document.getElementById('group_filter_hidden_min_price').value,
+    'max_price':document.getElementById('group_filter_hidden_max_price').value,
+  },
+ dataType: 'json',
+ success: function (data) {
+   document.getElementById("accordionGroups").lastElementChild.parentNode.removeChild(document.getElementById("accordionGroups").lastElementChild);
+   group_list = JSON.parse(data["group_list_collection"]);
+
+   if (data["get_more"] == "false") {
+     stop_group_loading_el = '<p style="display:none" id="stop_group_loading">'
+      document.getElementsByClassName('hide_load_stopping_el')[0].insertAdjacentHTML('beforeEnd',stop_group_loading_el );
+   }
+   if (group_list.length == 0) {
+     console.log("nothing element")
+
+     return
+   }
+   console.log(document.getElementById("group-files-scroll-content"))
+   for (var group_obj = 0; group_obj < group_list.length; group_obj++) {
+              group_object=JSON.parse(group_list[group_obj])
+
+    if (group_object['user_profile_pic_url'] != "false") {
+      group_object['user_profile_pic_url'] = group_object['user_profile_pic_url']
+    }else {
+      group_object['user_profile_pic_url'] = " /static/img/default-profile-picture-gmail-2.png"
+    }
+
+   group_element=' <div group_pk="'+group_object["group_pk"]+'" id="group'+group_object["group_pk"]+'"> <div class="mb-1 media rounded border border-light list-group-item-action"> <div class=" media-body col-12"> <div class="d-flex justify-content-start"> <div class="my-3 mr-1 px-0 col-md-3 parent"> <img src="'+group_object["group_picture"]+'" class="group-list-img image1 rgba-stylish-slight" alt="..."> <div class="d-flex justify-content-start image2"> <p class="pt-2 pr-3 admin-callout"> <strong>Admin:</strong></p><img class="ui fluid avatar image mx-0 " src="'+group_object["user_profile_pic_url"]+'"> </div></div><div class=" px-0 mx-0 col-md-9 my-3"> <div class="d-flex justify-content-between"> <h5 class="m-0">'+group_object["group_title"]+'</h5> <div class="d-flex justify-content-end pr-3"> <div class="d-flex justify-content-start pr-3"> <i class="users icon float-right"></i> <p style="color:#22222;font-family:Icons;font-style:normal;font-weight: 400;">'+group_object["group_membeer_count"]+'</p></div></div></div><div class="pt-1" style="width:100%;">'+group_object["group_description"]+' </div><p class=" pt-2 mb-0"><strong>'+group_object["group_price"]+''+group_object["price_description"]+'</strong></p><a href="'+group_object["group_url"]+'" class=" btn btn-primary btn-sm button-boder-radius hoverable waves-effect waves-light">Join Group</a> <span data-toggle="collapse" data-target="#collapseGroup'+group_object["group_pk"]+'" group_pk="'+group_object["group_pk"]+'" onclick="load_group_metrics(this)" aria-expanded="false" aria-controls="collapseGroup'+group_object["group_pk"]+'"> <p class="text-decoration-none pt-2">Learn More</p></span> </div></div></div></div><div id="collapseGroup'+group_object["group_pk"]+'" class="collapse" aria-labelledby="group'+group_object["group_pk"]+'" data-parent="#accordionGroups"> </div></div>'
+   document.getElementById("accordionGroups").insertAdjacentHTML('beforeEnd', group_element);
+ }
+}
+  ,
+//have to add in the data type
+});
+
+
+});
+//reset filter when user leaves page
+window.onpagehide = event => {
+  $.ajax({
+    url:"{% url 'core:feed' %}",
+    data: {
+    'reset_group_filter': 'true'
+    },
+   dataType: 'json',
+   success: function (data) {
+   }}
+,
+  );
+};
+
+// reset button
+$("#reset_group_filter").click(function(e) {
+e.preventDefault();
+if ( document.getElementById('stop_group_loading')) {
+   document.getElementById('stop_group_loading').parentNode.removeChild( document.getElementById('stop_group_loading'));
+}
+//check if form inputs are valid
+$.ajax({
+
+  url:"{% url 'core:feed' %}",
+  data: {
+  'reset_group_filter': 'true'
+  },
+ dataType: 'json',
+ success: function (data) {
+dispalay_alert_footer('Filter was Reset')
+ }}
+  ,
+//have to add in the data type
+);
+});
+//https://stackoverflow.com/questions/20516166/bootstrap-multiselect-get-selected-values
+
+function remove_alert_button(){
+  try {
+    alert_footer = document.getElementById('alert_footer')
+    console.log(alert_footer)
+    alert_footer.removeChild(alert_footer.childNodes[0]);
+  } catch (e) {
+  }
+}
+
+function dispalay_alert_footer(message) {
+  try {
+    remove_alert_button()
+  } catch (e) {
+    console.log("no alert")
+  }
+  try {
+    content='<button id="alert_footer_content" class="btn btn-primary btn-lg btn-block waves-effect pr-0" onclick="remove_alert_button()"><div class="d-flex justify-content-start"><span><p>'+message+'</p></span> <span><i class="ui times icon ml-3" onclick="remove_alert_button()"></i></span></div></button>'
+    alert_footer.insertAdjacentHTML('beforeEnd', content);
+  } catch (e) {
+  }
+}
+
+function dispalay_alert_footer_loader(message) {
+  try {
+    remove_alert_button()
+  } catch (e) {
+    console.log("no alert")
+  }
+  try {
+    content='<button id="alert_footer_content" class="btn btn-primary btn-lg btn-block waves-effect pr-0 pl-0" onclick="remove_alert_button()"><div class="d-flex justify-content-start"><div class="spinner-border text-dark mx-2" role="status" id="loader_process"><span class="sr-only">Loading...</span></div><span><p>'+message+'</p></span> <span><i class="ui times icon ml-3" onclick="remove_alert_button()"></i></span></div></button>'
+
+    alert_footer.insertAdjacentHTML('beforeEnd', content);
+  } catch (e) {
+  }
+}
+
+function load_queried_articles() {
+  query=document.getElementById('article_query_feild').value
+  dispalay_alert_footer_loader("Loading Articles!")
+  $.ajax({
+    url:"{% url 'core:feed' %}",
+    data: {
+    'article_query': query
+    },
+   dataType: 'json',
+   success: function (data) {
+     remove_alert_button()
+     article_list = JSON.parse(data["article_list_collection"]);
+    var article_list_elements = []
+     for (var article_obj = 0; article_obj < article_list.length; article_obj++) {
+                article_object=JSON.parse(article_list[article_obj])
+                // https://stackoverflow.com/questions/5454235/shorten-string-without-cutting-words-in-javascript
+                article_object["article_description"] = article_object["article_description"].substr(0, 120) +"..."
+                 article_object["article_author"] = article_object["article_author"].substr(0, 21)  +"..."
+                article_object["article_source"] = article_object["article_source"].substr(0, 30)
+                if (article_obj <3) {
+                  document.getElementsByClassName('carousel-item')[article_obj].getElementsByTagName('h3')[0].textContent = article_object["article_title"]
+                  document.getElementsByClassName('carousel-item')[article_obj].getElementsByTagName('img')[0].src = article_object["article_urltoimage"]
+                  document.getElementsByClassName('carousel-item')[article_obj].getElementsByTagName('a')[0].href = article_object["article_url"]
+                  document.getElementsByClassName('carousel-item')[article_obj].getElementsByTagName('p')[0].textContent = article_object["article_description"]
+                }
+
+                  if (article_obj ==3) {
+                    document.getElementById('featured_article_1').innerHTML = ""
+                    article_element='<a href="'+article_object["article_url"]+'"> <div class="view overlay rounded z-depth-1-half mb-3"> <img src="'+article_object["article_urltoimage"]+'" alt="Sample post image" width="397" height="194" style="object-fit:cover;border-radius: .28571429rem;"> <div class="mask rgba-white-slight waves-effect waves-light"></div></div></a> <div class="news-data"> <a href="" class="light-blue-text"> <h6> </h6> </a> <p> <strong> <i class="far fa-clock"></i>'+article_object["article_published"]+'</strong> </p></div><h3> <a> <strong>'+article_object["article_title"]+'</strong> </a> </h3> <p> '+article_object["article_description"]+' </p><hr>'
+                      document.getElementById('featured_article_1').insertAdjacentHTML('beforeEnd', article_element);
+                  }
+                  if (article_obj ==4) {
+                    document.getElementById('featured_article_2').innerHTML = ""
+                    article_element='<a href="'+article_object["article_url"]+'"> <div class="view overlay rounded z-depth-1-half mb-3"> <img src="'+article_object["article_urltoimage"]+'" alt="Sample post image" width="397" height="194" style="object-fit:cover;border-radius: .28571429rem;"> <div class="mask rgba-white-slight waves-effect waves-light"></div></div></a> <div class="news-data"> <a href="" class="light-blue-text"> <h6> </h6> </a> <p> <strong> <i class="far fa-clock"></i>'+article_object["article_published"]+'</strong> </p></div><h3> <a> <strong>'+article_object["article_title"]+'</strong> </a> </h3> <p> '+article_object["article_description"]+' </p><hr>'
+                      document.getElementById('featured_article_2').insertAdjacentHTML('beforeEnd', article_element);
+                  }
+
+                if (article_obj >= 5) {
+                  article_element='<div class="d-flex justify-content-start mb-2"> <div class="mt-2"> <a href="'+article_object["article_url"]+'"> <div class="view overlay rounded z-depth-1"> <img src="'+article_object["article_urltoimage"]+'" height="100" width="100" alt="Minor sample post image" style="object-fit:cover;border-radius: .28571429rem;"> <div class="mask rgba-white-slight waves-effect waves-light"></div></div></a> </div><div class=" pl-1" height="150"> <p class="dark-grey-text my-0" style="width:60;"> <strong>By: '+article_object["article_author"]+'</strong> </p><p class="my-0"> <strong> '+article_object["article_source"]+'</strong> </p><p class="px-1" style="width:60;">'+article_object["article_description"]+'</p></div></div>'
+                  article_list_elements.push(article_element)
+                }
+
+              }
+
+      // one for scroller
+      article_list_elements_3=article_list_elements.slice(5) //5 +
+
+      article_list_middle = Math.ceil(article_list_elements_3.length/2)
+
+      first_half=article_list_elements_3.slice(0,article_list_middle)
+      second_half=article_list_elements_3.slice(article_list_middle)
+      first_half=first_half.join("")
+      second_half=second_half.join("")
+      document.getElementById('first_half_scroller').innerHTML= ""
+      document.getElementById('second_half_scroller').innerHTML= ""
+      document.getElementById('first_half_scroller').insertAdjacentHTML('beforeEnd', first_half);
+      document.getElementById('second_half_scroller').insertAdjacentHTML('beforeEnd', second_half);
+
+   }}
+,
+  );
+}
+
+
+function notification_aknowledge(element) {
+  //get the web url we are at and compare it to the notification_url
+  site = "{{request.build_absolute_uri}}"
+  site=site.replace(/\/$/, "");
+  //close notification
+
+notification_id_checked = element.attributes["notification_pk"].value
+$.ajaxSetup({
+  data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+});
+
+$.ajax({
+  type: "POST",
+    url:"{% url 'core:feed' %}",
+    data: {
+      'notification_id_checked': notification_id_checked,
+    },
+     dataType: 'json', //have to add in the data type
+    success: function (data) {
+      // get rid of green overlay
+      notification_element_id = 'Notification'+notification_id_checked
+      notification_element_id =document.getElementById(notification_element_id)
+      notification_color_element=notification_element_id.getElementsByClassName('list-group-item-action')[0]
+      if (notification_color_element.classList.contains("unchecked-notification")) {
+        notification_color_element.classList.remove("unchecked-notification");
+      }
+    }
+});
+
+  $('#Dividend_Wealth_Notification_modal_button_close').click()
+
+  chatSocket.send(JSON.stringify({
+      //clearing notifications of user on page
+     'notifiation_checked': 'true',
+     'user_username':"{{user_username}}",
+  }));
+    nav_bar_notification =   document.getElementById('Dividend_Wealth_Notification_Bell_count')
+    nav_bar_notification.textContent = '0'
+    nav_bar_notification.style.display = "none"
+
+    url = element.attributes["notification_url"].value
+    type_notification = element.attributes["type_note"].value
+    action_note = element.attributes["action_note"].value
+    post_id = element.attributes["post_id"].value
+
+//don't do Anything if notification is a watchlist one
+if (action_note != 'watchlist') {
+  //slit the url from the id of notification instance
+    url=url.split("#");
+      //console.log(url[1])
+      //if we are on notification site
+    if (url[0]==site) {
+      //grab board header
+      //if not on the board add notification
+      //get notification elements
+      if (type_notification=='post') {
+              //post like container
+              if (action_note == 'like') {
+                    //Section show post in the feed
+                      group_board_header=  document.getElementById('pills-profile-tab')
+                      //if  on board
+                          if (group_board_header.attributes["aria-selected"].value == "true") {
+                            //get the post element
+                            post=  document.getElementById(url[1])
+                            //scroll to the post element
+                            post.scrollIntoView({behavior: "smooth",block: "center",})
+                            console.log('on board page')
+
+                          }else {
+                            //click on the board button
+                            group_board_header.click()
+                            //grab element
+                            post=  document.getElementById(url[1])
+                            //page does not load fast enough so I included the set interval to wait for the page to load
+                            var checkExist = setInterval(function() {
+                                         if ($('#'+url[1]).length) {
+                                            // console.log("Exists!");
+                                            clearInterval(checkExist);
+                                            post=  document.getElementById(url[1])
+                                            post.scrollIntoView({behavior: "smooth",block: "center",})
+                                         }
+                                      }, 600);
+
+                            console.log('on board page')
+                          }
+
+              }
+              //post like container
+              //post like container
+              if (action_note == 'mention') {
+                    //Section show post in the feed
+                      group_board_header=  document.getElementById('pills-profile-tab')
+                      //if  on board
+                          if (group_board_header.attributes["aria-selected"].value == "true") {
+                            //get the post element
+                            post=  document.getElementById(url[1])
+                            //scroll to the post element
+                            post.scrollIntoView({behavior: "smooth",block: "center",})
+                            console.log('on board page')
+
+                          }else {
+                            //click on the board button
+                            group_board_header.click()
+                            //grab element
+                            post=  document.getElementById(url[1])
+                            //page does not load fast enough so I included the set interval to wait for the page to load
+                            var checkExist = setInterval(function() {
+                                         if ($('#'+url[1]).length) {
+                                            // console.log("Exists!");
+                                            clearInterval(checkExist);
+                                            post=  document.getElementById(url[1])
+                                            post.scrollIntoView({behavior: "smooth",block: "center",})
+                                         }
+                                      }, 600);
+
+                            console.log('on board page')
+                          }
+
+              }
+
+              if (action_note == 'alert') {
+                    //Section show post in the feed
+                      group_board_header=  document.getElementById('pills-home-tab')
+                      //if  on board
+                          if (group_board_header.attributes["aria-selected"].value == "true") {
+                            //get the post element
+                            post=  document.getElementById(url[1])
+                            //scroll to the post element
+                            post.scrollIntoView({behavior: "smooth",block: "center",})
+                            console.log('on board page')
+
+                          }else {
+                            //click on the board button
+                            group_board_header.click()
+                            //grab element
+                            post=  document.getElementById(url[1])
+                            //page does not load fast enough so I included the set interval to wait for the page to load
+                            var checkExist = setInterval(function() {
+                                         if ($('#'+url[1]).length) {
+                                            // console.log("Exists!");
+                                            clearInterval(checkExist);
+                                            post=  document.getElementById(url[1])
+                                            post.scrollIntoView({behavior: "smooth",block: "center",})
+                                         }
+                                      }, 600);
+
+                            console.log('on board page')
+                          }
+
+              }
+
+      }
+      if (type_notification=='comment') {
+        //post like container
+        if (action_note == 'like') {
+              //Section show post in the feed
+                group_board_header=  document.getElementById('pills-profile-tab')
+                //if  on board
+                    if (group_board_header.attributes["aria-selected"].value == "true") {
+
+                      //click the drop down of the comment
+                      class_name="post_dropdown_icon"+post_id
+                      post_dropdown_icon_v = document.getElementsByClassName(class_name)[0]
+                        console.log(post_dropdown_icon_v)
+                      //if the dropdown not open open it
+                      if ( post_dropdown_icon_v.attributes["aria-expanded"].value == "false") {
+                        $(post_dropdown_icon_v).click()
+                      }
+                      //get the post element
+                      post=  document.getElementById(url[1])
+                      //scroll to the post element
+                      post.scrollIntoView({behavior: "smooth",block: "center",})
+                      console.log('on board page')
+
+                    }else {
+                      //click on the board button
+                      group_board_header.click()
+
+                      //grab element
+                      post=  document.getElementById(url[1])
+                      //page does not load fast enough so I included the set interval to wait for the page to load
+                      var checkExist = setInterval(function() {
+                                   if ($('#'+url[1]).length) {
+                                      // console.log("Exists!");
+                                      clearInterval(checkExist);
+
+                                      //click the drop down of the comment
+                                      class_name="post_dropdown_icon"+post_id
+                                      post_dropdown_icon_v = document.getElementsByClassName(class_name)[0]
+                                      //if the dropdown not open open it
+                                      if ( post_dropdown_icon_v.attributes["aria-expanded"].value == "false") {
+                                        $(post_dropdown_icon_v).click()
+                                      }
+
+                                      post= document.getElementById(url[1])
+                                      post.scrollIntoView({behavior: "smooth",block: "center",})
+                                   }
+                                }, 600);
+
+                      console.log('on board page')
+                    }
+
+        }
+        //post like container
+        if (action_note == 'mention') {
+              //Section show post in the feed
+                group_board_header=  document.getElementById('pills-profile-tab')
+                //if  on board
+                    if (group_board_header.attributes["aria-selected"].value == "true") {
+
+                      //click the drop down of the comment
+                      class_name="post_dropdown_icon"+post_id
+                      post_dropdown_icon_v = document.getElementsByClassName(class_name)[0]
+                        console.log(post_dropdown_icon_v)
+                      //if the dropdown not open open it
+                      if ( post_dropdown_icon_v.attributes["aria-expanded"].value == "false") {
+                        $(post_dropdown_icon_v).click()
+                      }
+                      //get the post element
+                      post=  document.getElementById(url[1])
+                      //scroll to the post element
+                      post.scrollIntoView({behavior: "smooth",block: "center",})
+                      console.log('on board page')
+
+                    }else {
+                      //click on the board button
+                      group_board_header.click()
+
+                      //grab element
+                      post=  document.getElementById(url[1])
+                      //page does not load fast enough so I included the set interval to wait for the page to load
+                      var checkExist = setInterval(function() {
+                                   if ($('#'+url[1]).length) {
+                                      // console.log("Exists!");
+                                      clearInterval(checkExist);
+
+                                      //click the drop down of the comment
+                                      class_name="post_dropdown_icon"+post_id
+                                      post_dropdown_icon_v = document.getElementsByClassName(class_name)[0]
+                                      //if the dropdown not open open it
+                                      if ( post_dropdown_icon_v.attributes["aria-expanded"].value == "false") {
+                                        $(post_dropdown_icon_v).click()
+                                      }
+
+                                      post= document.getElementById(url[1])
+                                      post.scrollIntoView({behavior: "smooth",block: "center",})
+                                   }
+                                }, 600);
+
+                      console.log('on board page')
+                    }
+
+        }
+        //post like container
+
+      }
+      if (type_notification=='reply') {
+        //post like container
+        if (action_note == 'like') {
+              //Section show post in the feed
+                group_board_header=  document.getElementById('pills-profile-tab')
+                //if  on board
+                    if (group_board_header.attributes["aria-selected"].value == "true") {
+
+                      //click the drop down of the comment
+                      class_name="post_dropdown_icon"+post_id
+                      post_dropdown_icon_v = document.getElementsByClassName(class_name)[0]
+                        console.log(post_dropdown_icon_v)
+                      //if the dropdown not open open it
+                      if ( post_dropdown_icon_v.attributes["aria-expanded"].value == "false") {
+                        $(post_dropdown_icon_v).click()
+                      }
+                      //get the post element
+                      post=  document.getElementById(url[1])
+                      //scroll to the post element
+                      post.scrollIntoView({behavior: "smooth",block: "center",})
+                      console.log('on board page')
+
+                    }else {
+                      //click on the board button
+                      group_board_header.click()
+
+                      //grab element
+                      post=  document.getElementById(url[1])
+                      //page does not load fast enough so I included the set interval to wait for the page to load
+                      var checkExist = setInterval(function() {
+                                   if ($('#'+url[1]).length) {
+                                      // console.log("Exists!");
+                                      clearInterval(checkExist);
+
+                                      //click the drop down of the comment
+                                      class_name="post_dropdown_icon"+post_id
+                                      post_dropdown_icon_v = document.getElementsByClassName(class_name)[0]
+                                      //if the dropdown not open open it
+                                      if ( post_dropdown_icon_v.attributes["aria-expanded"].value == "false") {
+                                        $(post_dropdown_icon_v).click()
+                                      }
+
+                                      post= document.getElementById(url[1])
+                                      post.scrollIntoView({behavior: "smooth",block: "center",})
+                                   }
+                                }, 600);
+
+                      console.log('on board page')
+                    }
+
+        }
+        //post like container
+        //post like container
+        if (action_note == 'mention') {
+              //Section show post in the feed
+                group_board_header=  document.getElementById('pills-profile-tab')
+                //if  on board
+                    if (group_board_header.attributes["aria-selected"].value == "true") {
+
+                      //click the drop down of the comment
+                      class_name="post_dropdown_icon"+post_id
+                      post_dropdown_icon_v = document.getElementsByClassName(class_name)[0]
+                        console.log(post_dropdown_icon_v)
+                      //if the dropdown not open open it
+                      if ( post_dropdown_icon_v.attributes["aria-expanded"].value == "false") {
+                        $(post_dropdown_icon_v).click()
+                      }
+                      //get the post element
+                      post=  document.getElementById(url[1])
+                      //scroll to the post element
+                      post.scrollIntoView({behavior: "smooth",block: "center",})
+                      console.log('on board page')
+
+                    }else {
+                      //click on the board button
+                      group_board_header.click()
+
+                      //grab element
+                      post=  document.getElementById(url[1])
+                      //page does not load fast enough so I included the set interval to wait for the page to load
+                      var checkExist = setInterval(function() {
+                                   if ($('#'+url[1]).length) {
+                                      // console.log("Exists!");
+                                      clearInterval(checkExist);
+
+                                      //click the drop down of the comment
+                                      class_name="post_dropdown_icon"+post_id
+                                      post_dropdown_icon_v = document.getElementsByClassName(class_name)[0]
+                                      //if the dropdown not open open it
+                                      if ( post_dropdown_icon_v.attributes["aria-expanded"].value == "false") {
+                                        $(post_dropdown_icon_v).click()
+                                      }
+
+                                      post= document.getElementById(url[1])
+                                      post.scrollIntoView({behavior: "smooth",block: "center",})
+                                   }
+                                }, 600);
+
+                      console.log('on board page')
+                    }
+        }
+        //post like container
+      }
+    }else {
+      //redirect user to notification site
+    msdom=0
+    }
+    }
+}
+
+function user_relationship(e){
+  if ({{user_authenticated}}) {
+    // send to the server relationship to make
+    chatSocket.send(JSON.stringify({
+        'user_to_follow':  e.attributes["user_username"].value,
+        'user_username':"{{user_username}}"
+    }));
+  }else {
+    // redirect to login page
+window.location.href = "{%url 'account_login'%}"
+  }
+}
+
+document.addEventListener("DOMContentLoaded",function(event){
+  // infinite scroll profile
+  document.getElementById('profile_list_scroller').addEventListener("scroll", function (event) {
+      console.log("scrolling");
+        profile_alert_header=  document.getElementById('pills-contact-tab')
+    if (profile_alert_header.attributes["aria-selected"].value == "true") {
+     isScrolledToBottom = this.scrollHeight - this.clientHeight <= this.scrollTop + 1;
+
+          if (isScrolledToBottom) {
+            // get the last profile
+            // if there is no files there will be an error
+            if (document.getElementById('stop_profile_loading')) {
+              console.log("stopping element")
+              return
+            }
+
+              profile_pk_att=document.getElementById("profile_list_scroller").lastElementChild.attributes["user_pk"].value
+
+              document.getElementById("profile_list_scroller").insertAdjacentHTML('beforeEnd', '<div class="d-flex justify-content-center"><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div></div>');
+                  $.ajax({
+                      url:"{% url 'core:feed' %}",
+
+                      data: {
+                        'profile_infinite_scroll': profile_pk_att
+                      },
+                       dataType: 'json', //have to add in the data type
+                      success: function (data) {
+                        document.getElementById("profile_list_scroller").lastElementChild.parentNode.removeChild(document.getElementById("profile_list_scroller").lastElementChild);
+                        profile_list = JSON.parse(data["profile_list_collection"]);
+
+                        if (data["get_more"] == "false") {
+                          stop_profile_loading_el = '<p style="display:none" id="stop_profile_loading">'
+                           document.getElementsByClassName('hide_load_stopping_el')[0].insertAdjacentHTML('beforeEnd',stop_profile_loading_el );
+                        }
+                        if (profile_list.length == 0) {
+                          console.log("nothing element")
+                          return
+                        }
+
+                        for (var profile_obj = 0; profile_obj < profile_list.length; profile_obj++) {
+                                   profile_object=JSON.parse(profile_list[profile_obj])
+                                   // verify user profile pic
+                         if (profile_object['user_profile_pic_url'] != "false") {
+                           profile_object['user_profile_pic_url'] = profile_object['user_profile_pic_url']
+                         }else {
+                           profile_object['user_profile_pic_url'] = "{{default_profile_pic_url}}"
+                         }
+                         // verify user background  pic
+                         if (profile_object['user_background_pic_url'] != "false") {
+                           profile_object['user_background_pic_url'] = profile_object['user_background_pic_url']
+                         }else {
+                           profile_object['user_background_pic_url'] = "{{default_background_url}}"
+                         }
+                         // verify dividend wealth member
+                         if (profile_object['user_current_dividend_wealth_member'] != "false") {
+                           profile_object['user_current_dividend_wealth_member'] ='<img src="{{dividend_member_tag}}" alt="" class="dividend_wealth_member_tag_img">'
+                         }else {
+                           profile_object['user_current_dividend_wealth_member'] = ''
+                         }
+                         // verify follow user_is_a_follower
+                         if (profile_object['user_is_a_follower'] != "false") {
+                           profile_object['user_is_a_follower'] ="Follows You"
+                         }else {
+                           profile_object['user_is_a_follower'] = ""
+                         }
+                         // verify follow full name
+                         if (profile_object['user_full_name'] != "false") {
+                           profile_object['user_full_name'] = '<h4 class="card-title text-center mb-1 profile-overflow">'+profile_object['user_full_name']+'</h4>'
+                         }else {
+                           profile_object['user_full_name'] = ''
+                         }
+
+
+                        profile_element='<div class="col-md-4 mt-1 mb-2 col-sm-6 col-6 mx-0 px-1 " user_pk="'+profile_object['user_pk']+'"> <div class="card user-card hoverable parent-user px-0 mx-0" style="border-radius: .28571429rem;"> <div class="view overlay image1-user"> <img class="card-img-top user-card-img" src="'+profile_object['user_background_pic_url']+'" alt="Card image cap"> <a href="'+profile_object['url_to_user']+'"> <div class="mask rgba-white-slight waves-effect waves-light"></div></a> </div><img class="image2-user avatar-user" src="'+profile_object['user_profile_pic_url']+'"> <div class="card-body" style="border-radius: .28571429rem;"> <div class=" card-body-avatar"> <a class="cancela" href="'+profile_object['url_to_user']+'"> '+profile_object['user_full_name']+'<div class="d-flex justify-content-center"> <p class="card-text text-center mb-0">@'+profile_object['user_username']+'</p>'+profile_object['user_current_dividend_wealth_member']+' </div><p class="card-text text-center mb-0"><b>'+profile_object['user_is_a_follower']+'</b></p></a> <hr class="mt-1"> <p class="card-text text-center mb-1 profile-overflow">'+profile_object['user_finacial_roles']+'</p><p class="card-text text-center my-0 profile-overflow">'+profile_object['user_credentials']+'</p><div class="d-flex justify-content-center"> <a id="profile_'+profile_object['user_username']+'" onclick="user_relationship(this)" user_username="'+profile_object['user_username']+'" class=" btn btn-primary btn-sm hoverable waves-effect waves-light" style="border-radius: .28571429rem;">'+profile_object['user_follow_status']+'</a> </div></div></div></div></div>'
+                        document.getElementById("profile_list_scroller").insertAdjacentHTML('beforeEnd', profile_element);
+                      }
+                    }
+                      })
+                    }
+                  }
+                })
+})
+
+//filtering user function
+$("form#profile_filter_form").submit(function(e) {
+e.preventDefault();
+//check if form inputs are valid
+
+//https://stackoverflow.com/questions/20516166/bootstrap-multiselect-get-selected-values
+// values for financial roles
+    var selected = $('#profile_financial_role_input').find("option:selected");
+    var arrSelected = [];
+    selected.each(function(){
+       arrSelected.push($(this).val());
+    });
+    // values for credentials
+    var selected = $('#profile_credentials_input').find("option:selected");
+    var arrSelected1 = [];
+    selected.each(function(){
+       arrSelected1.push($(this).val());
+    });
+    if (arrSelected.length == 0) {
+      arrSelected = ["select all"];
+    }
+    if (arrSelected1.length == 0) {
+      arrSelected1 = ["select all"];
+    }
+if ( document.getElementById('stop_profile_loading')) {
+   document.getElementById('stop_profile_loading').parentNode.removeChild( document.getElementById('stop_profile_loading'));
+}
+document.getElementById('profile_list_scroller').innerHTML = ''
+document.getElementById("profile_list_scroller").insertAdjacentHTML('beforeEnd', '<div class="d-flex justify-content-center"><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div><div class="spinner-grow" role="status"><span class="sr-only">Loading...</span></div></div>');
+$.ajax({
+
+  url:"{% url 'core:feed' %}",
+  data: {
+    'profile_filter_financial_role': arrSelected,
+    'profile_filter_credentials': arrSelected1,
+
+  },
+ dataType: 'json',
+ success: function (data) {
+   document.getElementById("profile_list_scroller").lastElementChild.parentNode.removeChild(document.getElementById("profile_list_scroller").lastElementChild);
+   profile_list = JSON.parse(data["profile_list_collection"]);
+
+   if (data["get_more"] == "false") {
+     stop_profile_loading_el = '<p style="display:none" id="stop_profile_loading">'
+      document.getElementsByClassName('hide_load_stopping_el')[0].insertAdjacentHTML('beforeEnd',stop_profile_loading_el );
+   }
+   if (profile_list.length == 0) {
+     console.log("nothing element")
+     return
+   }
+
+   for (var profile_obj = 0; profile_obj < profile_list.length; profile_obj++) {
+              profile_object=JSON.parse(profile_list[profile_obj])
+              // verify user profile pic
+    if (profile_object['user_profile_pic_url'] != "false") {
+      profile_object['user_profile_pic_url'] = profile_object['user_profile_pic_url']
+    }else {
+      profile_object['user_profile_pic_url'] = "{{default_profile_pic_url}}"
+    }
+    // verify user background  pic
+    if (profile_object['user_background_pic_url'] != "false") {
+      profile_object['user_background_pic_url'] = profile_object['user_background_pic_url']
+    }else {
+      profile_object['user_background_pic_url'] = "{{default_background_url}}"
+    }
+    // verify dividend wealth member
+    if (profile_object['user_current_dividend_wealth_member'] != "false") {
+      profile_object['user_current_dividend_wealth_member'] ='<img src="{{dividend_member_tag}}" alt="" class="dividend_wealth_member_tag_img">'
+    }else {
+      profile_object['user_current_dividend_wealth_member'] = ''
+    }
+    // verify follow user_is_a_follower
+    if (profile_object['user_is_a_follower'] != "false") {
+      profile_object['user_is_a_follower'] ="Follows You"
+    }else {
+      profile_object['user_is_a_follower'] = ""
+    }
+    // verify follow full name
+    if (profile_object['user_full_name'] != "false") {
+      profile_object['user_full_name'] = '<h4 class="card-title text-center mb-1 profile-overflow">'+profile_object['user_full_name']+'</h4>'
+    }else {
+      profile_object['user_full_name'] = ''
+    }
+
+
+   profile_element='<div class="col-md-4 mt-1 mb-2 col-sm-6 col-6 mx-0 px-1 " user_pk="'+profile_object['user_pk']+'"> <div class="card user-card hoverable parent-user px-0 mx-0" style="border-radius: .28571429rem;"> <div class="view overlay image1-user"> <img class="card-img-top user-card-img" src="'+profile_object['user_background_pic_url']+'" alt="Card image cap"> <a href="'+profile_object['url_to_user']+'"> <div class="mask rgba-white-slight waves-effect waves-light"></div></a> </div><img class="image2-user avatar-user" src="'+profile_object['user_profile_pic_url']+'"> <div class="card-body" style="border-radius: .28571429rem;"> <div class=" card-body-avatar"> <a class="cancela" href="'+profile_object['url_to_user']+'"> '+profile_object['user_full_name']+'<div class="d-flex justify-content-center"> <p class="card-text text-center mb-0">@'+profile_object['user_username']+'</p>'+profile_object['user_current_dividend_wealth_member']+' </div><p class="card-text text-center mb-0"><b>'+profile_object['user_is_a_follower']+'</b></p></a> <hr class="mt-1"> <p class="card-text text-center mb-1 profile-overflow">'+profile_object['user_finacial_roles']+'</p><p class="card-text text-center my-0 profile-overflow">'+profile_object['user_credentials']+'</p><div class="d-flex justify-content-center"> <a id="profile_'+profile_object['user_username']+'" onclick="user_relationship(this)" user_username="'+profile_object['user_username']+'" class=" btn btn-primary btn-sm hoverable waves-effect waves-light" style="border-radius: .28571429rem;">'+profile_object['user_follow_status']+'</a> </div></div></div></div></div>'
+   document.getElementById("profile_list_scroller").insertAdjacentHTML('beforeEnd', profile_element);
+ }
+}
+  ,
+//have to add in the data type
+});
+
+
+});
+
+//
+$("#reset_profile_filter").click(function(e) {
+e.preventDefault();
+if ( document.getElementById('stop_profile_loading')) {
+   document.getElementById('stop_profile_loading').parentNode.removeChild( document.getElementById('stop_profile_loading'));
+}
+//check if form inputs are valid
+$.ajax({
+
+  url:"{% url 'core:feed' %}",
+  data: {
+  'reset_profile_filter': 'true'
+  },
+ dataType: 'json',
+ success: function (data) {
+dispalay_alert_footer('Filter was Reset')
+ }}
+  ,
+//have to add in the data type
+);
+});
+
+function populate_similiar_group_modal(e) {
+
+slug = e.attributes["slug"].value
+$.ajax({
+    url:"{% url 'core:feed' %}",
+
+    data: {
+      'similar_group_slug': slug
+    },
+     dataType: 'json', //have to add in the data type
+    success: function (data) {
+      //open modal
+      document.getElementById('Similar_Groups_modal_open_button').click()
+      //modal element where content is stored
+      modal_content =document.getElementById('Similar_Groups_modal_contents')
+      // remove all prior content from the modal
+      modal_content.innerHTML = ''
+      header='<div class="text-center mb-3"><h3>'+data["group_title"]+'</h3></div>'
+      description = '<div class="text-center mb-3"><p>'+data["group_description"]+'<p></div>'
+      content = '<div class="row"><div class="col-6">'+data["value_proposition"]+'</div><div class="col-6 text-right"> '+data["rules_guidlines"]+'</div></div>'
+      html_content = header+description+content
+      modal_content.insertAdjacentHTML('afterBegin', html_content);
+    }
+});
+
+
+}
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js">
+  </script>
+
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" type="text/css"/>
+
+  <script>
+      var feed = "feed";
+      // open a channel to talk
+      // document.addEventListener("DOMContentLoaded", function(event) {
+      var chatSocket = new ReconnectingWebSocket(
+          'ws://' + window.location.host +
+          '/ws/feed/'+ feed + '/');
+
+          chatSocket.onopen = function(event) {
+            console.log("WebSocket is open now.");
+            var start = new Date();
+            {% if user_authenticated == "true"%}
+                chatSocket.send(JSON.stringify({
+                    'active_url':feed,
+                    'user_username':"{{user_username}}"
+                }));
+              {%endif%}
+                console.log("message sent")
+          };
+
+          //Section receive message
+      chatSocket.onmessage = function(e) {
+          var data = JSON.parse(e.data);
+          //Section for getting data from server
+          ///Section is for accepting variables to deal with online group status icon change change/////
+              //user_on_group_page has info containing server knowledge of page user is located on
+              var user_on_group_page = data['user_on_group_page'];
+              //getting username because the status symbol id has the username to make it unique
+              var user_username = data['user_username']
+            //#/////Section is for accepting variables to change user member status, sent from group creator/////
+              var pending_status =data['pending_status']
+              var pending_member_change_username =data['pending_member_change_username']
+
+            //#/////Section is for accepting variables to change user member status, sent from group creator/////
+              var new_member =data['new_member']
+              //#/////Section is for getting the group member count of the group/////
+              var group_count = data['group_count']
+
+              ///Section is for accepting variable that have to deal with post/comment/reply delete archive and report
+              var post_comment_reply_action =data['post_comment_reply_action']
+              var server_reponse_post_comment_reply_action =data['server_reponse_post_comment_reply_action']
+              //Section is for accepting variable that has the content to create a post
+              var view_group_post = data['view_group_post']
+              try {
+                // have to extract the json information from the variable
+                post_object = JSON.parse(view_group_post);
+
+              } catch (e) {}
+
+              //Section is for accepting variable that has the content to create a post
+              var view_group_comment = data['view_group_comment']
+              try {
+                // have to extract the json information from the variable
+                comment_object = JSON.parse(view_group_comment);
+              } catch (e) {}
+
+              //Section is for accepting variable that has the content to create a post
+              var view_group_reply = data['view_group_reply']
+              try {
+                // have to extract the json information from the variable
+                reply_object = JSON.parse(view_group_reply);
+              } catch (e) {}
+
+              //Section is for accepting variable that has the watchlist to be added to
+              var stock_watchlist_add =data['stock_watchlist_add']
+
+              //Section is for accepting variables that will open update share modal
+              var stock_slug_update_portfolio =data['stock_slug_update_portfolio']
+              var share_count_update =data['share_count_update']
+
+              //Section is for getting Notifications content
+              var notification_content = data['notification_content']
+              try {
+                // have to extract the json information from the variable
+                notification_object = JSON.parse(notification_content);
+              } catch (e) {}
+
+              //Section is for getting new_member content
+              var new_member_information = data['new_member_information']
+              try {
+                // have to extract the json information from the variable
+                new_member_information = JSON.parse(new_member_information);
+                // console.log(new_member_information)
+              } catch (e) {}
+              // Section is for check if user left manually
+              var user_leave_manually =data['user_leave_manually']
+              // Section is for getting variable that has information on if user downloaded watchlist twice and has not changed the name of previous
+              var user_adds_watchlist_with_same_name = data['user_adds_watchlist_with_same_name']
+              try {
+                // have to extract the json information from the variable
+                 user_adds_watchlist_with_same_name_object= JSON.parse(user_adds_watchlist_with_same_name);
+              } catch (e) {}
+
+              var relationship_response = data['relationship_response']
+
+              var user_to_follow = data['user_to_follow']
+
+            //end getting data section
+
+  /////////////////////////////////End Section  Async Post////////////////
+  //
+  // if (user_adds_watchlist_with_same_name != 'null'){
+  //   if (user_adds_watchlist_with_same_name_object["true"]== "true") {
+  //     console.log(user_adds_watchlist_with_same_name,"here")
+  //     try {
+  //       remove_alert_button()
+  //     } catch (e) {
+  //       console.log("no alert")
+  //     }
+  //     //place alert on users page
+  //     alert_footer=document.getElementById('alert_footer')
+  //     //clone the alert element
+  //     clone = document.getElementById('alert_footer_content')
+  //     //cloning the alert
+  //     clone = clone.cloneNode(true);
+  //     clone.id = "user_adds_watchlist_with_same_name";
+  //     try {
+  //       alert_footer.appendChild(clone);
+  //       //$('#alert_footer').appendTo(clone).show('slow');
+  //     } catch (e) {
+  //   }
+  //
+  //   }
+  //   //change html attribues of the the new member link
+  //   post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
+  //   post_sending.textContent = "Watchlist not added. You already have a watchlist with that name."
+  //
+  // }
+  //
+  // ///////////////////////End Membership Change////////////////////
+  //
+  // ///////Section is for  changing watchlist download number
+  // if (stock_watchlist_add  != 'null') {
+  // try {
+  //   //change download number
+  //   download_watchlist_id = "watchlist_download"+stock_watchlist_add
+  //   download_watchlist_element=document.getElementById(download_watchlist_id)
+  //   num_string=download_watchlist_element.textContent
+  //   num=parseInt(num_string)
+  //   num = num + 1
+  //   download_watchlist_element.textContent = num
+  //
+  //
+  // } catch (e) {}
+  // }
+  // /////////////////////// End Section changing watchlist download number////////////////////
+  //
+  // ///////Section is for  updating stock porfolio count
+  // if (stock_slug_update_portfolio != 'null') {
+  //
+  //   if ("{{user}}"==user_username) {
+  //     //change value to the previous share number
+  //     update_input_element =  document.getElementById('update_stock_porfolio_value')
+  //     update_input_element.value = share_count_update
+  //     //change value to stock slug
+  //     update_input_element_slug =  document.getElementById('update_stock_porfolio_slug')
+  //     update_input_element_slug.value = stock_slug_update_portfolio
+  //     //change title to stock slug
+  //     update_input_element_title =  document.getElementById('update_stock_porfolio_title')
+  //     update_input_element_title.textContent = stock_slug_update_portfolio.toUpperCase()
+  //     //show modal
+  //     $('#update_stock_porfolio_button_modal').click();
+  //   }
+  //
+  // }
+  ///////End Section for  updating stock porfolio count
+
+  //////Section is for processing Notifications
+  if (notification_content != 'null'){
+    usersnotification = "{{user_username}}"
+            if (notification_object["userprofile_name"] ==usersnotification) {
+            //console.log(notification_object);
+            //Get the element that we want to store the notification in
+                element_to_store_notification = document.getElementById('Dividend_Wealth_Notification_modal_container')
+
+            //Section get the template example post and generate the starter post
+                  //get element to store post in progress
+                  hiding_container=document.getElementById('hiding_container')
+                  // get the example post,
+                  original_template=document.getElementById('Example_Notification')
+                  //cloning the example post
+                  clone = original_template.cloneNode(true);
+                  //change the id to temporary id
+                  clone.id = "in_progress_notification_example";
+                  try {
+                    //place post_clone in hiding container
+                    hiding_container.appendChild(clone);
+                  } catch (e) {
+                  }
+
+            //Section is for populating notification
+            if (notification_object["type"]=="post") {
+
+              if (notification_object["action"]=="like") {
+
+                in_progress_notification_example=document.getElementById('in_progress_notification_example')
+
+                //populating action user image
+                    action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                    if (notification_object['action_user_profile_pic']!="false") {
+                        action_user_img_element.src = notification_object['action_user_profile_pic']
+                    }
+                    else {
+                        action_user_img_element.src =  "/static/img/default-profile-picture-gmail-2.png"
+                    }
+
+                //populating action user name
+                  action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                  action_user_name_element.textContent = '@' + notification_object["action_user"]
+                //populating action statement
+                    action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                    action_statement.textContent = notification_object["action_statement"]
+                //populating notification time
+                    notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                    notification_time.textContent = notification_object["notification_time"]
+                //populating notification notification_aknowledge function element
+                    notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                    notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                    notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                    notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                    notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+              }
+              if (notification_object["action"]=="mention") {
+
+                in_progress_notification_example=document.getElementById('in_progress_notification_example')
+
+                //populating action user image
+                    action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                    if (notification_object['action_user_profile_pic']!="false") {
+                        action_user_img_element.src = notification_object['action_user_profile_pic']
+                    }
+                    else {
+                        action_user_img_element.src =  "/static/img/default-profile-picture-gmail-2.png"
+                    }
+
+                //populating action user name
+                  action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                  action_user_name_element.textContent = '@' + notification_object["action_user"]
+                //populating action statement
+                    action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                    action_statement.textContent = notification_object["action_statement"]
+                //populating notification time
+                    notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                    notification_time.textContent = notification_object["notification_time"]
+                //populating notification notification_aknowledge function element
+                    notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                    notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                    notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                    notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                    notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+
+              }
+              if (notification_object["action"]=="alert") {
+
+                in_progress_notification_example=document.getElementById('in_progress_notification_example')
+
+                //populating action user image
+                    action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                    if (notification_object['action_user_profile_pic']!="false") {
+                        action_user_img_element.src = notification_object['action_user_profile_pic']
+                    }
+                    else {
+                        action_user_img_element.src =  "/static/img/default-profile-picture-gmail-2.png"
+                    }
+
+                //populating action user name
+                  action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                  action_user_name_element.textContent = '@' + notification_object["action_user"]
+                //populating action statement
+                    action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                    action_statement.textContent = notification_object["action_statement"]
+                //populating notification time
+                    notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                    notification_time.textContent = notification_object["notification_time"]
+                //populating notification notification_aknowledge function element
+                    notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                    notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                    notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                    notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                    notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+
+              }
+              if (notification_object["action"]=="watchlist") {
+
+                in_progress_notification_example=document.getElementById('in_progress_notification_example')
+
+                //populating action user image
+                    action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                    if (notification_object['action_user_profile_pic']!="false") {
+                        action_user_img_element.src = notification_object['action_user_profile_pic']
+                    }
+                    else {
+                        action_user_img_element.src =  "/static/img/default-profile-picture-gmail-2.png"
+                    }
+
+                //populating action user name
+                  action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                  action_user_name_element.textContent = '@' + notification_object["action_user"]
+                //populating action statement
+                    action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                    action_statement.textContent = notification_object["action_statement"]
+                //populating notification time
+                    notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                    notification_time.textContent = notification_object["notification_time"]
+                //populating notification notification_aknowledge function element
+                    notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                    notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                    notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                    notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                    notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+
+              }
+
+            }
+            //Section is for populating notification
+            if (notification_object["type"]=="comment") {
+                  if (notification_object["action"]=="like") {
+
+                    in_progress_notification_example=document.getElementById('in_progress_notification_example')
+                    //populating action user image
+                        action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                        if (notification_object['action_user_profile_pic']!="false") {
+                            action_user_img_element.src = notification_object['action_user_profile_pic']
+                        }
+                        else {
+                            action_user_img_element.src =  "/static/img/default-profile-picture-gmail-2.png"
+                        }
+
+                    //populating action user name
+                      action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                      action_user_name_element.textContent = '@' + notification_object["action_user"]
+                    //populating action statement
+                        action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                        action_statement.textContent = notification_object["action_statement"]
+                    //populating notification time
+                        notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                        notification_time.textContent = notification_object["notification_time"]
+                    //populating notification notification_aknowledge function element
+                        notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                        notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                        notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                        notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                        notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+                        notification_fucntion_elem.attributes["post_id"].value = notification_object["post_pk"]
+                  }
+
+                  if (notification_object["action"]=="mention") {
+
+                    in_progress_notification_example=document.getElementById('in_progress_notification_example')
+                    //populating action user image
+                        action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                        if (notification_object['action_user_profile_pic']!="false") {
+                            action_user_img_element.src = notification_object['action_user_profile_pic']
+                        }
+                        else {
+                            action_user_img_element.src =  "/static/img/default-profile-picture-gmail-2.png"
+                        }
+
+                    //populating action user name
+                      action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                      action_user_name_element.textContent = '@' + notification_object["action_user"]
+                    //populating action statement
+                        action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                        action_statement.textContent = notification_object["action_statement"]
+                    //populating notification time
+                        notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                        notification_time.textContent = notification_object["notification_time"]
+                    //populating notification notification_aknowledge function element
+                        notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                        notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                        notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                        notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                        notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+                        notification_fucntion_elem.attributes["post_id"].value = notification_object["post_pk"]
+                  }
+
+            }
+            if (notification_object["type"]=="reply") {
+              if (notification_object["action"]=="like") {
+
+                in_progress_notification_example=document.getElementById('in_progress_notification_example')
+                //populating action user image
+                    action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                    if (notification_object['action_user_profile_pic']!="false") {
+                        action_user_img_element.src = notification_object['action_user_profile_pic']
+                    }
+                    else {
+                        action_user_img_element.src =  "/static/img/default-profile-picture-gmail-2.png"
+                    }
+
+                //populating action user name
+                  action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                  action_user_name_element.textContent = '@' + notification_object["action_user"]
+                //populating action statement
+                    action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                    action_statement.textContent = notification_object["action_statement"]
+                //populating notification time
+                    notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                    notification_time.textContent = notification_object["notification_time"]
+                //populating notification notification_aknowledge function element
+                    notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                    notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                    notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                    notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                    notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+                    notification_fucntion_elem.attributes["post_id"].value = notification_object["post_pk"]
+              }
+              if (notification_object["action"]=="mention") {
+
+                in_progress_notification_example=document.getElementById('in_progress_notification_example')
+                //populating action user image
+                    action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                    if (notification_object['action_user_profile_pic']!="false") {
+                        action_user_img_element.src = notification_object['action_user_profile_pic']
+                    }
+                    else {
+                        action_user_img_element.src =  "/static/img/default-profile-picture-gmail-2.png"
+                    }
+
+                //populating action user name
+                  action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                  action_user_name_element.textContent = '@' + notification_object["action_user"]
+                //populating action statement
+                    action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                    action_statement.textContent = notification_object["action_statement"]
+                //populating notification time
+                    notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                    notification_time.textContent = notification_object["notification_time"]
+                //populating notification notification_aknowledge function element
+                    notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                    notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                    notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                    notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                    notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+                    notification_fucntion_elem.attributes["post_id"].value = notification_object["post_pk"]
+              }
+            }
+            if (notification_object["type"]=="follow") {
+              if (notification_object["action"]=="follow") {
+
+                    in_progress_notification_example=document.getElementById('in_progress_notification_example')
+                    //populating action user image
+                        action_user_img_element=in_progress_notification_example.getElementsByClassName('example_action_user_profile_pic')[0]
+                        if (notification_object['action_user_profile_pic']!="false") {
+                            action_user_img_element.src = notification_object['action_user_profile_pic']
+                        }
+                        else {
+                            action_user_img_element.src =  "{{default_profile_pic_url}}"
+                        }
+
+                    //populating action user name
+                      action_user_name_element=in_progress_notification_example.getElementsByClassName('example_action_username')[0]
+                      action_user_name_element.textContent = '@' + notification_object["action_user"]
+                    //populating action statement
+                        action_statement=in_progress_notification_example.getElementsByClassName('example-notification-action-statement')[0]
+                        action_statement.textContent = notification_object["action_statement"]
+                    //populating notification time
+                        notification_time=in_progress_notification_example.getElementsByClassName('example-notification-time-posted')[0]
+                        notification_time.textContent =  current_time()
+                    //populating notification notification_aknowledge function element
+                        notification_fucntion_elem=in_progress_notification_example.getElementsByClassName('example-notification-place')[0]
+                        notification_fucntion_elem.attributes["type_note"].value = notification_object["type"]
+                        notification_fucntion_elem.attributes["action_note"].value = notification_object["action"]
+                        notification_fucntion_elem.attributes["notification_url"].value = notification_object["notification_url"]
+                        notification_fucntion_elem.attributes["notification_pk"].value = notification_object["notification_pk"]
+                        notification_fucntion_elem.attributes["post_id"].value = notification_object["post_pk"]
+              }
+
+            }
+
+            //Section is for inserting  new notification into dom
+                // get the notifiation we have been generating,
+                in_progress_notification_example=document.getElementById('in_progress_notification_example')
+                //cloning the  post
+
+                clone = in_progress_notification_example.cloneNode(true);
+
+                //change the id to temporary id
+                clone.id = "Notification"+ notification_object["notification_pk"];
+
+                //place the notification in the notification modal
+                try {
+                  element_to_store_notification.insertBefore(clone, element_to_store_notification.firstChild);
+                } catch (e) {
+                  element_to_store_notification.appendChild(clone)
+                }
+                //delete the notification in progress
+                in_progress_notification_example.parentNode.removeChild(in_progress_notification_example);
+
+                //Add count to Dividend wealth Notification
+                nav_bar_notification =   document.getElementById('Dividend_Wealth_Notification_Bell_count')
+                nav_bar_notification.style.display = "inline"
+                note_count= nav_bar_notification.textContent
+                note_count=parseInt(note_count)
+                note_count = 1+note_count
+                note_count= note_count.toString()
+                nav_bar_notification.textContent = note_count
+                console.log('done updating bell')
+          }
+  }
+  //////End Notification processing
+
+  //////////////Section is for processing relationship Response///
+  if (relationship_response != 'null') {
+    // only perform actions on the users page that initiated contact
+    if (relationship_response["user_name_of_person_initiating"] == "{{user_username}}") {
+          if (relationship_response["follow_status"] =="following user") {
+            profile_follow_tag="profile_"+user_to_follow
+            document.getElementById(profile_follow_tag).textContent = "Following"
+            if (document.getElementsByClassName(profile_follow_tag)) {
+              document.getElementsByClassName(profile_follow_tag)[0].textContent = "Following"
+            }
+          }
+          if (relationship_response["follow_status"] =="unfollowing user") {
+            profile_follow_tag="profile_"+user_to_follow
+            document.getElementById(profile_follow_tag).textContent = "Follow"
+            // change text in featured user as well
+            if (document.getElementsByClassName(profile_follow_tag)) {
+              document.getElementsByClassName(profile_follow_tag)[0].textContent = "Follow"
+            }
+          }
+    }
+  }
+  //////////////End Section
+    };
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+
+    // //calculating user time
+    $(document).ready(function() {
+     start = new Date();
+    window.onpagehide = event => {
+          var end = new Date();
+          chatSocket.send(JSON.stringify({
+              //Section to send time
+             'group_time_spent': end - start,
+             'user_username':"{{user}}",
+          }));
+    };
+    });
+
+
+
+
+
+
+    function addZero(i) {
+      if (i < 10) {
+        i = "0" + i;
+      }
+      return i;
+    }
+    function current_time() {
+
+      var d = new Date();
+      var weekday = new Array(7);
+      weekday[0] = "Sunday";
+      weekday[1] = "Monday";
+      weekday[2] = "Tuesday";
+      weekday[3] = "Wednesday";
+      weekday[4] = "Thursday";
+      weekday[5] = "Friday";
+      weekday[6] = "Saturday";
+
+      var day = weekday[d.getDay()];
+
+    var h = addZero(d.getHours());
+    var m = addZero(d.getMinutes());
+    var s = addZero(d.getSeconds());
+    time_of_day = "AM"
+    if (h >= 12) {
+        h = h - 12;
+        time_of_day = "PM";
+      }
+      if (h == 0) {
+        h = 12;
+      }
+    timezone = day+", "+ h + ":" + m+ time_of_day;
+    return timezone
+    }
+  </script>
+
+{% endblock %}

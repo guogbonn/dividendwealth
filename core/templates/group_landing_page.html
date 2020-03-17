@@ -1,0 +1,535 @@
+{%extends "base.html" %}
+
+{% block content  %}
+{% load staticfiles%}
+<style type="text/css">
+  .active:before {
+      background-color: #222222 !important;
+  }
+
+.done:before{
+  background-color: #2ad1a3 !important;
+}
+.lever:after{
+  background-color: #2ad1a3 !important;
+}
+.lever{
+
+    background-color: #222222 !important;
+}
+  .inputfile {
+  	width: 0.1px;
+  	height: 0.1px;
+  	opacity: 0;
+  	overflow: hidden;
+  	position: absolute;
+  	z-index: -1;
+  }
+
+
+    /*http://jsfiddle.net/yHNEv/ */
+  .img-wrap {
+      position: relative;
+      font-size: 0;
+  }
+  .img-wrap .close {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      z-index: 100;
+      background-color: #FFF;
+      padding: 5px 2px 2px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      opacity: .2;
+      text-align: center;
+      font-size: 22px;
+      line-height: 10px;
+      border-radius: 50%;
+      opacity: 1;
+  }
+  .img-wrap:hover .close {
+
+  }
+  .button-boder-radius{
+    border-radius: .28571429rem;
+  }
+
+  #group_price{
+    width: 80px;
+  }
+  .cancela,.cancela:link,.cancela:visited,.cancela:hover,.cancela:focus,.cancela:active{
+    color: inherit;
+    text-decoration: none;
+}
+  .tag-overflow {
+
+      overflow-x: scroll;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tag-overflow::-webkit-scrollbar {
+      display: none;
+    }
+    .button-overflow{
+      overflow: visible;
+    }
+    .button-boder-radius{
+      border-radius: .28571429rem;
+    }
+
+    .payment, .payment:hover{
+      background-color: #111111 !important;
+      color: #fff;
+    }
+    strong {
+    font-weight: bold !important;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+ul.stepper li a {
+    padding: .5rem !important;
+
+}
+</style>
+<div class="container pt-4 d-flex justify-content-center pb-3">
+
+  <div class="col-md-12 mx-0 px-0 ">
+
+        <div class="jumbotron p-0">
+
+  <!-- Card image -->
+  <div class="view overlay rounded-top">
+<img src="{{photo}}" class="img-fluid" alt="Sample image">
+
+  </div>
+
+  <!-- Card content -->
+  <div class="card-body text-center mb-3">
+
+    <!-- Title -->
+    <h3 class="card-title h3 my-4"><strong>{{title|title}}</strong></h3>
+    <!-- Text -->
+    <p class="my-0">Categories:</p>
+    <div class="d-flex justify-content-center tag-overflow mb-1">
+    {%for cat in group_categories%}
+        <a href="{{stock.get_absolute_url}}" class="my-1 cancela ">
+              <div class="ui small label mr-2 my-1">
+                <div class="media-body">
+                  <p>{{cat.category.description|title}}</p>
+
+                </div>
+              </div>
+        </a>
+    {%endfor%}
+    </div>
+
+    <p class="card-text py-1">{{group_description}}</p>
+
+
+    <!-- Button -->
+    {%if group_free == "false" %}
+    <p><strong>${{price}}{{price_method}}</strong></p>
+    <a  data-toggle="modal" data-target="#payment" slug="{{group_slug}}" selected_membership="{{group_type}}" price="{{price}}"  onclick="on_button_click_update_form_selected_membership(this)" class=" btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light px-5  hoverable">{{button_statement}}</a>
+    {%else%}
+    <a href="{% url 'core:group' slug=group_slug%}"  class=" btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light px-5  hoverable">Go to group</a>
+
+    {%endif%}
+
+  </div>
+
+</div>
+    <div class="row">
+    <div class="col-lg-6 mb-4">
+
+      <div>
+        <div class="card">
+          <div class="card-body">
+            {{value_proposition|safe}}
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-body">
+          {%if display_metrics == "true" %}
+          <h5 class="text-center"><strong>Group Metrics:</strong></h5>
+          if there is none remove section
+          <h4><strong>18</strong></h4>
+          <p>New posts today</p>
+          <p><strong>823</strong> in the last <strong>30</strong> days</p>
+
+          <hr>
+
+          <h4><strong>7%</strong></h4>
+            <p>More active than other Groups</p>
+
+          <hr>
+
+
+          <h4><strong>4</strong></h4>
+            <p>Avg num Members online</p>
+          <hr>
+
+          <h4><strong>4</strong></h4>
+            <p>Avg num Members Joining a Week</p>
+          <hr>
+
+
+          <h5><strong>Admin and Moderators:</strong></h5>
+
+          <img class="ui mini avatar image" src="https://mdbootstrap.com/img/Photos/Avatars/avatar-5.jpg"><span></span>
+
+          <div class="d-flex justify-content-center"><span>user1 </span> <span>user2</span></div>
+          {%endif%}
+          <h4 class="text-center"><strong>Rules/Guidelines</strong></h4>
+          {{rules_guidlines|safe}}
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- payment modol -->
+<div class="modal fade  modal-radius" id="payment" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered  modal-radius" role="document">
+    <div class="modal-content  modal-radius">
+      <div class="modal-header  modal-radius">
+        <div class="col-10 offset-1">
+          <div class="d-flex justify-content-between">
+            <h3 class="pt-3 mr-2">Payment Details</h3>
+            <div class="d-flex justify-content-start">
+              <img  class=""  width="46" height="50" src="{% static 'visa-pay-logo.svg' %}" />
+
+              <img  class="ml-1"  width="46" height="50" src="{% static 'mastercard.svg' %}" />
+
+              <img  class="ml-1"  width="46" height="50" src="{% static 'discover.svg' %}" />
+
+              <img  class="ml-1"  width="46" height="50" src="{% static 'american-express-logo.svg' %}" />
+
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+
+        <button id="watchlist_modal"  type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+      </div>
+      <div  class="modal-body  modal-radius">
+
+        <div class="col-10 offset-1">
+
+          <div class="text-center">
+            <h3 class="mb-2" id="item_description">Membership Fee</h3>
+            <h2 class="mt-0 mb-3" id="item_price">$8</h2>
+          </div>
+
+          <form id="default_card_form" class="" action="{%url 'core:group-landing' slug=group_slug%}" method="post">
+              {%csrf_token%}
+            <input id="default_card_input" type="hidden" name="use_default_card" value="">
+            <input id="group_slug_default_payment" type="hidden" name="group_slug_payment" value="">
+            <input id="selected_membership_default" type="hidden" name="selected_membership_default" value="">
+          </form>
+          {% if has_default_card == "true"%}
+
+          <hr id="rule2">
+          <div id="default_card_feild" class="">
+
+
+          <div class="d-flex justify-content-center">
+            <h5>Use Default Card</h5>
+          </div>
+
+
+          <div class="row hoverable pb-1 pt-4 pl-0 ml-0 rounded">
+            <!-- make hoverable to let user know to slide -->
+          <div class="col-6 pl-2 ml-0 tag-overflow">
+            <div class="form-check pl-0 ml-0">
+                <input type="checkbox" class="form-check-input"
+                            id="default_card_source"
+                 name="groupOfMaterialRadios">
+                <label class="form-check-label"for="default_card_source">
+                  <div class="d-flex justify-content-start">
+                    {%if card_brand == "Visa"%}
+                      <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'visa-pay-logo.svg' %}" />
+                      {%elif  card_brand == "MasterCard" %}
+                      <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'mastercard.svg' %}" />
+                      {%elif  card_brand == "Discover" %}
+                      <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'discover.svg' %}" />
+                      {%elif  card_brand == "American Express" %}
+                      <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'american-express-logo.svg' %}" />
+                      {%else%}
+                      <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'visa-pay-logo.svg' %}" />
+                      {%endif%}
+                      <div class="pt-1">
+                        <div class="d-flex justify-content-start">
+                              <p class="pr-1" >{{card_brand}}: </p>
+                              <p class="">****{{ card_last4 }}</p>
+                        </div>
+                      </div>
+                  </div>
+                </label>
+            </div>
+          </div>
+
+        <div class="col-3 tag-overflow">
+              <p class="pt-1">{{ card_name }}</p>
+        </div>
+
+        <div class="col-3 tag-overflow">
+          <p class="pt-1">{{ card_month }}/{{ card_exyear }}</p>
+        </div>
+          </div>
+
+          <div class="d-flex justify-content-center">
+            <div class="d-flex justify-content-start pt-1 mb-4">
+              <img  class="mx-0 px-0"  width="50" height="20" src="{% static 'substract.svg' %}" />
+              <h3 class="mx-0 my-0 py- px-0" >or</h3>
+              <img  class="mx-0 px-0"  width="50" height="20" src="{% static 'substract.svg' %}" />
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-center">
+            <h5 class="mb-2">New Payment Method</h5>
+          </div>
+
+  </div>
+          {%endif%}
+
+          <div id="form_modal_body" class="d-flex justify-content-center mb-2">
+
+          </div>
+
+          <form id="payment-form" class="MyDiv" action="{%url 'core:group-landing' slug=group_slug%}" method="post">
+            {%csrf_token%}
+            <!-- Use the CSS tab above to style your Element's container. -->
+            <label for="nameoncard">Name on Card</label>
+            <input name="name_on_card" type="text" id="nameoncard" required class="form-control mb-4 z-depth-1" >
+
+            <label for="card-element">Card Information</label>
+            <div id="card-element" class="MyCardElement form-control mb-4 z-depth-1">
+             <!-- Elements will create input elements here -->
+            </div>
+
+            <!-- We'll put the error messages in this element -->
+            <div id="card-errors" role="alert"></div>
+
+            <input id="selected_membership" type="hidden" name="selected_membership" value="">
+              {% if has_default_card == "true"%}
+                <hr id="rule">
+              {%endif%}
+              <button id="new_method_button" class="inputfile"  type="submit" name="button"></button>
+
+              <input id="group_slug_new_payment" type="hidden" name="group_slug_payment" value="">
+          </form>
+          <div class="d-flex justify-content-center">
+            <button onclick="submit_payment_forms()" class=" payment btn  btn-lg btn-block button-boder-radius button-overflow waves-effect waves-light px-5  hoverable"  >Pay</button>
+
+          </div>
+
+        </div>
+
+
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- end of payment modal -->
+</div>
+
+
+<div class="modal fade " id="" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content  modal-radius">
+      <div class="modal-header  modal-radius">
+        <div class="d-flex justify-content-center"></div>
+        <button id=""  type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body  modal-radius">
+        <!-- Hidding Spinnere Element -->
+                      <div id="form_spinner" class="preloader-wrapper big active">
+                            <div class="spinner-layer spinner-blue-only">
+                              <div class="circle-clipper left">
+                                <div class="circle"></div>
+                              </div>
+                              <div class="gap-patch">
+                                <div class="circle"></div>
+                              </div>
+                              <div class="circle-clipper right">
+                                <div class="circle"></div>
+                              </div>
+                            </div>
+                      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+
+<!-- script for toggling display of the form -->
+<script type="text/javascript">
+  // Set your publishable key: remember to change this to your live publishable key in production
+// See your keys here: https://dashboard.stripe.com/account/apikeys
+var stripe = Stripe("{{stripe_pluishable_key}}");
+var elements = stripe.elements();
+function submit_payment_forms() {
+  // submit default form
+  {% if has_default_card == "true"%}
+
+          // check if the default card source was chosen
+          checkBox = document.getElementById('default_card_source')
+
+          if (checkBox.checked == true){
+            console.log("yea");
+            // hide form
+            document.getElementById('payment-form').style.display='none'
+            document.getElementById('default_card_feild').style.display='none'
+            document.getElementById('rule').style.display='none'
+            document.getElementById('rule2').style.display='none'
+            //clone the spinner
+            clone = document.getElementById('form_spinner')
+            clone = clone.cloneNode(true);
+            clone.id = "spinner_clone";
+            try {
+              body =document.getElementById('form_modal_body')
+              body.appendChild(clone);
+              //$('#alert_footer').appendTo(clone).show('slow');
+            }catch (e){
+              sdx=2
+            }
+
+             document.getElementById('default_card_input').value = "true"
+             document.getElementById('default_card_form').submit();
+          }else {
+            document.getElementById('new_method_button').click();
+          }
+{%else%}
+
+          document.getElementById('new_method_button').click();
+
+{%endif%}
+
+
+}
+
+
+function on_button_click_update_form_selected_membership(element) {
+  document.getElementById('selected_membership').value = element.attributes["selected_membership"].value
+  document.getElementById('group_slug_new_payment').value = element.attributes["slug"].value
+    {% if has_default_card == "true"%}
+  document.getElementById('selected_membership_default').value = element.attributes["selected_membership"].value
+  document.getElementById('group_slug_default_payment').value = element.attributes["slug"].value
+
+  {%endif%}
+  if (element.attributes["selected_membership"].value == 's') {
+    item_descr=document.getElementById('item_description')
+    item_pr=document.getElementById('item_price')
+
+
+    item_descr.textContent = 'Monthly Membership Fee'
+    item_pr.textContent = '$'+ element.attributes["price"].value
+  }
+  if (element.attributes["selected_membership"].value == 'o') {
+    item_descr=document.getElementById('item_description')
+    item_pr=document.getElementById('item_price')
+
+    item_descr.textContent = 'One Time Addmission Fee'
+    item_pr.textContent = '$'+ element.attributes["price"].value
+  }
+}
+// Set up Stripe.js and Elements to use in checkout form
+var style = {
+  base: {
+    color: "#32325d",
+    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+    fontSmoothing: "antialiased",
+    fontSize: "16px",
+    "::placeholder": {
+      color: "#aab7c4"
+    }
+  },
+  invalid: {
+    color: "#fa755a",
+    iconColor: "#fa755a"
+  }
+};
+
+var card = elements.create("card", { style: style });
+card.mount("#card-element");
+
+
+
+var form = document.getElementById('payment-form');
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
+  // hide form
+  form.style.display='none'
+
+  //clone the spinner
+  clone = document.getElementById('form_spinner')
+  clone = clone.cloneNode(true);
+  clone.id = "spinner_clone";
+  try {
+    body =document.getElementById('form_modal_body')
+    body.appendChild(clone);
+    //$('#alert_footer').appendTo(clone).show('slow');
+  }catch (e){
+    sdx=2
+  }
+
+
+
+
+  stripe.createToken(card).then(function(result) {
+    if (result.error) {
+      // Inform the customer that there was an error.
+      var errorElement = document.getElementById('card-errors');
+      errorElement.textContent = result.error.message;
+
+      spinner_delete= document.getElementById('spinner_clone')
+      spinner_delete.parentNode.removeChild(spinner_delete);
+
+      form.style.display='inline'
+    } else {
+      // Send the token to your server.
+      stripeTokenHandler(result.token);
+      document.getElementById('payment-form').submit();
+    }
+  });
+});
+
+function stripeTokenHandler(token) {
+  // Insert the token ID into the form so it gets submitted to the server
+  var form = document.getElementById('payment-form');
+  var hiddenInput = document.createElement('input');
+  hiddenInput.setAttribute('type', 'hidden');
+  hiddenInput.setAttribute('name', 'stripeToken');
+  hiddenInput.setAttribute('value', token.id);
+  form.appendChild(hiddenInput);
+
+}
+
+
+
+
+</script>
+{%endblock%}

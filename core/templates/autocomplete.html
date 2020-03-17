@@ -1,0 +1,1207 @@
+{%extends "base.html" %}
+<!-- scroller -->
+<!-- https://benfrain.com/playground/scroller.html -->
+{% block content  %}
+{%load staticfiles%}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.rawgit.com/mervick/emojionearea/master/dist/emojionearea.min.js"></script>
+<script src="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/js/jquery.atwho.min.js"></script>
+<script src="https://cdn.rawgit.com/ichord/Caret.js/master/dist/jquery.caret.min.js"></script>
+<link href="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/css/jquery.atwho.css" rel="stylesheet">
+
+<style type="text/css">
+        /* * {
+          box-sizing: inherit;
+        } */
+
+        /* ::-webkit-scrollbar {
+   -webkit-appearance: none;
+   width: 0;
+   height: 0px;
+} */
+        .pn-ProductNav_Wrapper {
+          position: relative;
+          padding: 0 11px;
+          box-sizing: border-box;
+        }
+
+        .pn-ProductNav {
+          /* Make this scrollable when needed */
+          overflow-x: auto;
+          /* We don't want vertical scrolling */
+          overflow-y: hidden;
+          /* For WebKit implementations, provide inertia scrolling */
+          -webkit-overflow-scrolling: touch;
+          /* We don't want internal inline elements to wrap */
+
+          /* white-space: nowrap; */
+
+          /* If JS present, let's hide the default scrollbar */
+          /* positioning context for advancers */
+          position: relative;
+
+        }
+        .js .pn-ProductNav {
+          /* Make an auto-hiding scroller for the 3 people using a IE */
+          -ms-overflow-style: -ms-autohiding-scrollbar;
+          /* Remove the default scrollbar for WebKit implementations */
+        }
+        .js .pn-ProductNav::-webkit-scrollbar {
+          display: none;
+        }
+
+        .pn-ProductNav_Contents {
+          float: left;
+          -webkit-transition: -webkit-transform .2s ease-in-out;
+          transition: -webkit-transform .2s ease-in-out;
+          transition: transform .2s ease-in-out;
+          transition: transform .2s ease-in-out, -webkit-transform .2s ease-in-out;
+          position: relative;
+        }
+
+        .pn-ProductNav_Contents-no-transition {
+          -webkit-transition: none;
+          transition: none;
+        }
+
+        .pn-ProductNav_Link {
+          text-decoration: none;
+          color: #888;
+          font-size: 1.2rem;
+          font-family: -apple-system, sans-serif;
+          display: -webkit-inline-box;
+          display: -ms-inline-flexbox;
+
+          -webkit-box-align: center;
+              -ms-flex-align: center;
+                  align-items: center;
+          display: inline-block;
+          border: 1px solid transparent;
+          padding: 0 11px;
+        }
+        .pn-ProductNav_Link + .pn-ProductNav_Link {
+          border-left-color: #eee;
+        }
+        .pn-ProductNav_Link[aria-selected="true"] {
+          color: #111;
+        }
+
+        .pn-Advancer {
+          /* Reset the button */
+          -webkit-appearance: none;
+             -moz-appearance: none;
+                  appearance: none;
+          background: transparent;
+          padding: 0;
+          border: 0;
+          /* Now style it as needed */
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          /* Set the buttons invisible by default */
+          opacity: 0;
+          -webkit-transition: opacity .3s;
+          transition: opacity .3s;
+        }
+        .pn-Advancer:focus {
+          outline: 0;
+        }
+        .pn-Advancer:hover {
+          cursor: pointer;
+        }
+
+        .pn-Advancer_Left {
+          left: 0;
+        }
+        [data-overflowing="both"] ~ .pn-Advancer_Left, [data-overflowing="left"] ~ .pn-Advancer_Left {
+          opacity: 1;
+        }
+
+        .pn-Advancer_Right {
+          right: 0;
+        }
+        [data-overflowing="both"] ~ .pn-Advancer_Right, [data-overflowing="right"] ~ .pn-Advancer_Right {
+          opacity: 1;
+        }
+
+        .pn-Advancer_Icon {
+          width: 20px;
+          height: 44px;
+          fill: #bbb;
+        }
+
+        .pn-ProductNav_Indicator {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          height: 0px;
+          width: 0px;
+          background-color: transparent;
+          -webkit-transform-origin: 0 0;
+                  transform-origin: 0 0;
+          -webkit-transition: background-color .2s ease-in-out, -webkit-transform .2s ease-in-out;
+          transition: background-color .2s ease-in-out, -webkit-transform .2s ease-in-out;
+          transition: transform .2s ease-in-out, background-color .2s ease-in-out;
+          transition: transform .2s ease-in-out, background-color .2s ease-in-out, -webkit-transform .2s ease-in-out;
+        }
+
+    </style>
+<style>
+
+  .card-spacing{
+    margin-top: 25px;
+  }
+
+
+
+/*the container must be positioned relative:*/
+.autocomplete {
+  position: relative;
+  display: inline-block;
+}
+
+input {
+  border: 1px solid transparent;
+  background-color: #f1f1f1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+input[type=text] {
+  background-color: #f1f1f1;
+  width: 100%;
+}
+
+input[type=submit] {
+  background-color: DodgerBlue;
+  color: #fff;
+  cursor: pointer;
+}
+
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  /*position the autocomplete items to be the same width as the container:*/
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+
+.text {
+line-height: 1.2em;
+}
+
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+/*when hovering an item:*/
+.autocomplete-items div:hover {
+  background-color: #e9e9e9;
+}
+
+/*when navigating through the items using the arrow keys:*/
+.autocomplete-active {
+  background-color: DodgerBlue !important;
+  color: #ffffff;
+}
+
+.anyClass {
+  height:150px;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+.anyClass::-webkit-scrollbar {
+  display: none;
+}
+</style>
+
+<!-- Navbar -->
+<nav class="navbar  navbar-expand-lg navbar-light white scrolling-navbar"style="display:none">
+  <div class="container">
+
+    <!-- Brand -->
+    <a class="navbar-brand waves-effect" href="{%url 'core:item-list'%}" target="_blank">
+      <strong class="blue-text">Project Asher</strong>
+    </a>
+
+    <!-- Collapse -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Links -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+      <!-- Left -->
+      <ul class="navbar-nav mr-auto">
+
+        <li class="nav-item">
+        </li>
+        <li class="nav-item">
+          <a class="nav-link waves-effect" href="{% url 'core:checkout'%}"
+            target="_blank">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link waves-effect" href="https://mdbootstrap.com/education/bootstrap/" target="_blank">
+            </a>
+        </li>
+      </ul>
+
+      <!-- Right -->
+      <ul class="navbar-nav nav-flex-icons">
+        {% if request.user.is_authenticated%}
+        <li class="nav-item">
+          <a class="nav-link waves-effect">
+            <span class="badge red z-depth-1 mr-1"> 1</span>
+            <i class="bell outline icon"></i>
+            <span class="clearfix d-none d-sm-inline-block"> Notifications </span>
+          </a>
+        </li>
+        <!-- allaut tags to login and out -->
+        <li class="nav-item">
+          <a class="nav-link waves-effect" href="{%url 'account_logout'%}">
+            <span class="clearfix d-none d-sm-inline-block"> Logout </span>
+          </a>
+        </li>
+        {%else%}
+        <li class="nav-item">
+          <a class="nav-link waves-effect" href="{%url 'account_login'%}">
+            <span class="clearfix d-none d-sm-inline-block"> Login </span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link waves-effect" href="{%url 'account_signup'%}">
+            <span class="clearfix d-none d-sm-inline-block"> Sign Up </span>
+          </a>
+        </li>
+        {%endif%}
+
+
+
+      </ul>
+
+    </div>
+
+  </div>
+</nav>
+
+
+  <!-- Sidebar -->
+
+  <div class=" col-3  pb-0 mx-0 my-0 px-0" style="display:none">
+      <div class="mt-5 pt-4 pb-0 mb-0 sidebar position">
+
+        <a class="logo-wrapper waves-effect">
+          {% load static %}
+          <img src="{% static "img/logo.jpg" %}" alt="My image" class="img-fluid flex-center">
+
+        </a>
+
+        <div class="list-group ">
+          <a href="{% url 'core:user_dashboard'%}" class="list-group-item list-group-item-action waves-effect ">
+            <i class="fas fa-chart-pie mr-3"></i>Dashboard
+          </a>
+          <a href="{% url 'core:user_profile_page'%}" class="list-group-item list-group-item-action waves-effect">
+            <i class="fas fa-user mr-3"></i>Profile: {{user.first_name}}</a>
+          <a href="#" class="list-group-item list-group-item-action waves-effect">
+            <i class="fas fa-table mr-3"></i>Monthly Dividend Generator</a>
+          <a href="{% url 'core:feed' %}" class="list-group-item list-group-item-action waves-effect">
+            <i class="fas fa-map mr-3"></i>Feed</a>
+          <a href=" {% url 'core:news' %}" class="list-group-item list-group-item-action waves-effect">
+            <i class="fas fa-money-bill-alt mr-3"></i>News</a>
+            <a href="#" class="list-group-item list-group-item-action waves-effect">
+              <i class="fas fa-money-bill-alt mr-3"></i>Stock Filter</a>
+              <a href="#" class="list-group-item list-group-item-action waves-effect">
+                <i class="fas fa-money-bill-alt mr-3"></i>Donate</a>
+                <a role="button" class="btn btn-outline-info waves-effect" href="{%url 'core:create_post'%}" data-dismiss="modal">Create Post</a>
+        </div>
+
+      </div>
+      </div>
+      <!-- Sidebar -->
+<h2>Autocomplete</h2>
+
+<p>Start typing:</p>
+
+<!--Make sure the form has the autocomplete function switched off:-->
+<form autocomplete="off" action="/action_page.php">
+  <div class="autocomplete" style="width:300px;">
+    <input id="myInput" type="text" name="myCountry" placeholder="Stock">
+  </div>
+  <input type="submit">
+</form>
+
+<div id="example" contenteditable="true"></div>
+
+
+
+
+<p>
+Type an author:
+</p>
+<textarea  id="inputor" ></textarea>
+
+<input type="text" name="" value="">
+<br />
+
+<p>
+Type a city:
+</p>
+<div id="inputcity" contenteditable="true">Your Favorite City: </div>
+
+<p>
+Type an emoji e.g :smiley:
+</p>
+<textarea id="emojis"></textarea>
+<br />
+
+  <textarea name="message" class="form-control col-4" id=""></textarea>
+
+<div class="container">
+  <div class="pn-ProductNav_Wrapper">
+<nav id="pnProductNav" class="pn-ProductNav dragscroll" data-overflowing="right">
+<div id="pnProductNavContents" class="pn-ProductNav_Contents pn-ProductNav_Contents-no-transition" style="transform: none;">
+
+
+
+<div class="d-flex justify-content-start">
+
+{%for stockinfo in object_list%}
+
+
+{%if forloop.first%}
+
+<!-- stocks -->
+<section class="mx-3 my-3"  aria-selected="true">
+  {%else%}
+<section  class="mx-3 my-3"  >
+{%endif%}
+
+
+
+<!-- Card -->
+<div width="500" height="500"  style="min-width: 300px"  class="card chart-card hoverable card-spacing" >
+
+  <!-- Card content -->
+  <div class="card-body pb-0" href= "{{stockinfo.stock.get_absolute_url}}">
+
+    <!-- Title -->
+    <a class="card-title font-weight-bold" href= "{{stockinfo.stock.get_absolute_url}}">
+      <h4 class="card-title font-weight-bold" >{{stockinfo.stock.company_name}}</h4>
+
+    </a>
+
+    <!-- Text -->
+    <p class="card-text mb-4">NYSE: {{stockinfo.stock.ticker}}  •  Oct 16, 1:45PM</p>
+    <div class="d-flex justify-content-between">
+      <p class="display-4 align-self-end">{{stockinfo.stock.price}}</p>
+      <p class="align-self-end mb-4">887.02 (.03%)</p>
+    </div>
+
+  </div>
+
+  <!-- Classic tabs -->
+  <div class="classic-tabs">
+
+    <!-- Nav tabs -->
+    <ul class="nav tabs-white nav-fill" role="tablist">
+      <li class="nav-item ml-0">
+        <a class="nav-link waves-light active" data-toggle="tab" href="#{{stockinfo.stock.slug}}panel1001" role="tab">Stock Profile</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link waves-light" data-toggle="tab" href="#{{stockinfo.stock.slug}}panel1002" role="tab">Blog</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link waves-light" data-toggle="tab" href="#{{stockinfo.stock.slug}}panel1003" role="tab">Company Profile</a>
+      </li>
+    </ul>
+
+    <div class="tab-content rounded-bottom">
+      <!--Panel 1-->
+
+      <!-- Put a table here listing stock data -->
+      <div class="tab-pane fade in show active" id="{{stockinfo.stock.slug}}panel1001" role="tabpanel">
+
+<div class="container anyClass">
+
+
+        <table class="table table-hover">
+  <tbody>
+    <tr>
+      <th scope="row">Dividend:</th>
+      <td>{{stockinfo.stock.dividend_yeild}}%</td>
+    </tr>
+    <tr>
+      <th scope="row">Payout Months:</th>
+      <td>{{stockinfo.stock.get_months_display }}</td>
+
+    </tr>
+    <tr>
+      <th scope="row">Shares Owned:</th>
+      <td>{{stockinfo.quantity}}</td>
+
+    </tr>
+  </tbody>
+</table>
+</div>
+      </div>
+      <!--/.Panel 1-->
+      <!--Panel 2-->
+      <!-- for loop showing blogs with apple as topic -->
+      <div class="tab-pane fade" id="{{stockinfo.stock.slug}}panel1002" role="tabpanel">
+
+        <div class="container">
+          <textarea  onclick="this.focus();this.select()" name="message" class="form-control col-12 text mb-2" id=""></textarea>
+        </div>
+
+        <div class="container anyClass">
+
+
+
+          <p align="justify" class="font-small text-muted mx-1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil odit magnam minima, soluta doloribus reiciendis molestiae placeat unde eos molestias. Quisquam aperiam, pariatur. Tempora, placeat ratione porro voluptate odit minima.</p>
+          <p align="justify" class="font-small text-muted mx-1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil odit magnam minima, soluta doloribus reiciendis molestiae placeat unde eos molestias. Quisquam aperiam, pariatur. Tempora, placeat ratione porro voluptate odit minima.</p>
+        </div>
+
+
+      </div>
+      <!--/.Panel 2-->
+      <!--Panel 3-->
+      <!-- comany description -->
+      <div class="tab-pane fade" id="{{stockinfo.stock.slug}}panel1003" role="tabpanel">
+
+        <div class="container anyClass">
+
+          <img class="img-fluid z-depth-1 rounded mb-3" alt="sample image" src="https://mdbootstrap.com/img/Photos/Others/intro1.jpg">
+          <p align="justify" class="font-small text-muted mx-1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil odit magnam minima, soluta doloribus reiciendis molestiae placeat unde eos molestias. Quisquam aperiam, pariatur. Tempora, placeat ratione porro voluptate odit minima at ipsum sit amet.</p>
+
+        </div>
+
+
+      </div>
+      <!--/.Panel 3-->
+    </div>
+
+  </div>
+  <!-- Classic tabs -->
+
+    <a role="button" class="btn btn-outline-info waves-effect" href="{%url 'core:stocks_user_update' pk=stockinfo.id %}" data-dismiss="modal">update shares</a>
+    <a role="button" class="btn btn-outline-info waves-effect" href="{%url 'core:stocks_delete' pk=stockinfo.id %}" data-dismiss="modal">Remove Stock</a>
+
+
+</div>
+
+</section>
+
+
+{%endfor%}
+</div>
+
+<span id="pnIndicator" class="pn-ProductNav_Indicator" style="transform: translateX(0px) scaleX(0.794875); background-color: rgb(134, 113, 0);"></span>
+</div>
+</nav>
+<button id="pnAdvancerLeft" class="pn-Advancer pn-Advancer_Left" type="button">
+<svg class="pn-Advancer_Icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 551 1024"><path d="M445.44 38.183L-2.53 512l447.97 473.817 85.857-81.173-409.6-433.23v81.172l409.6-433.23L445.44 38.18z"></path></svg>
+</button>
+<button id="pnAdvancerRight" class="pn-Advancer pn-Advancer_Right" type="button">
+<svg class="pn-Advancer_Icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 551 1024"><path d="M105.56 985.817L553.53 512 105.56 38.183l-85.857 81.173 409.6 433.23v-81.172l-409.6 433.23 85.856 81.174z"></path></svg>
+</button>
+</div>
+</div>
+
+
+<div class="container">
+  <div class="pn-ProductNav_Wrapper">
+<nav id="pnProductNav" class="pn-ProductNav dragscroll" data-overflowing="right">
+<div id="pnProductNavContents" class="pn-ProductNav_Contents pn-ProductNav_Contents-no-transition" style="transform: none;">
+
+
+
+<div class="d-flex justify-content-start">
+
+{%for stockinfo in object_list%}
+
+
+
+
+<!-- stocks -->
+
+
+<section  class="mx-3 my-3"  >
+
+
+
+
+<!-- Card Light -->
+<div style="min-width: 300px" class="card">
+
+  <!-- Card image -->
+  <div class="view overlay">
+    <img class="card-img-top" src="https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20%28131%29.jpg" alt="Card image cap">
+    <a>
+      <div class="mask rgba-white-slight"></div>
+    </a>
+  </div>
+
+  <!-- Card content -->
+  <div class="card-body">
+
+    <!-- Social shares button -->
+    <a class="activator waves-effect waves-light mr-4"><i class="fas fa-share-alt"></i></a>
+    <!-- Title -->
+    <h4 class="card-title">Card title</h4>
+    <hr>
+    <!-- Text -->
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+    <!-- Link -->
+    <a href="#!" class="black-text d-flex justify-content-end"><h5>Read more <i class="fas fa-angle-double-right"></i></h5></a>
+
+  </div>
+
+</div>
+<!-- Card Light -->
+
+</section>
+
+
+{%endfor%}
+</div>
+
+<span id="pnIndicator" class="pn-ProductNav_Indicator" style="transform: translateX(0px) scaleX(0.794875); background-color: rgb(134, 113, 0);"></span>
+</div>
+</nav>
+
+</div>
+</div>
+
+
+  <!--Card-->
+  <div class="card card-spacing">
+
+    <!--Card content-->
+    <div class="card-body">
+
+      <div class="container">
+
+          <h4 class="card-title font-weight-bold" >Stock Portfolio Amount: ${{protfolio_ammount | floatformat:"-2"}}</h4>
+
+
+      </div>
+      <div class="container">
+
+          <h4 class="card-title font-weight-bold" >Yearly Dividend Amount: ${{dividend_income | floatformat:"-2"}}</h4>
+
+
+      </div>
+      <div class="container">
+
+          <h4 class="card-title font-weight-bold" >Portfolio Yeild: {{portfolio_yeild | floatformat:"-2"}}%</h4>
+
+
+      </div>
+
+      <div class="row">
+        {%for stockinfo in object_list%}
+
+          <div class="col-lg-6 col-md-10 mb-4" >
+
+        <!-- stocks -->
+        <section>
+
+        <!-- surround content with section -->
+        <div class="container stock-spacing">
+
+
+        <!-- Card -->
+        <div class="card chart-card hoverable card-spacing" >
+
+          <!-- Card content -->
+          <div class="card-body pb-0" href= "{{stockinfo.stock.get_absolute_url}}">
+
+            <!-- Title -->
+            <a class="card-title font-weight-bold" href= "{{stockinfo.stock.get_absolute_url}}">
+              <h4 class="card-title font-weight-bold" >{{stockinfo.stock.company_name}}</h4>
+
+            </a>
+
+            <!-- Text -->
+            <p class="card-text mb-4">NYSE: {{stockinfo.stock.ticker}}  •  Oct 16, 1:45PM</p>
+            <div class="d-flex justify-content-between">
+              <p class="display-4 align-self-end">{{stockinfo.stock.price}}</p>
+              <p class="align-self-end mb-4">887.02 (.03%)</p>
+            </div>
+
+          </div>
+
+          <!-- Classic tabs -->
+          <div class="classic-tabs">
+
+            <!-- Nav tabs -->
+            <ul class="nav tabs-white nav-fill" role="tablist">
+              <li class="nav-item ml-0">
+                <a class="nav-link waves-light active" data-toggle="tab" href="#{{stockinfo.stock.slug}}panel1001" role="tab">Stock Profile</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link waves-light" data-toggle="tab" href="#{{stockinfo.stock.slug}}panel1002" role="tab">Blog</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link waves-light" data-toggle="tab" href="#{{stockinfo.stock.slug}}panel1003" role="tab">Company Profile</a>
+              </li>
+            </ul>
+
+            <div class="tab-content rounded-bottom">
+              <!--Panel 1-->
+
+              <!-- Put a table here listing stock data -->
+              <div class="tab-pane fade in show active" id="{{stockinfo.stock.slug}}panel1001" role="tabpanel">
+        <div class="container">
+
+
+                <table class="table table-hover">
+          <tbody>
+            <tr>
+              <th scope="row">Dividend:</th>
+              <td>{{stockinfo.stock.dividend_yeild}}%</td>
+            </tr>
+            <tr>
+              <th scope="row">Payout Months:</th>
+              <td>{{stockinfo.stock.get_months_display }}</td>
+
+            </tr>
+            <tr>
+              <th scope="row">Shares Owned:</th>
+              <td>{{stockinfo.quantity}}</td>
+
+            </tr>
+          </tbody>
+        </table>
+        </div>
+              </div>
+              <!--/.Panel 1-->
+              <!--Panel 2-->
+              <!-- for loop showing blogs with apple as topic -->
+              <div class="tab-pane fade" id="{{stockinfo.stock.slug}}panel1002" role="tabpanel">
+                <p align="justify" class="font-small text-muted mx-1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil odit magnam minima, soluta doloribus reiciendis molestiae placeat unde eos molestias. Quisquam aperiam, pariatur. Tempora, placeat ratione porro voluptate odit minima.</p>
+                <p align="justify" class="font-small text-muted mx-1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil odit magnam minima, soluta doloribus reiciendis molestiae placeat unde eos molestias. Quisquam aperiam, pariatur. Tempora, placeat ratione porro voluptate odit minima.</p>
+              </div>
+              <!--/.Panel 2-->
+              <!--Panel 3-->
+              <!-- comany description -->
+              <div class="tab-pane fade" id="{{stockinfo.stock.slug}}panel1003" role="tabpanel">
+                <img class="img-fluid z-depth-1 rounded mb-3" alt="sample image" src="https://mdbootstrap.com/img/Photos/Others/intro1.jpg">
+                <p align="justify" class="font-small text-muted mx-1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil odit magnam minima, soluta doloribus reiciendis molestiae placeat unde eos molestias. Quisquam aperiam, pariatur. Tempora, placeat ratione porro voluptate odit minima at ipsum sit amet.</p>
+              </div>
+              <!--/.Panel 3-->
+            </div>
+
+          </div>
+          <!-- Classic tabs -->
+
+            <a role="button" class="btn btn-outline-info waves-effect" href="{%url 'core:stocks_user_update' pk=stockinfo.id %}" data-dismiss="modal">update shares</a>
+            <a role="button" class="btn btn-outline-info waves-effect" href="{%url 'core:stocks_delete' pk=stockinfo.id %}" data-dismiss="modal">Remove Stock</a>
+
+
+        </div>
+        </section>
+        </div>
+
+        {%endfor%}
+        <!--Pagination-->
+
+      <div class="col-lg-12 col-md-12 mb-4" >
+
+
+
+
+        {% if is_paginated%}
+
+
+        <nav class="d-flex justify-content-center wow fadeIn">
+          <ul class="pagination pg-blue">
+              {% if page_obj.has_previous%}
+            <!--Arrow left-->
+            <li class="page-item ">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                <span class="sr-only">Previous</span>
+              </a>
+            </li>
+            {%endif%}
+
+            <li class="page-item active">
+              <a class="page-link" href="?page={{page_obj.number}}">{{page_obj.number}}
+                <span class="sr-only">(current)</span>
+              </a>
+
+            {% if page_obj.has_next%}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+                <span class="sr-only">Next</span>
+              </a>
+            </li>
+            {%endif%}
+          </ul>
+        </nav>
+        <!--Pagination-->
+        {%endif%}
+          </div>
+      </div>
+
+    </div>
+
+  </div>
+  <!--/.Card-->
+<script>
+function autocomplete(inp, arr) {
+  /*the autocomplete function takes two arguments,
+  the text field element and an array of possible autocompleted values:*/
+  var currentFocus;
+  /*execute a function when someone writes in the text field:*/
+  inp.addEventListener("input", function(e) {
+      var a, b, i, val = this.value;
+      /*close any already open lists of autocompleted values*/
+      closeAllLists();
+      if (!val) { return false;}
+      currentFocus = -1;
+      /*create a DIV element that will contain the items (values):*/
+      a = document.createElement("DIV");
+      a.setAttribute("id", this.id + "autocomplete-list");
+      a.setAttribute("class", "autocomplete-items");
+      /*append the DIV element as a child of the autocomplete container:*/
+      this.parentNode.appendChild(a);
+      /*for each item in the array...*/
+      for (i = 0; i < arr.length; i++) {
+        /*check if the item starts with the same letters as the text field value:*/
+        if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+          /*create a DIV element for each matching element:*/
+          b = document.createElement("DIV");
+          /*make the matching letters bold:*/
+          b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+          b.innerHTML += arr[i].substr(val.length);
+          /*insert a input field that will hold the current array item's value:*/
+          b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+          /*execute a function when someone clicks on the item value (DIV element):*/
+          b.addEventListener("click", function(e) {
+              /*insert the value for the autocomplete text field:*/
+              inp.value = this.getElementsByTagName("input")[0].value;
+              /*close the list of autocompleted values,
+              (or any other open lists of autocompleted values:*/
+              closeAllLists();
+          });
+          a.appendChild(b);
+        }
+      }
+  });
+  /*execute a function presses a key on the keyboard:*/
+  inp.addEventListener("keydown", function(e) {
+      var x = document.getElementById(this.id + "autocomplete-list");
+      if (x) x = x.getElementsByTagName("div");
+      if (e.keyCode == 40) {
+        /*If the arrow DOWN key is pressed,
+        increase the currentFocus variable:*/
+        currentFocus++;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 38) { //up
+        /*If the arrow UP key is pressed,
+        decrease the currentFocus variable:*/
+        currentFocus--;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 13) {
+        /*If the ENTER key is pressed, prevent the form from being submitted,*/
+        e.preventDefault();
+        if (currentFocus > -1) {
+          /*and simulate a click on the "active" item:*/
+          if (x) x[currentFocus].click();
+        }
+      }
+  });
+  function addActive(x) {
+    /*a function to classify an item as "active":*/
+    if (!x) return false;
+    /*start by removing the "active" class on all items:*/
+    removeActive(x);
+    if (currentFocus >= x.length) currentFocus = 0;
+    if (currentFocus < 0) currentFocus = (x.length - 1);
+    /*add class "autocomplete-active":*/
+    x[currentFocus].classList.add("autocomplete-active");
+  }
+  function removeActive(x) {
+    /*a function to remove the "active" class from all autocomplete items:*/
+    for (var i = 0; i < x.length; i++) {
+      x[i].classList.remove("autocomplete-active");
+    }
+  }
+  function closeAllLists(elmnt) {
+    /*close all autocomplete lists in the document,
+    except the one passed as an argument:*/
+    var x = document.getElementsByClassName("autocomplete-items");
+    for (var i = 0; i < x.length; i++) {
+      if (elmnt != x[i] && elmnt != inp) {
+        x[i].parentNode.removeChild(x[i]);
+      }
+    }
+  }
+  /*execute a function when someone clicks in the document:*/
+  document.addEventListener("click", function (e) {
+      closeAllLists(e.target);
+  });
+}
+
+/*An array containing all the country names in the world:*/
+var countries = [
+{% for stock in stocks%}
+"{{stock.ticker}}",
+{%endfor%}
+];
+
+/*initiate the autocomplete function on the "myInput" element, and pass along the countries array as possible autocomplete values:*/
+autocomplete(document.getElementById("myInput"), countries);
+
+// ////////////////////////////////////////////////////////////////end of autocomplete block
+
+
+// Initialize author field
+$('#inputor').atwho({
+    at: "@",
+    data:[
+    {% for stock in stocks%}
+    "{{stock.ticker}}",
+    {%endfor%}]
+});
+
+// Initialize city field within content editable
+$('#inputcity').atwho({
+    at: "@",
+    data:['London', 'Stuttgart', 'Köln']
+});
+
+var emojis = [
+  "smile", "iphone", "girl", "smiley", "heart", "kiss", "copyright", "coffee",
+  "a", "ab", "airplane", "alien", "ambulance", "angel", "anger", "angry",
+  "arrow_forward", "arrow_left", "arrow_lower_left", "arrow_lower_right",
+  "arrow_right", "arrow_up", "arrow_upper_left", "arrow_upper_right",
+  "art", "astonished", "atm", "b", "baby", "baby_chick", "baby_symbol",
+  "balloon", "bamboo", "bank", "barber", "baseball", "basketball", "bath",
+  "bear", "beer", "beers", "beginner", "bell", "bento", "bike", "bikini",
+  "bird", "birthday", "black_square", "blue_car", "blue_heart", "blush",
+  "boar", "boat", "bomb", "book", "boot", "bouquet", "bow", "bowtie",
+  "boy", "bread", "briefcase", "broken_heart", "bug", "bulb",
+  "person_with_blond_hair", "phone", "pig", "pill", "pisces", "plus1",
+  "point_down", "point_left", "point_right", "point_up", "point_up_2",
+  "police_car", "poop", "post_office", "postbox", "pray", "princess",
+  "punch", "purple_heart", "question", "rabbit", "racehorse", "radio",
+  "up", "us", "v", "vhs", "vibration_mode", "virgo", "vs", "walking",
+  "warning", "watermelon", "wave", "wc", "wedding", "whale", "wheelchair",
+  "white_square", "wind_chime", "wink", "wink2", "wolf", "woman",
+  "womans_hat", "womens", "x", "yellow_heart", "zap", "zzz", "+1",
+  "-1"
+];
+
+var emojis = $.map(emojis, function(value, i) {return {key: value, name:value}});
+
+$('#emojis').atwho({
+  at: ":",
+  data: emojis,
+  displayTpl: "<li>${name} <img src='https://assets-cdn.github.com/images/icons/emoji/${key}.png'  height='20' width='20' /></li>",
+  insertTpl: "<img src='https://assets-cdn.github.com/images/icons/emoji/${name}.png'  height='20' width='20' />",
+  insertTpl: ':${key}:',
+  delay: 400
+});
+</script>
+
+
+<script type="text/javascript">
+        var SETTINGS = {
+            navBarTravelling: false,
+            navBarTravelDirection: "",
+             navBarTravelDistance: 150
+        }
+
+        var colours = {
+            0: "#212529",
+            1: "#7F4200",
+            2: "#99813D",
+            3: "#40FEFF",
+            4: "#14CC99",
+            5: "#00BAFF",
+            6: "#0082B2",
+            7: "#B25D7A",
+            8: "#00FF17",
+            9: "#006B49",
+            10: "#00B27A",
+            11: "#996B3D",
+            12: "#CC7014",
+            13: "#40FF8C",
+            14: "#FF3400",
+            15: "#ECBB5E",
+            16: "#ECBB0C",
+            17: "#B9D912",
+            18: "#253A93",
+            19: "#125FB9",
+        }
+
+        document.documentElement.classList.remove("no-js");
+        document.documentElement.classList.add("js");
+
+        // Out advancer buttons
+        var pnAdvancerLeft = document.getElementById("pnAdvancerLeft");
+        var pnAdvancerRight = document.getElementById("pnAdvancerRight");
+        // the indicator
+        var pnIndicator = document.getElementById("pnIndicator");
+
+        var pnProductNav = document.getElementById("pnProductNav");
+        var pnProductNavContents = document.getElementById("pnProductNavContents");
+
+        pnProductNav.setAttribute("data-overflowing", determineOverflow(pnProductNavContents, pnProductNav));
+
+        // Set the indicator
+        // moveIndicator(pnProductNav.querySelector("[aria-selected=\"true\"]"), colours[0]);
+
+        // Handle the scroll of the horizontal container
+        var last_known_scroll_position = 0;
+        var ticking = false;
+
+        function doSomething(scroll_pos) {
+            pnProductNav.setAttribute("data-overflowing", determineOverflow(pnProductNavContents, pnProductNav));
+        }
+
+        pnProductNav.addEventListener("scroll", function() {
+            last_known_scroll_position = window.scrollY;
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    doSomething(last_known_scroll_position);
+                    ticking = false;
+                });
+            }
+            ticking = true;
+        });
+
+
+        pnAdvancerLeft.addEventListener("click", function() {
+            // If in the middle of a move return
+            if (SETTINGS.navBarTravelling === true) {
+                return;
+            }
+            // If we have content overflowing both sides or on the left
+            if (determineOverflow(pnProductNavContents, pnProductNav) === "left" || determineOverflow(pnProductNavContents, pnProductNav) === "both") {
+                // Find how far this panel has been scrolled
+                var availableScrollLeft = pnProductNav.scrollLeft;
+                // If the space available is less than two lots of our desired distance, just move the whole amount
+                // otherwise, move by the amount in the settings
+                if (availableScrollLeft < SETTINGS.navBarTravelDistance * 2) {
+                    pnProductNavContents.style.transform = "translateX(" + availableScrollLeft + "px)";
+                } else {
+                    pnProductNavContents.style.transform = "translateX(" + SETTINGS.navBarTravelDistance + "px)";
+                }
+                // We do want a transition (this is set in CSS) when moving so remove the class that would prevent that
+                pnProductNavContents.classList.remove("pn-ProductNav_Contents-no-transition");
+                // Update our settings
+                SETTINGS.navBarTravelDirection = "left";
+                SETTINGS.navBarTravelling = true;
+            }
+            // Now update the attribute in the DOM
+            pnProductNav.setAttribute("data-overflowing", determineOverflow(pnProductNavContents, pnProductNav));
+        });
+
+        pnAdvancerRight.addEventListener("click", function() {
+            // If in the middle of a move return
+            if (SETTINGS.navBarTravelling === true) {
+                return;
+            }
+            // If we have content overflowing both sides or on the right
+            if (determineOverflow(pnProductNavContents, pnProductNav) === "right" || determineOverflow(pnProductNavContents, pnProductNav) === "both") {
+                // Get the right edge of the container and content
+                var navBarRightEdge = pnProductNavContents.getBoundingClientRect().right;
+                var navBarScrollerRightEdge = pnProductNav.getBoundingClientRect().right;
+                // Now we know how much space we have available to scroll
+                var availableScrollRight = Math.floor(navBarRightEdge - navBarScrollerRightEdge);
+                // If the space available is less than two lots of our desired distance, just move the whole amount
+                // otherwise, move by the amount in the settings
+                if (availableScrollRight < SETTINGS.navBarTravelDistance * 2) {
+                    pnProductNavContents.style.transform = "translateX(-" + availableScrollRight + "px)";
+                } else {
+                    pnProductNavContents.style.transform = "translateX(-" + SETTINGS.navBarTravelDistance + "px)";
+                }
+                // We do want a transition (this is set in CSS) when moving so remove the class that would prevent that
+                pnProductNavContents.classList.remove("pn-ProductNav_Contents-no-transition");
+                // Update our settings
+                SETTINGS.navBarTravelDirection = "right";
+                SETTINGS.navBarTravelling = true;
+            }
+            // Now update the attribute in the DOM
+            pnProductNav.setAttribute("data-overflowing", determineOverflow(pnProductNavContents, pnProductNav));
+        });
+
+        pnProductNavContents.addEventListener(
+            "transitionend",
+            function() {
+                // get the value of the transform, apply that to the current scroll position (so get the scroll pos first) and then remove the transform
+                var styleOfTransform = window.getComputedStyle(pnProductNavContents, null);
+                var tr = styleOfTransform.getPropertyValue("-webkit-transform") || styleOfTransform.getPropertyValue("transform");
+                // If there is no transition we want to default to 0 and not null
+                var amount = Math.abs(parseInt(tr.split(",")[4]) || 0);
+                pnProductNavContents.style.transform = "none";
+                pnProductNavContents.classList.add("pn-ProductNav_Contents-no-transition");
+                // Now lets set the scroll position
+                if (SETTINGS.navBarTravelDirection === "left") {
+                    pnProductNav.scrollLeft = pnProductNav.scrollLeft - amount;
+                } else {
+                    pnProductNav.scrollLeft = pnProductNav.scrollLeft + amount;
+                }
+                SETTINGS.navBarTravelling = false;
+            },
+            false
+        );
+
+        // // Handle setting the currently active link
+        // pnProductNavContents.addEventListener("click", function(e) {
+        //     var links = [].slice.call(document.querySelectorAll(".pn-ProductNav_Link"));
+        //     links.forEach(function(item) {
+        //         item.setAttribute("aria-selected", "false");
+        //     })
+        //     e.target.setAttribute("aria-selected", "true");
+        //     // Pass the clicked item and it's colour to the move indicator function
+        //     moveIndicator(e.target, colours[links.indexOf(e.target)]);
+        // });
+
+        // var count = 0;
+        function moveIndicator(item, color) {
+            var textPosition = item.getBoundingClientRect();
+            var container = pnProductNavContents.getBoundingClientRect().left;
+            var distance = textPosition.left - container;
+             var scroll = pnProductNavContents.scrollLeft;
+            pnIndicator.style.transform = "translateX(" + (distance + scroll) + "px) scaleX(" + textPosition.width * 0.01 + ")";
+            // count = count += 100;
+            // pnIndicator.style.transform = "translateX(" + count + "px)";
+
+            if (color) {
+                pnIndicator.style.backgroundColor = color;
+            }
+        }
+
+        function determineOverflow(content, container) {
+            var containerMetrics = container.getBoundingClientRect();
+            var containerMetricsRight = Math.floor(containerMetrics.right);
+            var containerMetricsLeft = Math.floor(containerMetrics.left);
+            var contentMetrics = content.getBoundingClientRect();
+            var contentMetricsRight = Math.floor(contentMetrics.right);
+            var contentMetricsLeft = Math.floor(contentMetrics.left);
+             if (containerMetricsLeft > contentMetricsLeft && containerMetricsRight < contentMetricsRight) {
+                return "both";
+            } else if (contentMetricsLeft < containerMetricsLeft) {
+                return "left";
+            } else if (contentMetricsRight > containerMetricsRight) {
+                return "right";
+            } else {
+                return "none";
+            }
+        }
+
+        /**
+         * @fileoverview dragscroll - scroll area by dragging
+         * @version 0.0.8
+         *
+         * @license MIT, see http://github.com/asvd/dragscroll
+         * @copyright 2015 asvd <heliosframework@gmail.com>
+         */
+
+
+        (function (root, factory) {
+            if (typeof define === 'function' && define.amd) {
+                define(['exports'], factory);
+            } else if (typeof exports !== 'undefined') {
+                factory(exports);
+            } else {
+                factory((root.dragscroll = {}));
+            }
+        }(this, function (exports) {
+            var _window = window;
+            var _document = document;
+            var mousemove = 'mousemove';
+            var mouseup = 'mouseup';
+            var mousedown = 'mousedown';
+            var EventListener = 'EventListener';
+            var addEventListener = 'add'+EventListener;
+            var removeEventListener = 'remove'+EventListener;
+            var newScrollX, newScrollY;
+
+            var dragged = [];
+            var reset = function(i, el) {
+                for (i = 0; i < dragged.length;) {
+                    el = dragged[i++];
+                    el = el.container || el;
+                    el[removeEventListener](mousedown, el.md, 0);
+                    _window[removeEventListener](mouseup, el.mu, 0);
+                    _window[removeEventListener](mousemove, el.mm, 0);
+                }
+
+                // cloning into array since HTMLCollection is updated dynamically
+                dragged = [].slice.call(_document.getElementsByClassName('dragscroll'));
+                for (i = 0; i < dragged.length;) {
+                    (function(el, lastClientX, lastClientY, pushed, scroller, cont){
+                        (cont = el.container || el)[addEventListener](
+                            mousedown,
+                            cont.md = function(e) {
+                                if (!el.hasAttribute('nochilddrag') ||
+                                    _document.elementFromPoint(
+                                        e.pageX, e.pageY
+                                    ) == cont
+                                ) {
+                                    pushed = 1;
+                                    lastClientX = e.clientX;
+                                    lastClientY = e.clientY;
+
+                                    e.preventDefault();
+                                }
+                            }, 0
+                        );
+
+                        _window[addEventListener](
+                            mouseup, cont.mu = function() {pushed = 0;}, 0
+                        );
+
+                        _window[addEventListener](
+                            mousemove,
+                            cont.mm = function(e) {
+                                if (pushed) {
+                                    (scroller = el.scroller||el).scrollLeft -=
+                                        newScrollX = (- lastClientX + (lastClientX=e.clientX));
+                                    scroller.scrollTop -=
+                                        newScrollY = (- lastClientY + (lastClientY=e.clientY));
+                                    if (el == _document.body) {
+                                        (scroller = _document.documentElement).scrollLeft -= newScrollX;
+                                        scroller.scrollTop -= newScrollY;
+                                    }
+                                }
+                            }, 0
+                        );
+                     })(dragged[i++]);
+                }
+            }
+
+
+            if (_document.readyState == 'complete') {
+                reset();
+            } else {
+                _window[addEventListener]('load', reset, 0);
+            }
+
+            exports.reset = reset;
+        }));
+
+
+    </script>
+
+
+{% endblock  %}

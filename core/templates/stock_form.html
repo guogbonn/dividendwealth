@@ -1,0 +1,27 @@
+{%extends "base.html" %}
+
+{% block content  %}
+{%load crispy_forms_tags%}
+
+<!-- Default form login -->
+<section>
+  <div class="container">
+    <form class="text-center border border-light p-5" action="" method="post" enctype="multipart/form-data">
+
+        <p class="h4 mb-4">Stock Profile</p>
+        {%csrf_token %}
+        {{form|crispy}}
+
+
+
+        <!-- Sign in button -->
+        <button class="btn btn-info btn-block my-4" type="submit">Create Stock</button>
+
+
+
+
+    </form>
+  </div>
+</section>
+
+{% endblock %}

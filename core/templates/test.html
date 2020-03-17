@@ -1,0 +1,80 @@
+<script type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {<!--   w w w .j a  v  a 2s.  c  o  m-->
+    $("*", document.body).click(function(e) {
+      e.stopPropagation();
+      var domEl = $(this).get(0);
+      console.log(domEl)
+      // $("span:first").text("Clicked on - " + domEl.tagName);
+    });
+  });
+
+}
+
+
+// $( "#profile-tab-classic-shadow" ).mouseover(function() {
+//   $( "#log" ).append( "<div>Handler for .mouseover() called.</div>" );
+// });
+</script>
+
+
+
+
+
+
+var domEL;
+var x =1;
+$(document).ready(function() {
+
+
+  $("*", document.body).click(function(e) {
+    e.stopPropagation();
+
+console.log(x)
+      if (x==1) {
+
+
+    console.log("3jello")
+
+    var domEl = $(this).get(0);
+  //$(this).submit(e);
+    console.log(domEl.id)
+    var id = domEl.id;
+    post = document.getElementById("pills-home-tab")
+    groups = document.getElementById("pills-profile-tab")
+    rooms = document.getElementById("pills-contact-tab")
+    feed = document.getElementById("pills-home-tab")
+    if (id ==post) {
+      console.log("hello")
+      document.getElementById("pills-home-tab").click()
+}
+    if (id ==groups) {
+      document.getElementById("pills-profile-tab").click()
+    };
+    if (id ==rooms) {
+      document.getElementById("pills-contact-tab").click()
+    };
+    if (id ==feed) {
+      document.getElementById("pills-home-tab").click()
+    };
+    console.log(id);
+    var vab = $("#look").val(id);
+    console.log(vab);
+
+    myButton = document.getElementById("name");
+    console.log( myButton.value);
+    myButton.value = id;
+
+    console.log( myButton.value);
+
+}
+x=x+1
+if(x == 15){
+x=0
+
+}
+    // $("span:first").text("Clicked on - " + domEl.tagName);
+  });
+
+});

@@ -1,0 +1,738 @@
+{%extends "base.html" %}
+
+{% block content  %}
+{% load custom_tags %}
+
+<style type="text/css">
+
+  .button-overflow{
+    overflow: visible;
+  }
+  .button-boder-radius{
+    border-radius: .28571429rem;
+  }
+
+  .cancela,.cancela:link,.cancela:visited,.cancela:hover,.cancela:focus,.cancela:active{
+    color: inherit;
+    text-decoration: none;
+}
+.tag-overflow {
+
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tag-overflow::-webkit-scrollbar {
+    display: none;
+  }
+button:hover {
+  transform: translateY(-1px);
+}
+
+.modal-radius{
+  border-radius: .28571429rem  !important;
+}
+
+.inputfile {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+.payment, .payment:hover{
+  background-color: #111111 !important;
+  color: #fff;
+}
+
+.payment-list{
+    width: 100%;
+    min-height: 250px;
+    background: #edf3f7;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.payment-list h1 {
+    color: #525f7f;
+    font-size: 24px;
+    font-weight: 400;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+ .payment-list h2 {
+    color: #8898aa;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+}
+.keep-text-on-one-line{
+  white-space:nowrap;
+}
+    </style>
+    {% load staticfiles %}
+
+<div class="container pb-5">
+
+  <div class="animated wow fadeIn">
+
+  <h1 class="pt-5">Dividend Wealth Account</h1>
+
+  <hr>
+  {% if hide_cancel_subscription == "false" %}
+
+  <h2>Subscription Details</h2>
+    {%else%}
+    <h2>Plan Details</h2>
+
+    {%endif%}
+
+
+    <div class="d-flex justify-content-start my-2">
+        {% if current_user_membership != "Free" %}
+        <h3 class="pt-2">{{current_user_membership}}</h3>
+        {%else%}
+        <h3 class="pt-2">Freemium</h3>
+        {%endif%}
+
+        {% if current_user_membership != "Lifetime" %}
+        <div class="">
+          <a href="{%url 'core:membership_choice'%}"  class=" btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light ml-3
+           px-3 py-2  hoverable">change</a>
+
+
+        </div>
+        {%endif%}
+    </div>
+{% if hide_cancel_subscription == "false" %}
+        <div class="">
+          <p> <strong>Current Payment Period:</strong> </p>
+          <p>   {{current_period_start}} to {{current_period_end}}</p>
+          <p>Amount:</p>
+          <p>${{ammount}}/month</p>
+        </div>
+  {%else%}
+        <p> <strong>Started:</strong> </p>
+        <p>  {{sub_model.sub_date}}</p>
+    {%endif%}
+    <div class="row animated wow my-2">
+{%if user_cards%}
+      <!--Grid column-->
+      <div class="col-lg-6 col-md-6 mb-4">
+        <div class="d-flex justify-content-center">
+          <h3 class="my-2">Card List</h3>
+          <button id="save_default_card_button" style="display:none"  onclick="load_new_default_card_form(this)" card_id="" class="payment btn btn-sm button-boder-radius button-overflow waves-effect waves-light mx-3 px-2 py-2  hoverable"  >Save New Default Card </button>
+
+        </div>
+
+            <div class="card text-center">
+
+              <!-- Card header -->
+        <div class="card-body pb-0">
+            <div class="row mb-1">
+                        <div class="col-4 tag-overflow">
+                          <h5 class="">Your Cards</h5>
+
+                        </div>
+
+                        <div class="col-4 tag-overflow">
+                          <h5 class="">Name on Card</h5>
+
+                        </div>
+
+                        <div class="col-4 tag-overflow">
+                          <h5 class=""> Expires</h5>
+                        </div>
+                </div>
+        </div>
+
+                      <hr class="my-0">
+              <!--Card content-->
+              <div class="card-body ">
+
+                <form class="" action="index.html" method="post">
+                  <input hidden type="text" id="new_default_card"name="" value="">
+                </form>
+{%for card in user_cards%}
+
+
+                <div
+                {% for key, value in card.items %}
+                {%if key == "id"%}
+                  id="{{value}}%row"
+                    {%endif%}
+                {% endfor %}
+                class="row hoverable pb-2 pt-3 rounded">
+                  <!-- make hoverable to let user know to slide -->
+                <div class="col-4 tag-overflow">
+                  <div class="form-check">
+                      <input type="radio" class="form-check-input"
+
+
+                                {% for key, value in card.items %}
+                                {%if key == "id"%}
+                                  id="{{value}}"
+                                    {%endif%}
+                                {% endfor %}
+
+                                {% for key, value in card.items %}
+                                {%if key == "default"%}
+                                    {%if value == "true"%}
+                                            onclick="clear_default_card_save_button()"
+                                            checked
+                                            {%else%}
+                                          onclick="show_save_default_card_button(this)"
+                                      {%endif%}
+                                    {%endif%}
+                                {% endfor %}
+                       name="groupOfMaterialRadios">
+                      <label class="form-check-label"
+                      {% for key, value in card.items %}
+                        {%if key == "id"%}
+                          for="{{ value }}"
+                            {%endif%}
+                        {% endfor %}>
+                        <div class="d-flex justify-content-start">
+
+                          {% for key, value in card.items %}
+                            {%if key == "brand"%}
+
+                              {%if value == "Visa"%}
+                                <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'visa-pay-logo.svg' %}" />
+                                {%elif  value == "MasterCard" %}
+                                <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'mastercard.svg' %}" />
+                                {%elif  value == "Discover" %}
+                                <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'discover.svg' %}" />
+                                {%elif  value == "American Express" %}
+                                <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'american-express-logo.svg' %}" />
+                                {%else%}
+                                <img  class="pb-2 pr-1"  width="30" height="30" src="{% static 'visa-pay-logo.svg' %}" />
+
+                                {%endif%}
+                              {%endif%}
+                            {% endfor %}
+                            <div class="pt-1">
+                              <div class="d-flex justify-content-start">
+                                    <p class="pr-1" >
+
+                                      {% for key, value in card.items %}
+                                        {%if key == "brand"%}
+                                          {{ value }}:
+                                            {%endif%}
+                                        {% endfor %}
+
+                                     </p>
+                                    {% for key, value in card.items %}
+                                    {%if key == "last4"%}
+                                        <p class="">****{{ value }}</p>
+                                        {%endif%}
+                                    {% endfor %}
+
+                              </div>
+                            </div>
+                        </div>
+                      </label>
+                  </div>
+                </div>
+
+              <div class="col-4 tag-overflow">
+                {% for key, value in card.items %}
+                {%if key == "name"%}
+                    <p class="pt-1">{{ value }}</p>
+                    {%endif%}
+                {% endfor %}
+              </div>
+
+              <div class="col-4 tag-overflow">
+                <div class="d-flex justify-content-center">
+
+                <p class="pt-1">
+                {% for key, value in card.items %}
+                {%if key == "exp_month"%}
+                    {{ value }}/
+                    {%endif%}
+                {% endfor %}
+                {% for key, value in card.items %}
+                {%if key == "exp_year"%}{{ value }}{%endif%}
+                {% endfor %}
+              </p>
+              <a onclick="populate_delete_card_modal(this)"
+
+              {% for key, value in card.items %}
+              {%if key == "id"%}
+                row_id="{{value}}%row"
+                  {%endif%}
+              {% endfor %}
+              class="pt-1 pl-1 text-danger deep-orange-lighter-hover text-muted cancela" data-toggle="modal" data-target="#delete_card_modal"> <small>Delete</small></a>
+              </div>
+              </div>
+                </div>
+
+                {%endfor%}
+              </div>
+        </div>
+</div>
+{%endif%}
+<!--Grid column-->
+{% if paid_subscriptions == "true"%}
+<div class="col-lg-6 col-md-6 mb-4">
+  <div class="d-flex justify-content-center">
+    <h3 class="my-2">Group Subscriptions</h3>
+  </div>
+  <div class="card text-center">
+
+    <!-- Card header -->
+<div class="card-body pb-0">
+  <div class="row mb-1">
+              <div class="col-4 tag-overflow">
+                <h5 class="">Group Name</h5>
+              </div>
+
+              <div class="col-4 tag-overflow">
+                <h5 class="">Subscription Fee</h5>
+              </div>
+
+              <div class="col-4 tag-overflow">
+                <h5 class=""> Date Due</h5>
+              </div>
+      </div>
+</div>
+
+            <hr class="my-0">
+    <!--Card content-->
+    <div class="card-body ">
+      {%for group in group_user_suscribed%}
+      <div class="row hoverable pb-2 pt-3 rounded">
+        <!-- make hoverable to let user know to slide -->
+      <div class="col-4 tag-overflow">
+
+            <p>{{group.group.title|title}}</p>
+
+      </div>
+
+    <div class="col-4 tag-overflow">
+      <p class="pt-1">${{group.price|price_convert}}</p>
+
+    </div>
+
+    <div class="col-4 tag-overflow">
+      <div class="d-flex justify-content-center">
+
+      <p class="pt-1 mr-1 pl-5">{{group.next_payment|date:"m/d/Y"}}</p>
+      <a class="pt-1 text-danger deep-orange-lighter-hover text-muted cancela" data-toggle="modal" data-target=""> <small>Unsuscribe</small></a>
+    </div>
+
+    </div>
+      </div>
+      {%endfor%}
+    </div>
+</div>
+
+</div>
+{%endif%}
+</div>
+{% if hide_cancel_subscription == "false" %}
+    <p class="mt-5 note note-success">Your plan will be automatically renewed on {{current_period_end}}. It will be charged as one payment of (${{ammount}}).</p>
+  {%endif%}
+    <hr>
+    {%if connected_acount == "false"%}
+    <button id="company_individual_choice_button" data-toggle="modal" data-target="#indiviual_company_modal"  class="payment btn btn-sm button-boder-radius button-overflow waves-effect waves-light mx-3 px-2 py-2  hoverable"  >$ Connect to Stripe </button>
+    {%else%}
+    <h2>Payments Dashboard</h2>
+
+    <div class="d-flex justify-content-between">
+          <div class="">
+          <p>Connected Since {{connected_payments}}</p>
+          <p>{{full_name}}</p>
+          <a  href="{{connected_login_url}}" class="payment btn btn-sm button-boder-radius button-overflow waves-effect waves-light  px-3 py-2 ml-0  hoverable"  >Login to Stripe</a>
+      </div>
+      <div class="">
+          <div class="d-flex justify-content-start">
+              <div class="mx-2 text-center">
+                  <p>This Week</p>
+                  <h3>$ {{payment_last_week|price_convert}}</h3>
+                  <p>Sales {{payment_num_last_week}}</p>
+              </div>
+
+              <div class="text-center">
+                  <p>Total Sales</p>
+                  <h3>$ {{payment_all_time|price_convert}}</h3>
+                  <p>Sales {{payment_num_all_time}}</p>
+              </div>
+          </div>
+      </div>
+</div>
+
+    <h3 class="mt-3">Recent Payments</h3>
+    {%if user_has_payments == "true"%}
+<div class=" card">
+
+
+    <div class="row mb-1 card-body">
+                <div class="col-3 tag-overflow">
+                  <h5 class="">Amount</h5>
+
+                </div>
+
+                <div class="col-3 pl-0 pr-0 tag-overflow">
+                  <h5 class="">Description</h5>
+
+                </div>
+
+                <div class="col-3 tag-overflow pr-0 ">
+                  <h5 class=""> Customer</h5>
+                </div>
+
+                <div class="col-3 tag-overflow">
+                  <h5 class=""> Date</h5>
+                </div>
+
+        </div>
+        <hr class="my-0">
+        <div class="card-body pt-0">
+          {%for payment in user_has_payments_list%}
+
+
+        <div class="row hoverable pb-2 pt-3 rounded">
+                            <!-- make hoverable to let user know to slide -->
+                                <div class="col-3 tag-overflow">
+                                  <p>${{payment.price|price_convert}}</p>
+                                </div>
+
+                              <div class="col-3 pl-0 pr-0 tag-overflow">
+                                <p >{{payment.description}} </p>
+                              </div>
+
+                              <div class="col-3 tag-overflow">
+                                <a class="keep-text-on-one-line">{{payment.person_paying.user.username}}</a>
+                              </div>
+
+                              <div class="col-3 tag-overflow">
+                                <p>{{payment.charge_date}}</p>
+                              </div>
+
+                          </div>
+                    {%endfor%}
+        </div>
+
+            </div>
+          {%else%}
+            <div class="payment-list">
+              <h1>No payments!</h1>
+              <h2>Let's create a group</h2>
+            </div>
+{%endif%}
+
+    {%endif%}
+<hr>
+
+    {% if hide_cancel_subscription == "false" %}
+    <div class="">
+      <a class="text-danger deep-orange-lighter-hover text-muted cancela" data-toggle="modal" data-target="#Cancel_Subscription">Cancel Subcription</a>
+    <p  >If you wish to discontinue Dividend Wealth Premium features, you can cancel anytime.</p>
+    </div>
+    {%endif%}
+</div>
+
+
+
+  <div class="modal fade" id="Cancel_Subscription" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button id="Cancel_Subscription_button"  type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+                <div class="text-center">
+                  <h3>Are you sure you want to cancel your subscription?</h3>
+                  <p>You will lose all these premium features and will be downgraded to free account at the end of the current billing cycle.</p>
+                  <button onclick="close_cancel_subscription()" class=" btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light ml-3  hoverable">Never Mind</button>
+                  <button onclick="cancel_subscription()" class=" btn btn-danger btn-sm button-boder-radius button-overflow waves-effect waves-light ml-3  hoverable">Cancel Membership</button>
+                </div>
+
+                <form id="payment-form" class="" action="{%url 'core:user_account' username=current_user_username%}" method="post">
+                      {%csrf_token%}
+                      <input type="hidden" id="cancel_subscription_input" name="cancel_user_subscription" value="">
+                  </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="delete_card_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content modal-radius">
+        <div class="modal-header">
+          <button id="Cancel_delete_card_modal_button"  type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+                <div class="text-center">
+                  <h3>Are you sure you want to delete this card?</h3>
+                  <button onclick="close_delete_card_modal()" class=" btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light ml-3  hoverable">Never Mind</button>
+                  <button id="delete_card_modal_button" onclick="delete_card(this)" row_id="" class=" btn btn-danger btn-sm button-boder-radius button-overflow waves-effect waves-light ml-3  hoverable">Delete Card</button>
+                </div>
+
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="indiviual_company_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content modal-radius">
+        <div class="modal-header">
+          <button id="indiviual_company_modal_button"  type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div  class="modal-body">
+
+          <div id="choice_body_inividual_company" class="d-flex justify-content-center my-2">
+
+          </div>
+
+                <div id="choice_feild_individual_company" class="text-center">
+                  <h3>Do you want to collect payments as an Individual or as a Company?</h3>
+                  <button onclick="individual_company_choice(this)" choice="individual" class=" btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light ml-3  hoverable">Individual</button>
+                  <button  onclick="individual_company_choice(this)" choice="company" class=" btn btn-info btn-sm button-boder-radius button-overflow waves-effect waves-light ml-3  hoverable">Company</button>
+                </div>
+
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- hiddin spinner -->
+<div class="modal fade " id="" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content  modal-radius">
+      <div class="modal-header  modal-radius">
+        <div class="d-flex justify-content-center"></div>
+        <button id=""  type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body  modal-radius">
+        <!-- Hidding Spinnere Element -->
+                      <div id="form_spinner" class="preloader-wrapper big active">
+                            <div class="spinner-layer spinner-blue-only">
+                              <div class="circle-clipper left">
+                                <div class="circle"></div>
+                              </div>
+                              <div class="gap-patch">
+                                <div class="circle"></div>
+                              </div>
+                              <div class="circle-clipper right">
+                                <div class="circle"></div>
+                              </div>
+                            </div>
+                      </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- hiddin spinner -->
+
+<form  id="delete_card_form" class=""   method="post">
+  {%csrf_token%}
+<input id="delete_card_input" type="hidden" name="delete_card" value="">
+<button id="delete_card_form_button" type="submit" class="inputfile" name="button"></button>
+</form>
+
+<form id="new_default_card_form"  method="post">
+  {%csrf_token%}
+<input id="new_default_card_input" type="hidden" name="new_default_card_input" value="">
+<button id="new_default_card_form_button" type="submit" class="inputfile" name="button"></button>
+</form>
+
+<form id="indiviual_company_form"  method="post">
+  {%csrf_token%}
+<input id="individual_or_company_choice" type="hidden" name="individual_or_company_choice" value="">
+<button id="individual_or_company_form_button" type="submit" class="inputfile" name="button"></button>
+</form>
+<script type="text/javascript">
+  card_id = "{{default_card_id}}"
+
+//Section below handels deleting card
+  function close_delete_card_modal() {
+    $('#Cancel_delete_card_modal_button').click()
+  }
+
+  function populate_delete_card_modal(element) {
+    document.getElementById("delete_card_modal_button").attributes["row_id"].value=element.attributes["row_id"].value
+  }
+
+  function delete_card(element) {
+    // get the row of the card to delete
+    //remove it from the ui
+    close_delete_card_modal()
+    card_row_id=element.attributes["row_id"].value
+    pend_delete_card=document.getElementById(card_row_id)
+    pend_delete_card.parentNode.removeChild(pend_delete_card);
+
+    // get the card id and load it into to the form
+    card_id = card_row_id.split("%");
+    document.getElementById('delete_card_input').value = card_id[0]
+    document.getElementById("delete_card_form_button").click()
+  }
+  //send form for processing
+  $("form#delete_card_form").submit(function(e) {
+e.preventDefault();
+var formData = new FormData(this);
+
+$.ajax({
+    url:"{%url 'core:user_account' username=current_user_username%}",
+    type: 'POST',
+    data: formData,
+    success: function (data) {
+      //show alert saying card is deleted
+
+      if (data["message"] != "null") {
+        // click on the new default source
+        if (data["message"] == "null default") {
+          //hide change default_card button, empty card list
+          document.getElementById('save_default_card_button').style.display="none"
+        }else {
+          // click new default card
+          document.getElementById(data["message"]).click()
+        }
+      }
+    },
+    cache: false,
+    contentType: false,
+    processData: false
+});
+});
+
+//Section above handels deleting card
+/////////////////////////////////////////////////////////////////////
+// Section handels changing default card
+function clear_default_card_save_button() {
+    //remove button
+    document.getElementById('save_default_card_button').style.display="none"
+
+}
+
+function show_save_default_card_button(element) {
+  //show button
+  document.getElementById('save_default_card_button').style.display="inline"
+    //change button attribue to the card id picked
+    document.getElementById("save_default_card_button").attributes["card_id"].value = element.id
+
+}
+
+function load_new_default_card_form(element) {
+  //get card id from button and send it to server
+    document.getElementById('new_default_card_input').value=element.attributes["card_id"].value
+    $('#new_default_card_form_button').click()
+}
+
+//send form for processing
+$("form#new_default_card_form").submit(function(e) {
+e.preventDefault();
+var formData = new FormData(this);
+
+$.ajax({
+  url:"{%url 'core:user_account' username=current_user_username%}",
+  type: 'POST',
+  data: formData,
+  success: function (data) {
+    //hide change default_card button, empty card list
+    document.getElementById('save_default_card_button').style.display="none"
+    //show alert saying card is deleted
+    alert(data["message"])
+  },
+  cache: false,
+  contentType: false,
+  processData: false
+});
+});
+
+// Section above handels changing default card
+/////////////////////////////////////////////////////////////////////
+// Section below handels sending individual or comany choice to the server
+function individual_company_choice(element) {
+  document.getElementById('individual_or_company_choice').value = element.attributes["choice"].value
+  $('#individual_or_company_form_button').click()
+}
+
+//send form for processing
+$("form#indiviual_company_form").submit(function(e) {
+e.preventDefault();
+var formData = new FormData(this);
+// remove choice feild
+document.getElementById('choice_feild_individual_company').style.display= "none"
+// load a spinner
+
+//clone the spinner
+clone = document.getElementById('form_spinner')
+clone = clone.cloneNode(true);
+clone.id = "spinner_clone";
+try {
+  body =document.getElementById('choice_body_inividual_company')
+  body.appendChild(clone);
+}catch (e){
+  sdx=2
+}
+$.ajax({
+  url:"{%url 'core:user_account' username=current_user_username%}",
+  type: 'POST',
+  data: formData,
+  success: function (data) {
+    //close modal
+    document.getElementById('indiviual_company_modal_button').click()
+    //get rid of stripe button
+    document.getElementById('company_individual_choice_button').style.display = "none"
+
+    console.log()
+    //redirect
+    str = "http://192.168.0.46:24/"
+    str = str.slice(0, -1);
+    destination = "https://connect.stripe.com/express/oauth/authorize?"+ "redirect_uri="+str
+    client_id = "&client_id="+data["client_id"] //testing id
+    state = "&state={STATE_VALUE}"
+    email="&stripe_user[email]="+data["email"]
+    capabilities = "&suggested_capabilities[]=transfers"
+    buisness_type="&stripe_user[business_type]="+ data["message"]
+    url = destination+client_id+state+email+capabilities+buisness_type
+    // console.log(url)
+      window.location.href = url;
+  },
+  cache: false,
+  contentType: false,
+  processData: false
+});
+});
+
+/////////////////////////////////////////////////////////////////////
+  document.addEventListener("DOMContentLoaded", function(event) {});
+
+function cancel_subscription() {
+  // Insert the token ID into the form so it gets submitted to the server
+  var form = document.getElementById('payment-form');
+  document.getElementById('cancel_subscription_input').value = 'true'
+  document.getElementById('payment-form').submit();
+}
+
+function close_cancel_subscription() {
+  document.getElementById('Cancel_Subscription_button').click()
+}
+</script>
+
+{%endblock%}
