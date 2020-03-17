@@ -990,9 +990,13 @@ class Feed(generic.TemplateView):
         context['financial_roles'] = FinancialRole.objects.all() #filter for active finacial roles
         # keep track of how often the fincal role is searched
 
+        # Section is for Stocks
+        stocks=Stocks.objects.all()
+        context['stocks'] = stocks
 
-
-
+        if self.request.user.is_authenticated:
+            user_owned_stocks= user.stock.all()
+            context['user_owned_stocks'] = user_owned_stocks
         return context
 
             #handeling post

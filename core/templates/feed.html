@@ -401,6 +401,33 @@ position: relative;
       height:160px;
         object-fit:cover;
     }
+
+    .tag-overflow {
+
+        overflow-x: scroll;
+        -webkit-overflow-scrolling: touch;
+      }
+      .tag-overflow::-webkit-scrollbar {
+        display: none;
+      }
+      .stock-info-metrics{
+        height:150px;
+        overflow-y: scroll;
+          -webkit-overflow-scrolling: touch;
+      }
+      .stock-info-metrics::-webkit-scrollbar {
+        display: none;
+      }
+      .md-pills .nav-link.active, .md-pills .show>.nav-link {
+          background-color: #3ad2a8 !important;
+          box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+          border-radius: .28571429rem;
+      }
+      .button-overflow{
+        overflow: visible;
+      }
+
+
 </style>
 
 <!-- turn of other blue outline elements of bootstrap4
@@ -892,7 +919,196 @@ label:focus,
               </div>
 
             </div>
-            <div class="tab-pane fade" id="pills-feed" role="tabpanel" aria-labelledby="pills-contact-tab">.w..
+            <div class="tab-pane fade" id="pills-feed" role="tabpanel" aria-labelledby="pills-contact-tab">
+
+                        <div class="row mx-0 my-0">
+                          {%for stock in stocks%}
+                          <!-- stocks -->
+                          <div class=" col-md-4 mt-1 mb-2 col-sm-12 col-12 mx-0 px-1 ">
+                            <div class="mx-2 my-2" id="watchlist_stock_{{stock.pk}}">
+                            <!-- Card -->
+                            <div  class="card chart-card hoverable card-spacing stock-card" >
+                              <!-- Card content -->
+                              <div class="card-body pb-0" >
+                                <!-- Title -->
+                                <a class="card-title font-weight-bold cancela" href= "{{stock.get_absolute_url}}">
+                                  <h4 class="card-title font-weight-bold " >{{stock.company_name}}</h4>
+                                </a>
+
+                                <!-- Text -->
+                                <p class="card-text mb-4">   <br> NYSE: {{stock.ticker}}  • updated- Oct 16, 1:45PM</p>
+                                <div class="d-flex justify-content-between">
+                                  <p class="display-4 align-self-end">${{stock.price}}</p>
+                                </div>
+                              </div>
+                              <!-- Classic tabs -->
+                              <div class="">
+                                <!-- Nav tabs -->
+                                <ul class="nav md-pills nav-justified stock-pill  pills-rounded" role="tablist">
+                                  <li class="nav-item ml-0">
+                                    <a class="nav-link waves-light active" data-toggle="tab" href="#{{stock.slug}}panel1001{{stock.pk}}" role="tab">Stock Profile</a>
+                                  </li>
+                                  <li class="nav-item">
+                                    <a class=" nav-link waves-light " data-toggle="tab" href="#{{stock.slug}}panel1002{{stock.pk}}" onclick="load_stock_post(this)" element_to_store_post="stock_container_post_list{{stock.slug}}{{stock.pk}}" slug="{{stock.slug}}" role="tab">Stock Feed</a>
+                                  </li>
+                                  <li class="nav-item">
+                                    <a class="nav-link  waves-light " data-toggle="tab" href="#{{stock.slug}}panel1003{{stock.pk}}" role="tab">Company Profile</a>
+                                  </li>
+                                </ul>
+                                <div class="tab-content rounded-bottom pt-0">
+                                  <!--Panel 1-->
+                                  <!-- Put a table here listing stock data -->
+                                  <div class="tab-pane fade in show active" id="{{stock.slug}}panel1001{{stock.pk}}" role="tabpanel">
+                            <div class="container stock-info-metrics table-responsive">
+                                    <table class="table table-hover">
+                              <tbody>
+                                <tr>
+                                  <th scope="row">Dividend:</th>
+                                  <td>{{stock.dividend_yeild}}%</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Payout Months:</th>
+                                  <td>{{stock.get_months_display }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            </div>
+                                  </div>
+                                  <!--/.Panel 1-->
+                                  <!--Panel 2-->
+                                  <!-- for loop showing blogs with apple as topic -->
+                                  <div class="tab-pane fade" id="{{stock.slug}}panel1002{{stock.pk}}" role="tabpanel">
+                                    <div class="container">
+                                      <a href="{{stock.get_absolute_url}}" class="fluid ui button mb-2">Post</a>
+                                    </div>
+                                    <!-- Post -->
+                                    <div class="container stock-info-metrics">
+              <!-- Stock feed -->
+                                      <div id="stock_container_post_list{{stock.slug}}{{stock.pk}}" >
+                                        <!-- cut below -->
+                                      {%for object in stock.post_set.all|sort_by:'-published'|slice:":5"%}
+
+              <div id="Poststock{{object.pk}}"class="loaded-post">
+
+              <div class="mb-1 media list-group-item-action rounded border border-light my-1 container-fluid for-loop-id-post"  id="headingOnePoststock{{object.pk}}">
+              <div class="ml-0 col-12 px-0">
+              <div class="media-body my-3 mx-0">
+              <div class="d-flex justify-content-between mb-2">
+              <span>
+              <div class="d-flex justify-content-start">
+              <span>
+              <div class="">
+              <a href="{{object.get_absolute_url}}" class="cancela">
+              {%load static%}
+              {%if object.author.profile_pic%}
+              <img class="ui fluid avatar image  mr-0" src="{{object.author.profile_pic.url}}" >
+              {%else%}
+              <img class="ui fluid avatar image  mr-0"  src="{{default_profile_pic_url}}" >
+              {%endif%}
+              </a>
+              </div>
+              </span>
+              <span>
+              <div class="d-flex justify-content-start ml-1">
+              <span>  <p>@{{object.author.user|safe}}</p></span>
+              {% if object.post_comment.all%}
+
+              {%else%}
+              <span>  <a  style ="display:none" class="cancela post_dropdown_icon{{object.pk}}" data-toggle="collapse" data-target="#collapseOne{{object.pk}}" aria-expanded="false" aria-controls="collapseOne{{object.pk}}">
+              <i class="angle down icon"></i>
+              </a>
+              </span>
+              {%endif%}
+              </div>
+              </span>
+              </div>
+              </span>
+              <span class="text-right text-muted"><div class="d-flex justify-content-end"><p>{{object.published|timesince|upto:','}}</p>  <p>  - </p>  <i id="grouppost{{object.pk}}"class="eye icon"></i> </div>   </span>
+              </div>
+              <div class="d-flex justify-content-start tag-overflow">
+              {%for stock in object.stocks.all%}
+              <a href="{{stock.get_absolute_url}}" class="my-1 cancela">
+              <div class="ui small label mr-2 my-1">
+              <div class="media-body">
+              <p>{{stock.ticker|safe}}</p>
+              </div>
+              </div>
+              </a>
+              {%endfor%}
+              </div>
+              <a href="{{object.get_absolute_url}}" class="cancela">
+              <div class="my-1 post-words text-left container" id="container"> <p>{{object.description|safe}}</p></div>
+              </a>
+              <div class="post_pictures col-12">
+              <div class="d-flex justify-content-center">
+              {%for pic in object.postpicture_set.all%}
+              {% if forloop.counter < 3 %}
+              <img  id="post_pic_{{pic.pk}}" class="ui small rounded image my-2 mx-1  hoverable" data-toggle="modal" data-target="#picture_modal_screen" src="{{pic.post_picture.url}}" alt="" data-toggle="modal" data-target="#picture_modal_screen" onclick="blow_up_image(this)">
+              {%endif%}
+              {%endfor%}
+              </div>
+              <div class="d-flex justify-content-center">
+              {%for pic in object.postpicture_set.all%}
+              {% if forloop.counter > 2 %}
+              <img id="post_pic_{{pic.pk}}" class="ui small rounded image my-2 mx-1 hoverable" data-toggle="modal" data-target="#picture_modal_screen" src="{{pic.post_picture.url}}" alt="" data-toggle="modal" data-target="#picture_modal_screen" onclick="blow_up_image(this)">
+              {%endif%}
+              {%endfor%}
+              </div>
+              </div>
+              <a href="{{object.get_absolute_url}}" class="cancela"></a>
+              <div class="d-flex justify-content-start tag-overflow">
+              {%for user in object.recipients.all%}
+              <a href="{{stock.get_absolute_url}}" class="my-1 cancela">
+              <div class="ui small label mr-2 my-1">
+              <div class="media-body">
+              <p>@{{user.user|safe}}</p>
+              </div>
+              </div>
+              </a>
+              {%endfor%}
+              </div>
+              </div>
+              </div>
+              </div>
+              </div>
+
+              {%endfor%}
+              <!--cut above  -->
+              </div>
+                          <!-- Stock feed -->
+                                    </div>
+                                  </div>
+                                  <div class="tab-pane fade" id="{{stock.slug}}panel1003{{stock.pk}}" role="tabpanel">
+                                    <div class="container stock-info-metrics">
+                                      <img class="img-fluid z-depth-1 rounded mb-3" alt="sample image" src="https://mdbootstrap.com/img/Photos/Others/intro1.jpg">
+                                      <p align="justify" class="font-small text-muted mx-1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil odit magnam minima, soluta doloribus reiciendis molestiae placeat unde eos molestias. Quisquam aperiam, pariatur. Tempora, placeat ratione porro voluptate odit minima at ipsum sit amet.</p>
+                                    </div>
+                                  </div>
+                                  <!--/.Panel 3-->
+                                </div>
+                              </div>
+                            {% if user_authenticated == "true"%}
+                                  {%if stock in user_owned_stocks%}
+                                     <div class="d-flex justify-content-center align-items-stretch">
+                                  <a role="button" class="btn button-overflow btn-outline-info waves-effect btn-sm my-2 button-boder-radius mr-0" stock_slug="{{stock.slug}}" onclick="update_portfolio_share(this)" data-dismiss="modal">Update your Shares</a>
+                                  <a role="button" class="btn button-overflow btn-outline-danger waves-effect btn-sm  my-2 button-boder-radius" option="remove" stock_ticker="{{stock.slug}}" onclick="add_or_remove_stock_from_portfolio(this)" data-dismiss="modal">Remove from Portfolio</a>
+                                  <a role="button" class="btn button-overflow btn-outline-info waves-effect btn-sm  my-2 button-boder-radius ml-0" stock_slug="{{stock.slug}}" onclick="add_stock_to_watchlist(this)"  data-dismiss="modal">Add to Watchlist</a>
+                                </div>
+
+                                {%else%}
+                                <div class="d-flex justify-content-between align-items-stretch">
+                                <a role="button" class="btn button-overflow btn-outline-info waves-effect btn-sm  my-2 button-boder-radius" option="add" stock_ticker="{{stock.slug}}" onclick="add_or_remove_stock_from_portfolio(this)"  data-dismiss="modal">Add to Portfolio</a>
+                                <a role="button" class="btn button-overflow btn-outline-info waves-effect btn-sm  my-2 button-boder-radius" stock_slug="{{stock.slug}}" onclick="add_stock_to_watchlist(this)" data-dismiss="modal">Add to Watchlist</a>
+                                </div>
+                                  {%endif%}
+                                  {%endif%}
+                            </div>
+                            </div>
+                          </div>
+
+                          {%endfor%}
+                        </div>
+
 
 
             </div>
@@ -910,9 +1126,7 @@ label:focus,
 </blockquote>
               </div>
             </div>
-<div class="">
 
-</div>
         <!-- Categories Widget -->
             <div class="card my-4">
           <div class="card-header "><div class="d-flex justify-content-end"><p>Featured Members</p></div></div>
