@@ -5,11 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-
-
-
-
-
       <!-- Font Awesome -->
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
       <!-- Bootstrap core CSS -->
@@ -38,18 +33,13 @@
     src="https://code.jquery.com/jquery-1.12.4.min.js"
     integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
     crossorigin="anonymous"></script> -->
-
-
       <style type="text/css">
-
-
       .button-boder-radius{
         border-radius: .28571429rem;
       }
       #button-line-height{
         line-height: 2;
       }
-
       .nav-scroller {
         height:400px;
         overflow-y: scroll;
@@ -58,27 +48,18 @@
       .nav-scroller::-webkit-scrollbar {
         display: none;
       }
-
       #bootstrap-overrides a:focus,#bootstrap-overrides a:hover, #bootstrap-overrides a   { /* 100+1=101 priority score, yay! */
         line-height: 2;
         color: inherit !important;
         text-decoration: none  !important;
       }
-
       .black-text, .md-toast-close-button:focus, .md-toast-close-button:hover {
     color: #e7e7e7!important;
 }
-
-
       </style>
-
-
 </head>
 <body class="fixed-sn black-skin">
-
-
-
-
+  {% block zoom_body %}
   <!--Double navigation-->
   <!-- SideNav slide-out button -->
 <div class="mb-5">
@@ -108,46 +89,30 @@
       <!-- Side navigation links -->
 <li>
         <ul class="collapsible collapsible-accordion button-line-height nav-scroller">
-
             <li >
               <div id="bootstrap-overrides" >
                 <a href="{%url 'core:membership_choice'%}"   class="cancela btn btn-primary btn-sm button-boder-radius button-line-height waves-effect waves-light hoverable">Wealth Partner</a>
               </div>
             </li>
-
               {% if request.user.is_authenticated%}
               <li>
                 <a href="{% url 'core:user_dashboard'%}" class="waves-effect arrow-r">
                     <i class="fas fa-chart-pie mr-3"></i>Dashboard</a>
               </li>
-
           {%endif%}
-
-             <li>  <a href="#" class="waves-effect arrow-r">
-                 <i class="fas fa-table mr-3"></i>Monthly Dividend Generator</a>
-            </li>
-
          <li><a href="{% url 'core:feed' %}" class="waves-effect arrow-r">
            <i class="fas fa-map mr-3"></i>Discover</a></li>
-
-
         </ul>
       </li>
-
       <!--/. Side navigation links -->
     </ul>
     <div class="sidenav-bg mask-strong"></div>
   </div>
   <!--/. Sidebar navigation -->
-
   <!-- Navbar -->
-
   <nav class="navbar fixed-top navbar-toggleable-md navbar-expand-sm scrolling-navbar double-nav">
     <!-- SideNav slide-out button -->
-
       <button href="#" style="display:inline"  data-activates="slide-out" class="visible-lg button-collapse black-text navbar-toggler"><i class="fas fa-bars"></i></button>
-
-
     <!-- Breadcrumb-->
     <div class="mr-auto">
       <p>Dividend Wealth</p>
@@ -155,42 +120,42 @@
     <!-- <a href="#" data-activates="slide-out" class="btn  black-text button-collapse mt-5"><i
         class="fas fa-bars"></i></a> -->
     <ul class="nav navbar-nav nav-flex-icons ml-auto">
-
-
       {% if request.user.is_authenticated%}
       <li class="nav-item">
           <span class="clearfix d-none d-sm-inline-block">
             <a href="{%url 'core:membership_choice'%}" class="btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light hoverable">Wealth Partner</a>
           </span>
-
       </li>
       <li class="nav-item" data-toggle="modal" data-target="#Dividend_Wealth_Notification">
         <a class="nav-link waves-effect">
           {% block notification_bell%}
           {%endblock notification_bell%}
           <i class="bell outline icon"></i>
-
         </a>
       </li>
-
       <li class="nav-item">
-        <a class="nav-link" href="{%url 'core:user_account' username=request.user.username %}"><i class="fas fa-user"></i></a>
+        <a class="nav-link pl-0" href="{%url 'core:user_account' username=request.user.username %}"><i class="fas fa-user"></i></a>
       </li>
       <!-- allaut tags to login and out -->
-      <li class="nav-item" style="display:inline">
-        <a class="nav-link waves-effect" href="{%url 'account_logout'%}">
-          <span class="clearfix d-none d-sm-inline-block"> Logout </span>
+      <li class="nav-item m-0 p-0" >
+        <a class="nav-link waves-effect m-0 p-0" href="{%url 'account_logout'%}">
+          <span class="nav-link"> Logout </span>
         </a>
       </li>
       {%else%}
-      <li class="nav-item" style="display:inline">
-        <a class="nav-link waves-effect" href="{%url 'account_login'%}">
-          <span class="clearfix d-none d-sm-inline-block"> Login </span>
+      <li class="nav-item">
+          <span class="clearfix d-none d-sm-inline-block">
+            <a href="{%url 'core:membership_choice'%}" class="btn btn-primary btn-sm button-boder-radius button-overflow waves-effect waves-light hoverable">Wealth Partner</a>
+          </span>
+      </li>
+      <li class="nav-item m-0 p-0" >
+        <a class="nav-link waves-effect m-0 p-0" href="{%url 'account_login'%}">
+          <span class="nav-link"> Login </span>
         </a>
       </li>
-      <li class="nav-item" style="display:inline">
-        <a class="nav-link waves-effect" href="{%url 'account_signup'%}">
-          <span class="clearfix d-none d-sm-inline-block"> Sign Up </span>
+      <li class="nav-item m-0 p-0" >
+        <a class="nav-link waves-effect m-0 p-0" href="{%url 'account_signup'%}">
+          <span class="nav-link"> Sign Up </span>
         </a>
       </li>
       {%endif%}
@@ -220,6 +185,7 @@
           {% endif %}
   <!-- Navbar -->
 
+  {% endblock zoom_body%}
 
 
   {%block jqeury%}

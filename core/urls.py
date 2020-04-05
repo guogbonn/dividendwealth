@@ -21,6 +21,10 @@ path('stockinfo/delete/<int:pk>/',views.Stocks_Delete.as_view(), name ='stocks_d
 path('stock/add/<slug>',views.Create_Stock_User.as_view(), name ='stocks_user_create'),
 path('stock/update/<int:pk>/',views.Update_Stock_User.as_view(), name ='stocks_user_update'),
 
+# zoom
+path('zoom/',views.TestZoom.as_view(), name ='zoom'),
+path('zoom-display/',views.DisplayZoom.as_view(), name ='zoomdisplay'),
+
 
 path('profile/',views.User_Profile_Page.as_view(),name = 'user_profile_page'),
 

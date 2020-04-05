@@ -316,6 +316,10 @@ class User_Profile(models.Model):
     user_relationship =  models.ManyToManyField('self',blank = True,through='UserRelationship', symmetrical=False)
     active_notification_url = models.CharField(max_length=60,null=True, blank=True)
     featured =  models.BooleanField(default=False)
+    zoom_access_token = models.CharField(max_length=120,null=True, blank=True)
+    zoom_refresh_token = models.CharField(max_length=120,null=True, blank=True)
+    zoom_account_linked = models.BooleanField(default=False)
+    zoom_access_token_exp = models.DateTimeField( blank=True,null=True)
     def save(self,*args,**kwargs): #type in what ever you want for name but name wil be slugfied when saved
         self.slug = slugify(self.user)
         #getting percentate
@@ -484,7 +488,11 @@ class GenGroup(models.Model):
     categories = models.ManyToManyField(Categories,blank=True,through='GroupCategories')
     published =  models.BooleanField(default=True) # free membership
     unpublished_reason =  models.CharField(max_length = 500,null=True, blank=True)
-
+    zoom_meeting_number = models.CharField(max_length = 500,null=True, blank=True)
+    zoom_password= models.CharField(max_length = 500,null=True, blank=True)
+    zoom_join_url = models.CharField(max_length = 500,null=True, blank=True)
+    zoom_start_url = models.CharField(max_length = 500,null=True, blank=True)
+    zoom_active_meeting =  models.BooleanField(default=False) # free membership
     def save(self,*args,**kwargs): #type in what ever you want for name but name wil be slugfied when saved
         self.slug = slugify(self.title)
         #getting percentate

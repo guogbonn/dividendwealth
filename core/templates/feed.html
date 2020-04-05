@@ -387,6 +387,8 @@ position: relative;
 
   .profile-card-horizontal-overflow {
       overflow-x: scroll;
+      overflow-y: hidden;
+
       -webkit-overflow-scrolling: touch;
       white-space: nowrap;
     }
@@ -1130,10 +1132,10 @@ label:focus,
         <!-- Categories Widget -->
             <div class="card my-4">
           <div class="card-header "><div class="d-flex justify-content-end"><p>Featured Members</p></div></div>
-              <div class="card-body profile-card-horizontal-overflow">
+              <div  class="card-body profile-card-horizontal-overflow viewport">
                 <div class="d-flex justify-content-start">
                   {% for profile in featured_members%}
-                  <div class=" ">
+                  <div class="featured_members">
                     <div  class="card user-card hoverable parent-user px-0 ml-2 {% if forloop.last%}mr-2{%endif%}"   style="border-radius: .28571429rem; max-width:165px">
                                 <!-- Card image -->
 
@@ -1347,6 +1349,7 @@ label:focus,
 
 
 
+<script src="https://unpkg.com/scrollbooster@2/dist/scrollbooster.min.js"></script>
 
 <script type="text/javascript">
 
@@ -2352,9 +2355,15 @@ $.ajax({
       modal_content.insertAdjacentHTML('afterBegin', html_content);
     }
 });
-
-
 }
+
+
+//https://github.com/ilyashubin/scrollbooster
+
+new ScrollBooster({
+    viewport: document.querySelector('.viewport'),
+    scrollMode: 'transform'
+});
   </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js">

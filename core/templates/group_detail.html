@@ -561,23 +561,74 @@ label:focus,
             <div class="col-md-9 pb-4">
               <div class="jumbotron p-0 mb-2">
                 <!-- Card image -->
-                <div class="d-flex justify-content-center view overlay rounded-top">
-                  <img src="{{object.group_picture.url}}" class="img-fluid group-cover-img pt-2" alt="Sample image">
-                  <a href="#">
-                    <div class="mask rgba-white-slight"></div>
-                  </a>
+                <div id="jumbotron_iframe_container" class="d-flex justify-content-center view overlay rounded-top">
+                  <!-- display iframe if there is a meeting in progross  -->
+                  {%if object.zoom_active_meeting%}
+                        {% if current_user == object.creator %}
+                        <!-- show group img for main user  -->
+                        <iframe id="display_zoom_iframe" class="" src="{%url 'core:zoom'%}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>
+                        {%else%}
+                        <iframe id="display_zoom_iframe" class="" src="{%url 'core:zoom'%}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>
+                        {%endif%}
+                  {%else%}
+                  <div id="jumbotron_group_picture" class="">
+                    <img src="{{object.group_picture.url}}" class="img-fluid group-cover-img pt-2" alt="Sample image" width="100%" height="300px">
+                    <a href="#">
+                      <div class="mask rgba-white-slight"></div>
+                    </a>
+                  </div>
+                  {%endif%}
                 </div>
                 <!-- Card content -->
                 <div class="card-body bg-white text-dark ">
                   <!-- Title -->
-                  <h3 class="card-title h3 my-2 text-center"><strong>{{object.title|title}}</strong></h3>
+                  {% if object.zoom_active_meeting%}
+                    {% if current_user != object.creator %}
+                    <div id="active_zoom_meeting_info" class="text-center">
+                      <p>Active Zoom Meeting:</p>
+                      <div>If the zoom meeting is not displaying on your screen:<a href="{{object.zoom_join_url}}">Join Confrence Here </a></div>
+                    </div>
+
+                    {%else%}
+                    <div  id="active_zoom_meeting_info" class="text-center">
+                      <p>Active Zoom Meeting:</p>
+                      <div>If a zoom page did not appear:<a href="{{object.zoom_start_url}}">Start Your Confrence Here </a></div>
+                    </div>
+                    {%endif%}
+                  {%endif%}
+
+                  {% if object.zoom_active_meeting%}
+
+                  <div id="end_zoom_meeting_button" class="text-center">
+                    <a  class="btn btn-primary btn-sm btn-rounded mb-1 " onclick="zoom_creator_close_meeting()">End Zoom Meeting</a>
+                  </div>
+
+                  {%endif%}
+                  <h3 id="group_title" class="card-title h3 my-2 text-center"><strong>{{object.title|title}}</strong></h3>
                   <!-- Text -->
                   <hr>
                   <div class="container">
+                    {% if current_user == object.creator %}
+                            {% if group_admin_zoom_account_linked == "true" %}
+                            <div class="text-center">
+                              <a onclick="zoom_create_meeting()" target="_blank" rel="noopener noreferrer"><img class="px-2 pb-1" width="32" height="32" src="{% static 'play-button.svg' %}" />Start Instant Zoom Meeting</a>
+                              <div style="display:none">Icons made by <a href="https://www.flaticon.com/authors/those-icons" title="Those Icons">Those Icons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+                            </div>
+
+                            <div class="text-center">
+                              <a  class="btn btn-default btn-sm btn-rounded  mb-3" data-toggle="modal" data-target="#modalLoginForm">Add Existing Zoom Meeting Here</a>
+                            </div>
+
+
+                            {%else%}
+                            <a href="https://zoom.us/oauth/authorize?client_id=i1lnKwB8TLKipg_Mn5HLnQ&response_type=code&redirect_uri=http%3A%2F%2F192.168.0.46%3A24%2Fzoom%2F" target="_blank" rel="noopener noreferrer"><img src="https://marketplacecontent.zoom.us/zoom_marketplace/img/add_to_zoom.png" height="32" alt="Add to ZOOM" /></a>
+                            {%endif%}
+                    {%endif%}
                   <div class="d-flex justify-content-start">
                     <span>
                       <!-- <button class=" ">Joined</button> -->
                       {% if current_user == object.creator %}
+
                       {%else%}
                       <div class="dropdown">
     <button class="ui tiny button " type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -593,8 +644,38 @@ label:focus,
                     <span>
                       <button id="Guidelines"class="ui tiny button " data-toggle="modal" data-target="#centralModalSm" >Guidelines</button>
                     </span>
+
                   </div>
                     </div>
+                    <!-- add zoom url modal  -->
+                    <!-- add existing meeting modal  -->
+                    <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                      aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header text-center">
+                            <h4 class="modal-title w-100 font-weight-bold">Meeting link</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body mx-3">
+                            <button id="zoom_add_existing_meeting_close_modal"  type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              </button>
+                            <form class="text-center p-2"  method="post">
+                            <div >
+                              <input  type="url" id="zoom_meeting_url" class="form-control mb-4" placeholder="meeting url">
+                            </div>
+                              </form>
+                              <div class=" d-flex justify-content-center">
+                                <button onclick="zoom_add_existing_meeting()" class="btn btn-default">Login</button>
+                              </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
                     <!--Modal for leaving group  -->
                     <div class="modal fade" id="Leave_Group_Modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered" role="document">
@@ -623,7 +704,6 @@ label:focus,
                     <!--Modal for leaving group  -->
 <!-- modal letting user know that they have been kicked from the group  -->
 <button style="display:none" id="aknowledge_kicked_from_group_button" data-toggle="modal" data-target="#kicked_from_group"></button>
-
                     <div class="modal fade" id="kicked_from_group" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
@@ -639,15 +719,11 @@ label:focus,
                         </div>
                       </div>
                     </div>
-
-                                            <!-- Central Modal Small -->
+                    <!-- Guidelines modal  -->
                           <div class="modal fade" id="centralModalSm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
                             aria-hidden="true">
-
                             <!-- Change class .modal-sm to change the size of the modal -->
                             <div class="modal-dialog modal-lg" role="document">
-
-
                               <div class="modal-content">
                                 <div class="modal-header">
                                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -709,6 +785,7 @@ label:focus,
                           </div>
                 </div>
               </div>
+
                 <ul class="mt-2 nav nav-pills mb-3 d-flex justify-content-around" id="pills-tab" role="tablist">
                     <li class="nav-item">
                       <div id="notification_alert_container" style="display:none"  class="notification icon">
@@ -3034,6 +3111,237 @@ many to many list template django upto -->
 <!-- ///////////////////////////////////////////////////////////////////////////////////////////Do Not Touch -->
 
 <script>
+
+  ///////////////////////////Zoom Section////////////////
+  //when user clicks create meeting send a request to create zoom meeting
+  function zoom_create_meeting() {
+    // dislplay loading function
+
+    try {
+      remove_alert_button()
+    } catch (e) {
+      console.log("no alert")
+    }
+    //place alert on users page
+    alert_footer=document.getElementById('alert_footer')
+    //clone the alert element
+    clone = document.getElementById('alert_footer_content')
+    //cloning the alert
+    clone = clone.cloneNode(true);
+    clone.id = "zoom_alert";
+    try {
+      alert_footer.appendChild(clone);
+      //$('#alert_footer').appendTo(clone).show('slow');
+    } catch (e) {
+    }
+    //change html attribues of the the new member link
+    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
+    post_sending.textContent = "Loading Zoom"
+
+    //Add spinner
+    //adding class for asthetics
+    document.getElementById(clone.id).classList.add("pl-0")
+    //get spinner
+    spinner = document.getElementById('black_spinner')
+    //clone spinner
+    spinner = spinner.cloneNode(true);
+    spinner.id = "loader_process";
+    //add the spinner to the flex box
+    button =document.getElementById(clone.id).getElementsByTagName('div')[0]
+    try {
+      button.insertBefore(spinner, button.firstChild);
+
+    } catch (e) {
+    }
+
+    $.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+    });
+
+    $.ajax({
+    type: "POST",
+    url:"{% url 'core:group' slug=object.slug %}",
+    data: {
+    "create_zoom_meeting_username":"{{user}}"
+    },
+     dataType: "json", //have to add in the data type
+    success: function (data) {
+      try {
+        remove_alert_button()
+      } catch (e) {
+        console.log("no alert")
+      }
+      // open zoom
+      //   popUp=window.open(data["start_url"]);
+      //   // add red recoring sign to indicate the xoom meeting is in progress
+      //   // let user know that their pop ups are blocked
+      // if (popUp == null || typeof(popUp)=='undefined') {
+      //     alert('Please disable your pop-up blocker for this site.');
+      // }
+      // else {  popUp.focus()
+      // }
+    }
+    });
+  }
+
+  function zoom_add_existing_meeting() {
+    // close modal
+ $("#zoom_add_existing_meeting_close_modal").click()
+    // message saying zoom is loading
+    try {
+      remove_alert_button()
+    } catch (e) {
+      console.log("no alert")
+    }
+    //place alert on users page
+    alert_footer=document.getElementById('alert_footer')
+    //clone the alert element
+    clone = document.getElementById('alert_footer_content')
+    //cloning the alert
+    clone = clone.cloneNode(true);
+    clone.id = "zoom_alert";
+    try {
+      alert_footer.appendChild(clone);
+      //$('#alert_footer').appendTo(clone).show('slow');
+    } catch (e) {
+    }
+    //change html attribues of the the new member link
+    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
+    post_sending.textContent = "Loading Zoom"
+
+    //Add spinner
+    //adding class for asthetics
+    document.getElementById(clone.id).classList.add("pl-0")
+    //get spinner
+    spinner = document.getElementById('black_spinner')
+    //clone spinner
+    spinner = spinner.cloneNode(true);
+    spinner.id = "loader_process";
+    //add the spinner to the flex box
+    button =document.getElementById(clone.id).getElementsByTagName('div')[0]
+    try {
+      button.insertBefore(spinner, button.firstChild);
+
+    } catch (e) {
+    }
+    // Overview
+    // get zoom url input to send to zoom page to join user to meeting //note the why is important
+    //get the index of j because it indicates where meeting and password will be in url /j/950..
+    // break up the url on th slash
+    // get the meeting numbers
+    //check to see if there is a password so we know if we should call the api or not
+    zoom_meeting_url=document.getElementById("zoom_meeting_url").value
+    j_index = zoom_meeting_url.indexOf("j")
+    meeting_number = splitValue(zoom_meeting_url, j_index)
+    meeting_number=meeting_number.split('/')
+    // https://regex101.com/r/cL3rI3/2/codegen?language=javascript
+    // get meeting number from url  stop on question mark
+            const regex = /(\d+)(?=.*\?)/gm;
+            const str = meeting_number;
+            let m;
+            var meeting_num
+            while ((m = regex.exec(str)) !== null) {
+                // This is necessary to avoid infinite loops with zero-width matches
+                if (m.index === regex.lastIndex) {
+                    regex.lastIndex++;
+                }
+                // The result can be accessed through the `m`-variable.
+                m.forEach((match, groupIndex) => {
+                    console.log(`Found match, group ${groupIndex}: ${match}`);
+                    meeting_num=match
+                });
+            }
+
+    //meeting number
+    meeting_number =meeting_num
+    if(typeof meeting_number === 'undefined') {
+      meeting_number = splitValue(zoom_meeting_url, j_index)
+      meeting_number=meeting_number.split('/')
+      meeting_number = meeting_number[1]
+    }
+    console.log("meeting_number",meeting_number)
+    // findout if there is a password in the url
+    pwd_index = zoom_meeting_url.indexOf("pwd")
+    // pwd index shows up as -1 if there is no pwd
+    if (pwd_index != -1) {
+        password = "true"
+    }else {
+        password = "false"
+    }
+    $.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+    });
+    $.ajax({
+    type: "POST",
+    url:"{% url 'core:group' slug=object.slug %}",
+    data: {
+    "zoom_add_existing_meeting_number":meeting_number,
+    "zoom_add_existing_meeting_password":password
+    },
+     dataType: "json", //have to add in the data type
+    success: function (data) {
+      //get rid of alert
+      try {
+        remove_alert_button()
+      } catch (e) {
+        console.log("no alert")
+      }
+
+    }
+    });
+
+  }
+  function add_group_image() {
+if (  document.getElementById('display_zoom_iframe')) {
+      // get rid of
+      document.getElementById('display_zoom_iframe').parentNode.removeChild( document.getElementById('display_zoom_iframe'));
+      document.getElementById('active_zoom_meeting_info').parentNode.removeChild( document.getElementById('active_zoom_meeting_info'));
+      // end zoom meeting button is not on members page
+      if ( document.getElementById('end_zoom_meeting_button')) {
+        document.getElementById('end_zoom_meeting_button').parentNode.removeChild( document.getElementById('end_zoom_meeting_button'));
+      }
+      // add picture to the container
+      document.getElementById("jumbotron_iframe_container").insertAdjacentHTML('beforeEnd',  '<div id="jumbotron_group_picture" class=""><img src="{{object.group_picture.url}}" class="img-fluid group-cover-img pt-2" alt="Sample image" height="300px" width="100%"><a href="#"><div class="mask rgba-white-slight"></div></a></div>');
+    }
+  }
+  function add_iframe() {
+    // get rid of group picture
+    document.getElementById('jumbotron_group_picture').parentNode.removeChild( document.getElementById('jumbotron_group_picture'));
+    //add zoom ifram  on members screen
+    document.getElementById("jumbotron_iframe_container").insertAdjacentHTML('beforeEnd', '  <iframe id="display_zoom_iframe" class="" src="{%url 'core:zoom'%}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>');
+
+}
+  function zoom_creator_close_meeting() {
+    {% if current_user == object.creator %}
+    $.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+    });
+
+    $.ajax({
+    type: "POST",
+    url:"{% url 'core:group' slug=object.slug %}",
+    data: {
+    "close_zoom_meeting":"true"
+    },
+     dataType: "json", //have to add in the data type
+    success: function (data) {
+
+    }
+    });
+
+    {%else%}
+    add_group_image();
+    {%endif%}
+
+  }
+
+  //function to split url and get the second half
+  function splitValue(value, index) {
+    return value.substring(index);
+}
+
+
+
   //iplementing infinite scrolling
     document.addEventListener("DOMContentLoaded", function(event) {
 
@@ -4414,16 +4722,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
     if (e.keyCode != 13) {
       k=09209
     }else {
-
           e.preventDefault()
-
           var category_name = this.value
           this.value = ''
           add_new_category(category_name)
           update_Categorory_string()
     }
-
-
     if (e.keyCode != 32) {
         k=09209
     }else {
@@ -4434,10 +4738,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       add_new_category(category_name)
       update_Categorory_string()
     }
-
-
   })
-
 });
 
 function add_new_category(name) {
@@ -4480,7 +4781,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
     if (e.keyCode != 13) {
       k=09209
     }else {
-
           e.preventDefault()
 
           var category_name = this.value
@@ -4488,34 +4788,26 @@ document.addEventListener("DOMContentLoaded", function(event) {
           add_new_category_s(category_name)
           update_Categorory_string_s()
     }
-
-
     if (e.keyCode != 32) {
         k=09209
     }else {
       e.preventDefault()
-
       var category_name = this.value
       this.value = ''
       add_new_category_s(category_name)
       update_Categorory_string_s()
     }
-
-
   })
-
 });
 
 function add_new_category_s(name) {
   //I learned how to use insertAdjacentHTML 12/31/19
   word_of_god = '<a onclick="remove_category_s(this)" class="my-0 button-overflow pt-3 px-0 ml-0  mr-1 cancela "><div class="ui small label mr-2 mt-0  pr-1"><div class="media-body mx-0 my-0 px-0 py-0 d-flex justify-content-start"><p class="my-0 straight-line-text category_specific_name_s">$' +name +'</p><i class="small close icon ml-1 mr-0 "></i></div></div></a>'
   document.getElementById('category_container2').insertAdjacentHTML('beforeend',word_of_god)
-
 }
 
 function fetch_category_array_s() {
   var categories = []
-
   document.querySelectorAll('.category_specific_name_s').forEach(function(e){
      name = e.textContent
     if (name== ' ') {
@@ -4526,9 +4818,6 @@ function fetch_category_array_s() {
   return categories;
 }
 
-
-
-
 function update_Categorory_string_s() {
   categories = fetch_category_array_s()
   document.getElementById('create_watchlist_stock').value = categories.join(' ')
@@ -4537,14 +4826,9 @@ function remove_category_s(element) {
   element.parentNode.removeChild(element);
   update_Categorory_string_s()
 }
-
-
 </script>
 
-
   <script>
-
-
     //https://stackoverflow.com/questions/10899384/uploading-both-data-and-files-in-one-form-using-ajax
     //post submission
     $("form#data").submit(function(e) {
@@ -6180,7 +6464,7 @@ return timezone
 </script>
 
 
-
+<!-- websocket -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js">
 </script>
 
@@ -6188,7 +6472,7 @@ return timezone
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" type="text/css"/>
 
 <script>
-var x =0;
+    var current_user_username = "{{user}}"
     var groupName = {{groupName}};
     // open a channel to talk
     // document.addEventListener("DOMContentLoaded", function(event) {
@@ -6212,22 +6496,16 @@ var x =0;
                 'user_username':"{{user}}",
                 'new_member':"1"
             }));
-
-            console.log("message sent")
+          console.log("message sent")
             }
             else {
-
               chatSocket.send(JSON.stringify({
                   'user_on_group_page': "1",
                   'user_username':"{{user}}"
               }));
               console.log("message sent")
-
             }
-
-
         };
-
 
         //Section receive message
     chatSocket.onmessage = function(e) {
@@ -6307,6 +6585,13 @@ var x =0;
               // have to extract the json information from the variable
                user_adds_watchlist_with_same_name_object= JSON.parse(user_adds_watchlist_with_same_name);
             } catch (e) {}
+
+            // section is for loading zoom iframe
+            var zoom_load_iframe = data['zoom_load_iframe']
+
+            // sectopm is getting vaiable to close zoom meeting
+            var zoom_close_group_meeting = data["zoom_close_group_meeting"]
+
           //end getting data section
 
 /////////////////////////////////Section Async Reply////////////////
@@ -8659,7 +8944,43 @@ if (user_leave_manually == "true"){
       removed_member.parentNode.removeChild(removed_member);
 }
 
-  };
+// ///////Section is for activating zoom UI on all group member windios
+if (zoom_load_iframe != "null") {
+  // if the current user is the person that started the meeting
+  if (current_user_username == zoom_load_iframe.user_create_zoom) {
+        // present_start meeting url
+        //present cording button
+        console.log("worked")
+        //remove start meeting button
+        //remove join meeting button
+      document.getElementById("group_title").insertAdjacentHTML('beforebegin', '<div  id="active_zoom_meeting_info" class="text-center"><p>Active Zoom Meeting:</p><div> If a zoom page did not appear:<a href="'+zoom_load_iframe.start_url+'" >Start Your Confrence Here </a></div></div>')
+      // insert zoom  close button
+      document.getElementById('group_title').insertAdjacentHTML('beforebegin', '<div id="end_zoom_meeting_button" class="text-center"><a  class="btn btn-primary btn-sm btn-rounded mb-1 " onclick="zoom_creator_close_meeting()">End Zoom Meeting</a></div>')
+
+  }else {
+      // for regular member
+      // show the join url in case there browser does not support the meeting
+      document.getElementById("group_title").insertAdjacentHTML('beforebegin', '<div  id="active_zoom_meeting_info" class="text-center"><p>Active Zoom Meeting:</p><div>If the zoom meeting is not displaying on your screen::<a href="'+zoom_load_iframe.join_url+'">Join Confrence Here</a></div></div>')
+      // insert zoom  close button
+      document.getElementById('group_title').insertAdjacentHTML('beforebegin', '<div id="end_zoom_meeting_button" class="text-center"><a  class="btn btn-primary btn-sm btn-rounded mb-1 " onclick="zoom_creator_close_meeting()">End Zoom Meeting</a></div>')
+
+      // message saying zoom meeting has started
+  }
+  // check to see if user has console block enabled
+  // bring up the iframe but first remove it if it already there
+
+  if (document.getElementById('display_zoom_iframe')) {
+      add_group_image()
+  }
+    add_iframe();//group members only
+}
+
+if (zoom_close_group_meeting != "null") {
+  add_group_image()
+}
+
+};
+
 
   //Section to subit member changes from modal for group creator
           //manage member creator member change
@@ -8713,7 +9034,6 @@ if (user_leave_manually == "true"){
 function post_comment_reply_action(post_id){
 //prevent repetion
 //https://stackoverflow.com/questions/2345708/how-can-i-get-the-full-absolute-url-with-domain-in-django
-
 site = "{{ request.build_absolute_uri }}"
 site=site.replace(/\/$/, "");
 console.log("post_comment_reply_action",post_id)

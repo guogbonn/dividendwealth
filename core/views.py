@@ -1,5 +1,4 @@
 import os
-from django.utils import timezone
 
 from django.conf import settings
 from django.http import JsonResponse
@@ -23,7 +22,6 @@ UserFinancialRole,FinancialRole,UserRelationship
 from django.views import generic
 from django.urls import reverse,reverse_lazy
 from django.conf import settings #for django allauth
-from django.utils import timezone #for order date
 from .forms import StocksModelForm,User_profile_form, Stock_profile_form,PostForm,GenGroupForm,PostComment
 from allauth.utils import get_user_model
 from django.contrib.auth.models import User
@@ -32,7 +30,7 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
-import datetime
+
 from django.db.models import Q,Sum, F,FloatField
 from chartit import PivotDataPool, PivotChart, DataPool, Chart
 import requests
@@ -49,6 +47,7 @@ from asgiref.sync import async_to_sync
 from datetime import date
 from datetime import time
 from datetime import datetime,timedelta
+import pytz
 import re
 from django.utils import timezone
 from django.http import JsonResponse
@@ -64,7 +63,11 @@ from django.db import connection
 import random
 import string
 from django.contrib.staticfiles.templatetags.staticfiles import static
-
+import http.client
+import hashlib
+import hmac
+import base64
+import time
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -90,7 +93,9 @@ def rotate_image(filepath):
     # cases: image don't have getexif
     pass
 
-# Create your views here.
+
+
+
 
 """
 def item_list(request):
@@ -126,7 +131,285 @@ class Autocom(generic.TemplateView):
         context['object_list']=StockInfo.objects.filter(userprofile =user).select_related()
         return context
 
+class TestZoom(generic.TemplateView):
+    template_name="zoom_test.html"
+    def get(self, *args, **kwargs):
+        # Section Recive Zoom Credentials
+        # only accept zoom credentials when user is authenticated
+        if self.request.user.is_authenticated:
+            # get the zooom ouath code
+            zoom_OAUTH = self.request.GET.getlist('code') if 'code' in self.request.GET else None
 
+            if zoom_OAUTH != None:
+                # if we have received the code from zoom get the user
+                # get redirect url for zoom oauth flow
+                # send a post reqest to zoom to acess user's zoom account
+                user = User_Profile.objects.filter(user=self.request.user)[0]
+                redirect_uri = "http://"+ self.request.META["HTTP_HOST"]+"/zoom/"
+                print(redirect_uri)
+                zoom_url = ('https://zoom.us/oauth/token?'
+                            'grant_type=authorization_code&'
+                            'code={}&'
+                            'redirect_uri={}')
+                zoom_api_response = requests.post(zoom_url.format(zoom_OAUTH[0],redirect_uri),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="}).json()
+                #  upon reciving the response save zoom credtials to the user info
+                print("zoom_api_response",zoom_api_response)
+                access_token = zoom_api_response["access_token"]
+                refresh_token = zoom_api_response["refresh_token"]
+                user.zoom_access_token = access_token
+                user.zoom_refresh_token = refresh_token
+                user.zoom_account_linked = True
+                user.zoom_access_token_exp = timezone.now() + timedelta(seconds=int(zoom_api_response["expires_in"]))
+                print("future", user.zoom_access_token_exp.strftime("%B %d, %Y, %H:%M:%S"))
+                print("present",timezone.now().strftime("%B %d, %Y, %H:%M:%S"))
+                user.save()
+                messages.info(self.request, "Zoom Account Successfully linked")
+
+                url = reverse('core:user_account', kwargs={'username':user.user.username})
+                return HttpResponseRedirect(url)
+        # if stripe code is not available then go to regular page
+        return super(TestZoom, self).get(self.request, *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        print("zoom post",self.request.POST)
+        meetConfig =self.request.POST.getlist('zoom') if 'zoom' in self.request.POST else None
+        if meetConfig != None:
+            dir=json.loads(meetConfig[0])
+
+            data= {"signature":"sig"}
+            return JsonResponse(data)
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TestZoom, self).get_context_data(*args, **kwargs)
+
+        if self.request.user.is_authenticated:
+            user = User_Profile.objects.filter(user=self.request.user)[0]
+            context['user_authenticated'] = "true"
+            context["user_username"] = user.user.username
+            context['user'] = user
+            user_notifications = Notification.objects.filter(userprofile=user).order_by('-date_created')[:10]
+            context['user_notifications'] = user_notifications
+            # when page loads we will load the password and meeting number we got from the zoom api
+            # if user is accessing this page from group page they will have a session variable stating the currrnt group they are in
+            # use the variable to access the meetingnum/password
+            if  'current_group_slug' in self.request.session:
+                current_group = get_object_or_404(GenGroup, slug=self.request.session["current_group_slug"])
+                context['zoom_add_existing_password'] = current_group.zoom_password
+                context['zoom_add_existing_meeting_number'] = current_group.zoom_meeting_number
+                if current_group.creator == user:
+                    context['zoom_role'] = 1
+                else:
+                    context['zoom_role'] = 0
+            else:
+                context['zoom_add_existing_password']= self.request.session["zoom_add_existing_password"] if 'zoom_add_existing_password' in self.request.session else "none"
+                context['zoom_add_existing_meeting_number']= self.request.session["zoom_add_existing_meeting_number"] if 'zoom_add_existing_meeting_number' in self.request.session else "none"
+                context['zoom_role'] = 0
+        else:
+            context['user_authenticated'] = "false"
+        # we need to hide these api keys in a golobal variable
+        context['apiSecret'] = 'kHrPcargyNAliZfiYgYZlqBXtdK9WxZCwfYJ' #JTW
+        context['zoom_api_key'] = 'z9z40dCdTVaA73xCvuTjzQ' #JTW
+        return context
+
+class DisplayZoom(generic.TemplateView):
+        template_name="display_zoom.html"
+        def post(self, *args, **kwargs):
+            # recive create meeting request
+            create_zoom_meeting_username =self.request.POST.getlist('create_zoom_meeting_username') if 'create_zoom_meeting_username' in self.request.POST else None
+            if create_zoom_meeting_username != None:
+                # get user creating meeeting
+                user = User_Profile.objects.filter(user=self.request.user)[0]
+                # check if the access token has expired refresh tokent
+                # note was not able to use timezone.now because I was getting an error saying it was referenced before assignment
+                # convert awaretimezone back to naicve local time
+                utc=pytz.UTC
+                zoom_access_token_exp = user.zoom_access_token_exp
+                est=pytz.timezone('America/Phoenix') #respective to the individuals time zone we can get it from the zoom information
+                zoom_access_token_exp=zoom_access_token_exp.astimezone(est)
+                now = utc.localize(datetime.now())
+                # convert both times to date time object
+                zoom_access_token_exp = datetime(zoom_access_token_exp.year, zoom_access_token_exp.month, zoom_access_token_exp.day, zoom_access_token_exp.hour,zoom_access_token_exp.minute)
+                now = datetime(now.year, now.month,now.day, now.hour, now.minute)
+
+                # print("zoom ac",zoom_access_token_exp)
+                # print("now",now)
+                # checking experiation date on acesss token
+                if now > zoom_access_token_exp:
+                    refresh_oauth_url = ('https://zoom.us/oauth/token?'
+                                        'grant_type=refresh_token&'
+                                        'refresh_token={}')
+                    zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="} ).json()
+                    # update access token
+                    # update refresh_token
+                    print("zoom_api_refresh_response",zoom_api_refresh_response)
+                    access_token = zoom_api_refresh_response["access_token"]
+                    refresh_token = zoom_api_refresh_response["refresh_token"]
+                    user.zoom_access_token = access_token
+                    user.zoom_refresh_token = refresh_token
+                    user.zoom_account_linked = True
+                    user.zoom_access_token_exp = datetime.now() + timedelta(seconds=int(zoom_api_refresh_response["expires_in"]))
+                    user.save()
+                # call zoom api for to get zoom information
+                # get zoom api url
+                zoom_url = 'https://api.zoom.us/v2/users/me/meetings'
+
+                auth_token=user.zoom_access_token
+                user_access_code= "Bearer "+auth_token
+                # dec;are meeting settings
+                # https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingcreate
+                meeting_topic = "First Meeting"
+                meeting_type= 1
+                duration = ""
+                timezone = "America/Phoenix"
+                password = "dividendW"
+                adgenda = "meeting description"
+                recurrence_type = 1
+
+                settings_host_video = "false"
+                settings_participant_video = "false"
+                settings_cn_meeting = "false"
+                settings_in_meeting = "false"
+                settings_join_before_host = "true"
+                settings_mute_upon_entry = "true"
+                settings_watermark = "false"
+                settings_use_pmi = "false"
+                settings_approval_type = 0
+                settings_registration_type = 1
+                settings_audio = "both"
+                settings_auto_recording="none"
+                settings_enforce_login = "true"
+                # request body for zoom meeting
+                request_body={
+                  "topic": meeting_type,
+                  "type": meeting_type,
+                  # "start_time": "string [date-time]", #scheduleded only
+                  # "duration": duration,  #scheduleded only
+                  # "timezone":timezone,
+                  "password": password,
+                  "agenda": adgenda,
+                  # "recurrence": {
+                  #   "type": "integer",
+                  #   "repeat_interval": "integer",
+                  #   "weekly_days": "string",
+                  #   "monthly_day": "integer",
+                  #   "monthly_week": "integer",
+                  #   "monthly_week_day": "integer",
+                  #   "end_times": "integer",
+                  #   "end_date_time": "string [date-time]"
+                  # },
+                  "settings": {
+                    "host_video": settings_host_video,
+                    "participant_video": settings_participant_video,
+                    "cn_meeting": settings_cn_meeting,
+                    "in_meeting": settings_in_meeting,
+                    "join_before_host":settings_join_before_host,
+                    "mute_upon_entry": settings_mute_upon_entry,
+                    "watermark": settings_watermark,
+                    "use_pmi": settings_use_pmi,
+                    "approval_type": settings_approval_type,
+                    "registration_type":settings_registration_type,
+                    "audio": settings_audio,
+                    "auto_recording": settings_auto_recording,
+                    "enforce_login": settings_enforce_login,
+                    # "enforce_login_domains": "string",
+                    # "alternative_hosts": "string",
+                    # "global_dial_in_countries": [
+                    #   "United States of America"
+                    # ],
+                    "registrants_email_notification": "false"
+                  }
+                }
+                zoom_api_user_response = requests.post(zoom_url,data=json.dumps(request_body),headers= {"Authorization":user_access_code,'Content-type': 'application/json', }).json()
+                print("zoom_api_user_response",zoom_api_user_response)
+                # save information in session variable in order to send to group page
+                self.request.session["zoom_add_existing_password"] = password
+                self.request.session["zoom_add_existing_meeting_number"] = zoom_api_user_response["id"]
+
+                self.request.session.modified = True
+                start_url=zoom_api_user_response["start_url"]
+                data= {"start_url":start_url}
+                # channles
+                return JsonResponse(data)
+
+            # recive request to link up existing meeting to DW
+            zoom_add_existing_meeting_number =self.request.POST.getlist('zoom_add_existing_meeting_number') if 'zoom_add_existing_meeting_number' in self.request.POST else None
+            zoom_add_existing_meeting_password =self.request.POST.getlist('zoom_add_existing_meeting_password') if 'zoom_add_existing_meeting_password' in self.request.POST else None
+            if zoom_add_existing_meeting_number != None:
+                user = User_Profile.objects.filter(user=self.request.user)[0]
+                self.request.session["zoom_add_existing_meeting_number"] = zoom_add_existing_meeting_number[0]
+                self.request.session["zoom_add_existing_password"] = ""
+                if zoom_add_existing_meeting_password[0] == "true":
+
+                    # check if the access token has expired refresh tokent
+                    # note was not able to use timezone.now because I was getting an error saying it was referenced before assignment
+                    # convert awaretimezone back to naicve local time
+                    utc=pytz.UTC
+                    zoom_access_token_exp = user.zoom_access_token_exp
+                    est=pytz.timezone('America/Phoenix') #respective to the individuals time zone we can get it from the zoom information
+                    zoom_access_token_exp=zoom_access_token_exp.astimezone(est)
+                    now = utc.localize(datetime.now())
+
+                    zoom_access_token_exp = datetime(zoom_access_token_exp.year, zoom_access_token_exp.month, zoom_access_token_exp.day, zoom_access_token_exp.hour,zoom_access_token_exp.minute)
+                    now = datetime(now.year, now.month,now.day, now.hour, now.minute)
+
+                    # print("zoom ac",zoom_access_token_exp)
+                    # print("now",now)
+                    # result_of_time = now - zoom_access_token_exp
+                    # print("result_of_time",result_of_time)
+                    if now > zoom_access_token_exp:
+                        refresh_oauth_url = ('https://zoom.us/oauth/token?'
+                                            'grant_type=refresh_token&'
+                                            'refresh_token={}')
+                        zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="} ).json()
+                        # update access token
+                        # update refresh_token
+                        print("zoom_api_refresh_response",zoom_api_refresh_response)
+                        access_token = zoom_api_refresh_response["access_token"]
+                        refresh_token = zoom_api_refresh_response["refresh_token"]
+                        user.zoom_access_token = access_token
+                        user.zoom_refresh_token = refresh_token
+                        user.zoom_account_linked = True
+                        user.zoom_access_token_exp = datetime.now() + timedelta(seconds=int(zoom_api_refresh_response["expires_in"]))
+                        user.save()
+                    # call zoom api for zoom meeting information
+                    # get zoom api url
+
+                    zoom_url = 'https://api.zoom.us/v2/meetings/{}'
+                    auth_token=user.zoom_access_token
+                    user_access_code= "Bearer "+auth_token
+                    zoom_api_user_response_meeting = requests.get(zoom_url.format(zoom_add_existing_meeting_number[0]),headers= {"Authorization":user_access_code,'Content-type': 'application/json'}).json()
+
+                    print("zoom_api_user_response_meeting",zoom_api_user_response_meeting)
+                    meeting_password=zoom_api_user_response_meeting["password"]
+                    print("meeting_password",meeting_password)
+                    self.request.session["zoom_add_existing_password"] = meeting_password
+
+                self.request.session.modified = True
+                # if everything went well tell user if something went wrong and we could not connect the meeting let the user know
+                data = {"hello":"hello"}
+
+                return JsonResponse(data)
+
+
+        def get_context_data(self, *args, **kwargs):
+
+            context = super(DisplayZoom, self).get_context_data(*args, **kwargs)
+
+            if self.request.user.is_authenticated:
+                user = User_Profile.objects.filter(user=self.request.user)[0]
+            # users
+                context['user_authenticated'] = "true"
+                context["user_username"] = user.user.username
+                context['user'] = user
+                user_notifications = Notification.objects.filter(userprofile=user).order_by('-date_created')[:10]
+                context['user_notifications'] = user_notifications
+
+                context["group_admin_zoom_account_linked"] = "true" if user.zoom_account_linked == True else "false"
+            else:
+                context['user_authenticated'] = "false"
+            context['apiSecret'] = 'kHrPcargyNAliZfiYgYZlqBXtdK9WxZCwfYJ'
+            context['zoom_api_key'] = 'z9z40dCdTVaA73xCvuTjzQ'
+            return context
 
 
 
@@ -981,7 +1264,7 @@ class Feed(generic.TemplateView):
         # Section is for Profile sc
         default_background_url = static('img/logo.jpg')
         context['default_background_url'] = default_background_url
-        default_profile_pic_url = static('img/default-profile-picture-gmail-2.png')
+        default_profile_pic_url = static('img/default-profile-picture.png')
         context['default_profile_pic_url'] = default_profile_pic_url
         dividend_member_tag = static('img/dividend_wealth_member.png')
         context['dividend_member_tag'] = dividend_member_tag
@@ -2671,7 +2954,9 @@ class Detail_Group(generic.DetailView):
         # Postz= get_object_or_404(Post, pk=3)
         # comments = Postz.post_comment.all()
         # print(comments)
-
+        # save group to acess on zoom page
+        self.request.session["current_group_slug"] = current_group.slug
+        self.request.session.modified = True
         #list of recommended groups for user not the currnet group
         list_of_groups = GenGroup.objects.filter(~Q(id=current_group.id),published=True)
         context['group_list'] = list_of_groups
@@ -2855,6 +3140,10 @@ class Detail_Group(generic.DetailView):
         #     percentage_of_time_meber_in_group=percentage_of_time_meber_in_group*100
         #     percentage_of_time_meber_in_group="{:.0f}".format(percentage_of_time_meber_in_group)
         #     print("percentage value",percentage_of_time_meber_in_group)
+        context["group_admin_zoom_account_linked"] = "true" if user.zoom_account_linked == True else "false"
+        # Zoom JTW
+        context['apiSecret'] = 'kHrPcargyNAliZfiYgYZlqBXtdK9WxZCwfYJ'
+        context['zoom_api_key'] = 'z9z40dCdTVaA73xCvuTjzQ'
         return context
         #handeling request
 
@@ -3999,14 +4288,7 @@ class Detail_Group(generic.DetailView):
                      'created_post_false': "true",
                     }
                     return JsonResponse(data)
-                # url = reverse('core:group', kwargs={'slug': self.kwargs['slug'],})
-                # object = "grouppost1"#add_on
-                # id = "#"+object
-                # url = url + id + add_on
-                # # print(HttpResponseRedirect(url))
-                # return HttpResponseRedirect(url)
-                #print("post created")
-                #add integer to comment feild
+
         #//////////////Replying to a Comment or reply //////////////////////////////////////////////////
 
         #////////////////commenting on a Post//////////////////////////////////
@@ -4220,13 +4502,230 @@ class Detail_Group(generic.DetailView):
                      'created_post_false': "true",
                     }
                     return JsonResponse(data)
-                # url = reverse('core:group', kwargs={'slug': self.kwargs['slug'],})
-                # object = "grouppost1"#add_on
-                # id = "#"+object
-                # url = url + id + add_on
-                # # print(HttpResponseRedirect(url))
-                # return HttpResponseRedirect(url)
-                #add integer to comment feild
+
+        #////////////////Zoom interface//////////////////////////////////
+
+        # recive create meeting request
+        create_zoom_meeting_username =self.request.POST.getlist('create_zoom_meeting_username') if 'create_zoom_meeting_username' in self.request.POST else None
+        if create_zoom_meeting_username != None:
+            # get user creating meeeting
+            # check if the access token has expired refresh tokent
+            # note was not able to use timezone.now because I was getting an error saying it was referenced before assignment
+            # convert awaretimezone back to naicve local time
+            utc=pytz.UTC
+            zoom_access_token_exp = user.zoom_access_token_exp
+            est=pytz.timezone('America/Phoenix') #respective to the individuals time zone we can get it from the zoom information
+            zoom_access_token_exp=zoom_access_token_exp.astimezone(est)
+            now = utc.localize(datetime.now())
+            # convert both times to date time object
+            zoom_access_token_exp = datetime(zoom_access_token_exp.year, zoom_access_token_exp.month, zoom_access_token_exp.day, zoom_access_token_exp.hour,zoom_access_token_exp.minute)
+            now = datetime(now.year, now.month,now.day, now.hour, now.minute)
+
+            # print("zoom ac",zoom_access_token_exp)
+            # print("now",now)
+            # checking experiation date on acesss token
+            if now > zoom_access_token_exp:
+                refresh_oauth_url = ('https://zoom.us/oauth/token?'
+                                    'grant_type=refresh_token&'
+                                    'refresh_token={}')
+                zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="} ).json()
+                # update access token
+                # update refresh_token
+                print("zoom_api_refresh_response",zoom_api_refresh_response)
+                access_token = zoom_api_refresh_response["access_token"]
+                refresh_token = zoom_api_refresh_response["refresh_token"]
+                user.zoom_access_token = access_token
+                user.zoom_refresh_token = refresh_token
+                user.zoom_account_linked = True
+                user.zoom_access_token_exp = datetime.now() + timedelta(seconds=int(zoom_api_refresh_response["expires_in"]))
+                user.save()
+            # call zoom api for to get zoom information
+            # get zoom api url
+            zoom_url = 'https://api.zoom.us/v2/users/me/meetings'
+
+            auth_token=user.zoom_access_token
+            user_access_code= "Bearer "+auth_token
+            # dec;are meeting settings
+            # https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingcreate
+            meeting_topic = "First Meeting"
+            meeting_type= 1
+            duration = ""
+            timezone = "America/Phoenix"
+            password = "dividendW"
+            adgenda = "meeting description"
+            recurrence_type = 1
+
+            settings_host_video = "false"
+            settings_participant_video = "false"
+            settings_cn_meeting = "false"
+            settings_in_meeting = "false"
+            settings_join_before_host = "true"
+            settings_mute_upon_entry = "false"
+            settings_watermark = "false"
+            settings_use_pmi = "false"
+            settings_approval_type = 0
+            settings_registration_type = 1
+            settings_audio = "both"
+            settings_auto_recording="none"
+            settings_enforce_login = "true"
+            # request body for zoom meeting
+            request_body={
+              "topic": meeting_type,
+              "type": meeting_type,
+              # "start_time": "string [date-time]", #scheduleded only
+              # "duration": duration,  #scheduleded only
+              # "timezone":timezone,
+              "password": password,
+              "agenda": adgenda,
+              # "recurrence": {
+              #   "type": "integer",
+              #   "repeat_interval": "integer",
+              #   "weekly_days": "string",
+              #   "monthly_day": "integer",
+              #   "monthly_week": "integer",
+              #   "monthly_week_day": "integer",
+              #   "end_times": "integer",
+              #   "end_date_time": "string [date-time]"
+              # },
+              "settings": {
+                "host_video": settings_host_video,
+                "participant_video": settings_participant_video,
+                "cn_meeting": settings_cn_meeting,
+                "in_meeting": settings_in_meeting,
+                "join_before_host":settings_join_before_host,
+                "mute_upon_entry": settings_mute_upon_entry,
+                "watermark": settings_watermark,
+                "use_pmi": settings_use_pmi,
+                "approval_type": settings_approval_type,
+                "registration_type":settings_registration_type,
+                "audio": settings_audio,
+                "auto_recording": settings_auto_recording,
+                "enforce_login": settings_enforce_login,
+                # "enforce_login_domains": "string",
+                # "alternative_hosts": "string",
+                # "global_dial_in_countries": [
+                #   "United States of America"
+                # ],
+                "registrants_email_notification": "false"
+              }
+            }
+            zoom_api_user_response = requests.post(zoom_url,data=json.dumps(request_body),headers= {"Authorization":user_access_code,'Content-type': 'application/json', }).json()
+            print("zoom_api_user_response",zoom_api_user_response)
+            # save information in session variable in order to send to group page
+            self.request.session["zoom_add_existing_password"] = password
+            self.request.session["zoom_add_existing_meeting_number"] = zoom_api_user_response["id"]
+
+            self.request.session.modified = True
+            start_url=zoom_api_user_response["start_url"]
+            data= {"start_url":start_url}
+            # save information avout meeting to group model
+            current_group.zoom_meeting_number = zoom_api_user_response["id"]
+            current_group.zoom_password = password
+            current_group.zoom_active_meeting = True
+            current_group.zoom_join_url = zoom_api_user_response["join_url"]
+            current_group.zoom_start_url = zoom_api_user_response["start_url"]
+            current_group.save()
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(current_group.slug, {"type": "chat.message",
+            "zoom_load_iframe": {"created_or_existing":"created_meeting",
+                                "user_create_zoom":create_zoom_meeting_username[0],
+                                "join_url":zoom_api_user_response["join_url"],
+                                "start_url":zoom_api_user_response["start_url"],
+                                }})
+            return JsonResponse(data)
+
+        # recive request to link up existing meeting to DW
+        zoom_add_existing_meeting_number =self.request.POST.getlist('zoom_add_existing_meeting_number') if 'zoom_add_existing_meeting_number' in self.request.POST else None
+        zoom_add_existing_meeting_password =self.request.POST.getlist('zoom_add_existing_meeting_password') if 'zoom_add_existing_meeting_password' in self.request.POST else None
+        if zoom_add_existing_meeting_number != None:
+            user = User_Profile.objects.filter(user=self.request.user)[0]
+            self.request.session["zoom_add_existing_meeting_number"] = zoom_add_existing_meeting_number[0]
+            self.request.session["zoom_add_existing_password"] = ""
+
+
+            # check if the access token has expired refresh tokent
+            # note was not able to use timezone.now because I was getting an error saying it was referenced before assignment
+            # convert awaretimezone back to naicve local time
+            utc=pytz.UTC
+            zoom_access_token_exp = user.zoom_access_token_exp
+            est=pytz.timezone('America/Phoenix') #respective to the individuals time zone we can get it from the zoom information
+            zoom_access_token_exp=zoom_access_token_exp.astimezone(est)
+            now = utc.localize(datetime.now())
+
+            zoom_access_token_exp = datetime(zoom_access_token_exp.year, zoom_access_token_exp.month, zoom_access_token_exp.day, zoom_access_token_exp.hour,zoom_access_token_exp.minute)
+            now = datetime(now.year, now.month,now.day, now.hour, now.minute)
+
+            # print("zoom ac",zoom_access_token_exp)
+            # print("now",now)
+            # result_of_time = now - zoom_access_token_exp
+            # print("result_of_time",result_of_time)
+            if now > zoom_access_token_exp:
+                refresh_oauth_url = ('https://zoom.us/oauth/token?'
+                                    'grant_type=refresh_token&'
+                                    'refresh_token={}')
+                zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="} ).json()
+                # update access token
+                # update refresh_token
+                print("zoom_api_refresh_response",zoom_api_refresh_response)
+                access_token = zoom_api_refresh_response["access_token"]
+                refresh_token = zoom_api_refresh_response["refresh_token"]
+                user.zoom_access_token = access_token
+                user.zoom_refresh_token = refresh_token
+                user.zoom_account_linked = True
+                user.zoom_access_token_exp = datetime.now() + timedelta(seconds=int(zoom_api_refresh_response["expires_in"]))
+                user.save()
+            # call zoom api for zoom meeting information
+            # get zoom api url
+
+            zoom_url = 'https://api.zoom.us/v2/meetings/{}'
+            auth_token=user.zoom_access_token
+            user_access_code= "Bearer "+auth_token
+            zoom_api_user_response_meeting = requests.get(zoom_url.format(zoom_add_existing_meeting_number[0]),headers= {"Authorization":user_access_code,'Content-type': 'application/json'}).json()
+
+            print("zoom_api_user_response_meeting",zoom_api_user_response_meeting)
+            if zoom_add_existing_meeting_password[0] == "true":
+                meeting_password=zoom_api_user_response_meeting["password"]
+                print("meeting_password",meeting_password)
+                self.request.session["zoom_add_existing_password"] = meeting_password
+
+            self.request.session.modified = True
+            # if everything went well tell user if something went wrong and we could not connect the meeting let the user know
+            # save information avout meeting to group model
+            current_group.zoom_meeting_number = self.request.session["zoom_add_existing_meeting_number"]
+            current_group.zoom_password = self.request.session["zoom_add_existing_password"]
+            current_group.zoom_active_meeting = True
+            current_group.zoom_join_url = zoom_api_user_response_meeting["join_url"]
+            current_group.zoom_start_url = zoom_api_user_response_meeting["start_url"]
+            current_group.save()
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(current_group.slug, {"type": "chat.message",
+            "zoom_load_iframe": {"created_or_existing":"using_existing_meeting",
+                                "user_create_zoom":user.user.username,
+                                "join_url":zoom_api_user_response_meeting["join_url"],
+                                "start_url":zoom_api_user_response_meeting["start_url"],
+                                }})
+
+            data = {"data":"none"}
+
+            return JsonResponse(data)
+
+        close_zoom_meeting =self.request.POST.getlist('close_zoom_meeting') if 'close_zoom_meeting' in self.request.POST else None
+        if close_zoom_meeting != None:
+            current_group.zoom_active_meeting = False
+            current_group.save()
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(current_group.slug, {"type": "chat.message",
+            "zoom_close_group_meeting": {"zoom_close_group_meeting":"true",
+                                }})
+            data = {"data":"none"}
+
+            return JsonResponse(data)
+
+
+
 class Membership_Choice(generic.TemplateView):
     template_name = 'membership_choice.html'
 
@@ -5011,6 +5510,7 @@ class User_Dashboard(generic.ListView):
             url = reverse('core:feed')
             return HttpResponseRedirect(url)
 
+        print("lknvkld nsdkls nfk",self.request.get_host() )
         stripeOAUTH = self.request.GET.getlist('code') if 'code' in self.request.GET else None
         if stripeOAUTH != None:
             user = User_Profile.objects.filter(user=self.request.user)[0]

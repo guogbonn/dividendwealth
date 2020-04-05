@@ -176,7 +176,7 @@ class GroupConsumer(AsyncWebsocketConsumer):
                 user_leave_manually = event['user_leave_manually']
 
 
-            # Section is for sending notification to appropriate page 
+            # Section is for sending notification to appropriate page
             try:
                 active_url = event['active_url']
             except KeyError:
@@ -422,6 +422,20 @@ class GroupConsumer(AsyncWebsocketConsumer):
             event['user_adds_watchlist_with_same_name'] = 'null'
             user_adds_watchlist_with_same_name = event['user_adds_watchlist_with_same_name']
 
+        # Section is for getting varialble dealing with the oppening of the ifram
+        try:
+            zoom_load_iframe = event['zoom_load_iframe']
+        except KeyError:
+            event['zoom_load_iframe'] = 'null'
+            zoom_load_iframe = event['zoom_load_iframe']
+
+        # Section is for getting varialble dealing with closing zoom iframe
+        try:
+            zoom_close_group_meeting = event['zoom_close_group_meeting']
+        except KeyError:
+            event['zoom_close_group_meeting'] = 'null'
+            zoom_close_group_meeting = event['zoom_close_group_meeting']
+
         #//section is for group count
         group_count =await database_sync_to_async(self.group_count)()
 
@@ -475,6 +489,12 @@ class GroupConsumer(AsyncWebsocketConsumer):
 
             # Section if for user adding a watchlist he already has with the same name
             'user_adds_watchlist_with_same_name':user_adds_watchlist_with_same_name,
+
+        # Section is for getting varialble dealing with the oppening of the ifram
+            "zoom_load_iframe":zoom_load_iframe,
+            
+            # Section is for sending information dealing with group closing
+            "zoom_close_group_meeting":zoom_close_group_meeting
 
         }))
         #end chat_message
