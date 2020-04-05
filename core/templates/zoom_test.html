@@ -1,0 +1,113 @@
+{%extends "base.html" %}
+
+{% block zoom_body  %}
+    <!-- import #zmmtg-root css -->
+    <link type="text/css" rel="stylesheet" href="https://source.zoom.us/1.7.2/css/bootstrap.css" />
+    <link type="text/css" rel="stylesheet" href="https://source.zoom.us/1.7.2/css/react-select.css" />
+    <style>
+    .zocontainer {
+      height: 100%;
+      width: 100%;
+    }
+    </style>
+<div class="col-md-12 container  d-flex justify-content-center">
+  <div id="zoom_display_container" class=" zocontainer ">
+
+  </div>
+</div>
+
+
+    <!-- import ZoomMtg dependencies -->
+      <script src="https://source.zoom.us/1.7.2/lib/vendor/react.min.js"></script>
+      <script src="https://source.zoom.us/1.7.2/lib/vendor/react-dom.min.js"></script>
+      <script src="https://source.zoom.us/1.7.2/lib/vendor/redux.min.js"></script>
+      <script src="https://source.zoom.us/1.7.2/lib/vendor/redux-thunk.min.js"></script>
+      <script src="https://source.zoom.us/1.7.2/lib/vendor/jquery.min.js"></script>
+      <script src="https://source.zoom.us/1.7.2/lib/vendor/lodash.min.js"></script>
+
+      <!-- import ZoomMtg -->
+      <script src="https://source.zoom.us/zoom-meeting-1.7.2.min.js"></script>
+
+      <script>
+
+      console.log(JSON.stringify(ZoomMtg.checkSystemRequirements()));
+      ZoomMtg.setZoomJSLib('https://source.zoom.us/1.7.2/lib', '/av');
+      ZoomMtg.preLoadWasm();
+// 625-592-6190
+      ZoomMtg.prepareJssdk();
+
+
+      const meetConfig = {
+	apiKey: "{{zoom_api_key}}",
+	meetingNumber: "{{zoom_add_existing_meeting_number}}",
+	leaveUrl: "{{request.build_absolute_uri}}",
+	userName:"{{user.user_fullname}}",
+  userEmail:"{{user.user.email}}",
+  apiSecret:"{{apiSecret}}",
+	passWord: "{{zoom_add_existing_password}}",
+	role: {{zoom_role}}
+};
+
+var signature = ZoomMtg.generateSignature({
+    meetingNumber: meetConfig.meetingNumber,
+    apiKey: meetConfig.apiKey,
+    apiSecret: meetConfig.apiSecret,
+    role: meetConfig.role,
+    success: function(res){
+        console.log(res.result);
+    }
+});
+
+  document.addEventListener("DOMContentLoaded", function(event) {
+    ZoomMtg.init({
+      leaveUrl: meetConfig.leaveUrl,
+      isSupportAV: true,
+      screenShare: true, // default, and it also require account's sharing setting enabled.
+      disableJoinAudio: false, //optional
+
+      success: function() {
+        ZoomMtg.join({
+          signature: signature,
+          apiKey: meetConfig.apiKey,
+          meetingNumber: meetConfig.meetingNumber,
+          userName: meetConfig.userName,
+          userEmail: meetConfig.userEmail,
+          passWord: meetConfig.passWord,
+          success: function(res){
+                     $('#nav-tool').hide();
+                     console.log('join meeting success');
+                    //  setTimeout( function () {  var startButton = document.getElementById("pc-join");
+                    // startButton.click();
+                    // }, 3000);
+                 },
+                 error: function(res) {
+                     console.log(res);
+                 }
+          // Email required for Webinars
+          // userEmail: meetConfig.userEmail,
+          // password optional; set by Host
+          // password: meetConfig.password
+        });
+
+      },
+      error: function(res) {
+        console.log(res);
+      }
+    });
+});
+
+// document.getElementById("zmmtg-root").style.height = "400px";
+// document.getElementById("zmmtg-root").style.width = "400px";
+
+$("#zmmtg-root").appendTo("#zoom_display_container");
+// setInterval(function(){
+//   try {
+//     if (document.getElementsByClassName('zm-modal-legacy')[0]) {
+//         location.reload();
+//     }
+//   } catch (e) {}
+//
+// }, 4000);
+      </script>
+
+{%endblock%}

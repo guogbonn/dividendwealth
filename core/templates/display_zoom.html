@@ -1,0 +1,181 @@
+{%extends "base.html" %}
+{%load staticfiles%}
+{% block content  %}
+
+<div id="iframe_container" class="container d-flex justify-content-center pt-5 mt-5">
+  <iframe id="display_zoom_iframe" class="pt-5 mt-5" src="{%url 'core:zoom'%}" width="100%" height="500px" allowfullscreen="" frameborder="0"></iframe>
+  <!-- <button onclick="add_iframe()" type="button" name="button">add iframe</button>
+<button onclick="remove_iframe()" type="button" name="button">remove iframe </button> -->
+
+<!-- <iframe src="https://us04web.zoom.us/j/124423509?pwd=bE14U3Z2WGxDZms1OElSTklCaWFqUT09" width="1000" height="500" sandbox="allow-same-origin allow-forms allow-scripts" allow="microphone; camera"></iframe> -->
+
+</div>
+<div class="container d-flex justify-content-center ">
+  {% if group_admin_zoom_account_linked == "true" %}
+  <a onclick="zoom_create_meeting()" target="_blank" rel="noopener noreferrer"><img class="px-2 pb-1" width="32" height="32" src="{% static 'play-button.svg' %}" />Start Zoom Meeting</a>
+  <div style="display:none">Icons made by <a href="https://www.flaticon.com/authors/those-icons" title="Those Icons">Those Icons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+  {%else%}
+  <a href="https://zoom.us/oauth/authorize?client_id=i1lnKwB8TLKipg_Mn5HLnQ&response_type=code&redirect_uri=http%3A%2F%2F192.168.0.46%3A24%2Fzoom%2F" target="_blank" rel="noopener noreferrer"><img src="https://marketplacecontent.zoom.us/zoom_marketplace/img/add_to_zoom.png" height="32" alt="Add to ZOOM" /></a>
+  {%endif%}
+</div>
+
+<div class="text-center">
+  <a href="" class="btn btn-default btn-rounded mb-4" data-toggle="modal" data-target="#modalLoginForm">add created meeting here</a>
+</div>
+
+<!-- add existing meeting modal  -->
+<div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Meeting link</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <button id="zoom_add_existing_meeting_close_modal"  type="button" class="close" data-dismiss="modal" aria-label="Close">
+          </button>
+        <form class="text-center p-2"  method="post">
+        <div >
+          <input  type="url" id="zoom_meeting_url" class="form-control mb-4" placeholder="meeting url">
+        </div>
+          </form>
+          <div class=" d-flex justify-content-center">
+            <button onclick="zoom_add_existing_meeting()" class="btn btn-default">Login</button>
+          </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- create meeting modal start url -->
+<div class="modal fade" id="zoom_start_meeting_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Start Zoom meeting </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <button id="zoom_create_meeting_close_modal"  type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+
+        <a id="zoom_create_meeting_modal_button"  class="btn btn-default btn-rounded mb-4" href="">Open Zoom</a>
+
+        <embed id="embedded_zoom"  style="width:400px; height: 500px;">
+    </div>
+  </div>
+</div>
+<a style="display:none" id="start_meeting_url_button" href="" class="btn btn-default btn-rounded mb-4" data-toggle="modal" data-target="#zoom_start_meeting_modal">Open Zoom</a>
+
+
+
+
+<script>
+  //when user clicks create meeting send a request to create zoom meeting
+  function zoom_create_meeting() {
+    $.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+    });
+
+    $.ajax({
+    type: "POST",
+    url:"{% url 'core:zoomdisplay' %}",
+    data: {
+    "create_zoom_meeting_username":"{{user_username}}"
+    },
+     dataType: "json", //have to add in the data type
+    success: function (data) {
+
+        window.open(data["start_url"]);
+    }
+    });
+
+  }
+
+  function zoom_add_existing_meeting() {
+    // Overview
+    // get zoom url input to send to zoom page to join user to meeting //note the why is important
+    //get the index of j because it indicates where meeting and password will be in url /j/950..
+    // break up the url on th slash
+    // get the meeting numbers
+    //check to see if there is a password so we know if we should call the api or not
+    zoom_meeting_url=document.getElementById("zoom_meeting_url").value
+    j_index = zoom_meeting_url.indexOf("j")
+    meeting_number = splitValue(zoom_meeting_url, j_index)
+    meeting_number=meeting_number.split('/')
+    // https://regex101.com/r/cL3rI3/2/codegen?language=javascript
+    // get meeting number from url  stop on question mark
+            const regex = /(\d+)(?=.*\?)/gm;
+            const str = meeting_number;
+            let m;
+            var meeting_num
+            while ((m = regex.exec(str)) !== null) {
+                // This is necessary to avoid infinite loops with zero-width matches
+                if (m.index === regex.lastIndex) {
+                    regex.lastIndex++;
+                }
+                // The result can be accessed through the `m`-variable.
+                m.forEach((match, groupIndex) => {
+                    console.log(`Found match, group ${groupIndex}: ${match}`);
+                    meeting_num=match
+                });
+            }
+
+    //meeting number
+    meeting_number =meeting_num
+    if(typeof meeting_number === 'undefined') {
+      meeting_number = splitValue(zoom_meeting_url, j_index)
+      meeting_number=meeting_number.split('/')
+      meeting_number = meeting_number[1]
+    }
+    console.log("meeting_number",meeting_number)
+    // findout if there is a password in the url
+    pwd_index = zoom_meeting_url.indexOf("pwd")
+    // pwd index shows up as -1 if there is no pwd
+    if (pwd_index != -1) {
+        password = "true"
+    }else {
+        password = "false"
+    }
+    $.ajaxSetup({
+    data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+    });
+    $.ajax({
+    type: "POST",
+    url:"{% url 'core:zoomdisplay' %}",
+    data: {
+    "zoom_add_existing_meeting_number":meeting_number,
+    "zoom_add_existing_meeting_password":password
+    },
+     dataType: "json", //have to add in the data type
+    success: function (data) {
+      // close modal
+   $("#zoom_add_existing_meeting_close_modal").click()
+      // reload zoom
+      document.getElementById('display_zoom_iframe').contentWindow.location.reload();
+    }
+    });
+
+  }
+  function remove_iframe() {
+    document.getElementById('display_zoom_iframe').parentNode.removeChild( document.getElementById('display_zoom_iframe'));
+
+  }
+  function add_iframe() {
+    document.getElementById("iframe_container").insertAdjacentHTML('beforeEnd', '  <iframe id="display_zoom_iframe" class="pt-5 mt-5" src="{%url 'core:zoom'%}" width="100%" height="500px" allowfullscreen="" frameborder="0"></iframe>');
+    document.getElementById('display_zoom_iframe').contentWindow.location.reload();
+
+  }
+
+  //function to split url and get the second half
+  function splitValue(value, index) {
+    return value.substring(index);
+}
+</script>
+{%endblock%}
