@@ -446,13 +446,16 @@ button:hover,
 label:focus,
 .btn:active,
 .btn.active -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://cdn.rawgit.com/mervick/emojionearea/master/dist/emojionearea.min.js"></script>
-<script src="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/js/jquery.atwho.min.js"></script>
-<script src="https://cdn.rawgit.com/ichord/Caret.js/master/dist/jquery.caret.min.js"></script>
-<link href="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/css/jquery.atwho.css" rel="stylesheet">
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
+<script  src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script  src="https://cdn.rawgit.com/mervick/emojionearea/master/dist/emojionearea.min.js"></script>
+<script  src="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/js/jquery.atwho.min.js"></script>
+<script  src="https://cdn.rawgit.com/ichord/Caret.js/master/dist/jquery.caret.min.js"></script>
+<link  href="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/css/jquery.atwho.css" rel="stylesheet">
+
+
+
+<script   type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" type="text/css"/>
 
 <div class="container pt-2">
@@ -1349,9 +1352,9 @@ label:focus,
 
 
 
-<script src="https://unpkg.com/scrollbooster@2/dist/scrollbooster.min.js"></script>
+<script  src="https://unpkg.com/scrollbooster@2/dist/scrollbooster.min.js"></script>
 
-<script type="text/javascript">
+<script  type="text/javascript">
 
     // Material Select Initialization
     document.addEventListener("DOMContentLoaded", function(event) {
@@ -2366,19 +2369,27 @@ new ScrollBooster({
 });
   </script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js">
+  <script  src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js">
   </script>
 
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
+  <script   type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" type="text/css"/>
 
   <script>
       var feed = "feed";
       // open a channel to talk
       // document.addEventListener("DOMContentLoaded", function(event) {
-      var chatSocket = new ReconnectingWebSocket(
-          'ws://' + window.location.host +
-          '/ws/feed/'+ feed + '/');
+      var chatSocket
+    ws_start='ws://'
+      if (window.location.protocol == 'https:') {
+          ws_start = 'wss://'
+      }
+        // chatSocket = new ReconnectingWebSocket(
+        //    'ws://' + window.location.host +
+        //    '/ws/feed/'+ fseed + '/');
+           chatSocket = new ReconnectingWebSocket(
+               ws_start + window.location.host +
+               '/ws/feed/'+ feed + '/');
 
           chatSocket.onopen = function(event) {
             console.log("WebSocket is open now.");

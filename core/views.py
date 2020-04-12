@@ -145,13 +145,13 @@ class TestZoom(generic.TemplateView):
                 # get redirect url for zoom oauth flow
                 # send a post reqest to zoom to acess user's zoom account
                 user = User_Profile.objects.filter(user=self.request.user)[0]
-                redirect_uri = "http://"+ self.request.META["HTTP_HOST"]+"/zoom/"
-                print(redirect_uri)
+                redirect_uri = "https://"+ self.request.META["HTTP_HOST"]+"/zoom/"
+                print("redirect_uri",redirect_uri)
                 zoom_url = ('https://zoom.us/oauth/token?'
                             'grant_type=authorization_code&'
                             'code={}&'
                             'redirect_uri={}')
-                zoom_api_response = requests.post(zoom_url.format(zoom_OAUTH[0],redirect_uri),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="}).json()
+                zoom_api_response = requests.post(zoom_url.format(zoom_OAUTH[0],redirect_uri),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpuVjJGZHY5akh5TUN5cDRqVWdhaGZuRk91V1NVSnNPRg=="}).json()
                 #  upon reciving the response save zoom credtials to the user info
                 print("zoom_api_response",zoom_api_response)
                 access_token = zoom_api_response["access_token"]
@@ -207,6 +207,7 @@ class TestZoom(generic.TemplateView):
         else:
             context['user_authenticated'] = "false"
         # we need to hide these api keys in a golobal variable
+        # context['tools'] =static('js/tools.js')
         context['apiSecret'] = 'kHrPcargyNAliZfiYgYZlqBXtdK9WxZCwfYJ' #JTW
         context['zoom_api_key'] = 'z9z40dCdTVaA73xCvuTjzQ' #JTW
         return context
@@ -238,7 +239,7 @@ class DisplayZoom(generic.TemplateView):
                     refresh_oauth_url = ('https://zoom.us/oauth/token?'
                                         'grant_type=refresh_token&'
                                         'refresh_token={}')
-                    zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="} ).json()
+                    zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpuVjJGZHY5akh5TUN5cDRqVWdhaGZuRk91V1NVSnNPRg=="} ).json()
                     # update access token
                     # update refresh_token
                     print("zoom_api_refresh_response",zoom_api_refresh_response)
@@ -360,7 +361,7 @@ class DisplayZoom(generic.TemplateView):
                         refresh_oauth_url = ('https://zoom.us/oauth/token?'
                                             'grant_type=refresh_token&'
                                             'refresh_token={}')
-                        zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="} ).json()
+                        zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpuVjJGZHY5akh5TUN5cDRqVWdhaGZuRk91V1NVSnNPRg=="} ).json()
                         # update access token
                         # update refresh_token
                         print("zoom_api_refresh_response",zoom_api_refresh_response)
@@ -2947,6 +2948,8 @@ class Detail_Group(generic.DetailView):
         context['user'] = user.user.username
         context['current_user'] = user
 
+        zoom_iframe_url = "https://"+self.request.META['HTTP_HOST']+"/zoom"
+        context['zoom_iframe_url'] = zoom_iframe_url
         default_profile_pic_url = static('img/default-profile-picture-gmail-2.png')
         context['default_profile_pic_url'] = default_profile_pic_url
         #getting groups post
@@ -4528,7 +4531,7 @@ class Detail_Group(generic.DetailView):
                 refresh_oauth_url = ('https://zoom.us/oauth/token?'
                                     'grant_type=refresh_token&'
                                     'refresh_token={}')
-                zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="} ).json()
+                zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpuVjJGZHY5akh5TUN5cDRqVWdhaGZuRk91V1NVSnNPRg=="} ).json()
                 # update access token
                 # update refresh_token
                 print("zoom_api_refresh_response",zoom_api_refresh_response)
@@ -4664,7 +4667,7 @@ class Detail_Group(generic.DetailView):
                 refresh_oauth_url = ('https://zoom.us/oauth/token?'
                                     'grant_type=refresh_token&'
                                     'refresh_token={}')
-                zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpkek9CcXhnTXJjSkhYZ1ExQXREeXhpTkZUN0N6QnRaNQ=="} ).json()
+                zoom_api_refresh_response = requests.post(refresh_oauth_url.format(user.zoom_refresh_token),headers = {"Authorization":"Basic aTFsbkt3QjhUTEtpcGdfTW41SExuUTpuVjJGZHY5akh5TUN5cDRqVWdhaGZuRk91V1NVSnNPRg=="} ).json()
                 # update access token
                 # update refresh_token
                 print("zoom_api_refresh_response",zoom_api_refresh_response)

@@ -540,7 +540,7 @@ label:focus,
 <script src="https://cdn.rawgit.com/ichord/Caret.js/master/dist/jquery.caret.min.js"></script>
 <link href="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/css/jquery.atwho.css" rel="stylesheet"> -->
 
-<script src="{% static 'js/emojionearea.min.js' %}"></script>
+<script  src="{% static 'js/emojionearea.min.js' %}"></script>
 <script src="{% static 'js/jquery.atwho.min.js' %}"></script>
 <script src="{% static 'js/jquery.caret.min.js' %}"></script>
 <link href="{% static 'css/jquery.atwho.css' %}" rel="stylesheet">
@@ -566,9 +566,9 @@ label:focus,
                   {%if object.zoom_active_meeting%}
                         {% if current_user == object.creator %}
                         <!-- show group img for main user  -->
-                        <iframe id="display_zoom_iframe" class="" src="{%url 'core:zoom'%}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>
+                        <iframe id="display_zoom_iframe" class="" src="{{zoom_iframe_url}}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>
                         {%else%}
-                        <iframe id="display_zoom_iframe" class="" src="{%url 'core:zoom'%}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>
+                        <iframe id="display_zoom_iframe" class="" src="{{zoom_iframe_url}}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>
                         {%endif%}
                   {%else%}
                   <div id="jumbotron_group_picture" class="">
@@ -621,7 +621,7 @@ label:focus,
 
 
                             {%else%}
-                            <a href="https://zoom.us/oauth/authorize?client_id=i1lnKwB8TLKipg_Mn5HLnQ&response_type=code&redirect_uri=http%3A%2F%2F192.168.0.46%3A24%2Fzoom%2F" target="_blank" rel="noopener noreferrer"><img src="https://marketplacecontent.zoom.us/zoom_marketplace/img/add_to_zoom.png" height="32" alt="Add to ZOOM" /></a>
+                            <a id="autherize_zoom_button" href="https://zoom.us/oauth/authorize?client_id=i1lnKwB8TLKipg_Mn5HLnQ&response_type=code&redirect_uri=https%3A%2F%2Ffdc6e0d6.ngrok.io%2Fzoom%2F" target="_blank" rel="noopener noreferrer"><img src="https://marketplacecontent.zoom.us/zoom_marketplace/img/add_to_zoom.png" height="32" alt="Add to ZOOM" /></a>
                             {%endif%}
                     {%endif%}
                   <div class="d-flex justify-content-start">
@@ -3110,49 +3110,13 @@ many to many list template django upto -->
 <!-- {% for new in news|slice:":3" %} {%endfor%}-->
 <!-- ///////////////////////////////////////////////////////////////////////////////////////////Do Not Touch -->
 
-<script>
+<script async>
 
   ///////////////////////////Zoom Section////////////////
   //when user clicks create meeting send a request to create zoom meeting
   function zoom_create_meeting() {
     // dislplay loading function
-
-    try {
-      remove_alert_button()
-    } catch (e) {
-      console.log("no alert")
-    }
-    //place alert on users page
-    alert_footer=document.getElementById('alert_footer')
-    //clone the alert element
-    clone = document.getElementById('alert_footer_content')
-    //cloning the alert
-    clone = clone.cloneNode(true);
-    clone.id = "zoom_alert";
-    try {
-      alert_footer.appendChild(clone);
-      //$('#alert_footer').appendTo(clone).show('slow');
-    } catch (e) {
-    }
-    //change html attribues of the the new member link
-    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-    post_sending.textContent = "Loading Zoom"
-
-    //Add spinner
-    //adding class for asthetics
-    document.getElementById(clone.id).classList.add("pl-0")
-    //get spinner
-    spinner = document.getElementById('black_spinner')
-    //clone spinner
-    spinner = spinner.cloneNode(true);
-    spinner.id = "loader_process";
-    //add the spinner to the flex box
-    button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-    try {
-      button.insertBefore(spinner, button.firstChild);
-
-    } catch (e) {
-    }
+    dispalay_alert_footer_loader("loading zoom")
 
     $.ajaxSetup({
     data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
@@ -3166,11 +3130,7 @@ many to many list template django upto -->
     },
      dataType: "json", //have to add in the data type
     success: function (data) {
-      try {
-        remove_alert_button()
-      } catch (e) {
-        console.log("no alert")
-      }
+      dispalay_alert_footer("zoom meeting loaded")
       // open zoom
       //   popUp=window.open(data["start_url"]);
       //   // add red recoring sign to indicate the xoom meeting is in progress
@@ -3188,42 +3148,8 @@ many to many list template django upto -->
     // close modal
  $("#zoom_add_existing_meeting_close_modal").click()
     // message saying zoom is loading
-    try {
-      remove_alert_button()
-    } catch (e) {
-      console.log("no alert")
-    }
-    //place alert on users page
-    alert_footer=document.getElementById('alert_footer')
-    //clone the alert element
-    clone = document.getElementById('alert_footer_content')
-    //cloning the alert
-    clone = clone.cloneNode(true);
-    clone.id = "zoom_alert";
-    try {
-      alert_footer.appendChild(clone);
-      //$('#alert_footer').appendTo(clone).show('slow');
-    } catch (e) {
-    }
-    //change html attribues of the the new member link
-    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-    post_sending.textContent = "Loading Zoom"
+  dispalay_alert_footer_loader("Loading Zoom")
 
-    //Add spinner
-    //adding class for asthetics
-    document.getElementById(clone.id).classList.add("pl-0")
-    //get spinner
-    spinner = document.getElementById('black_spinner')
-    //clone spinner
-    spinner = spinner.cloneNode(true);
-    spinner.id = "loader_process";
-    //add the spinner to the flex box
-    button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-    try {
-      button.insertBefore(spinner, button.firstChild);
-
-    } catch (e) {
-    }
     // Overview
     // get zoom url input to send to zoom page to join user to meeting //note the why is important
     //get the index of j because it indicates where meeting and password will be in url /j/950..
@@ -3303,13 +3229,18 @@ if (  document.getElementById('display_zoom_iframe')) {
       // add picture to the container
       document.getElementById("jumbotron_iframe_container").insertAdjacentHTML('beforeEnd',  '<div id="jumbotron_group_picture" class=""><img src="{{object.group_picture.url}}" class="img-fluid group-cover-img pt-2" alt="Sample image" height="300px" width="100%"><a href="#"><div class="mask rgba-white-slight"></div></a></div>');
     }
+    if (document.getElementById('autherize_zoom_button')) {
+        document.getElementById('autherize_zoom_button').parentNode.removeChild( document.getElementById('autherize_zoom_button'));
+    }
   }
   function add_iframe() {
     // get rid of group picture
     document.getElementById('jumbotron_group_picture').parentNode.removeChild( document.getElementById('jumbotron_group_picture'));
     //add zoom ifram  on members screen
-    document.getElementById("jumbotron_iframe_container").insertAdjacentHTML('beforeEnd', '  <iframe id="display_zoom_iframe" class="" src="{%url 'core:zoom'%}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>');
-
+    document.getElementById("jumbotron_iframe_container").insertAdjacentHTML('beforeEnd', '  <iframe id="display_zoom_iframe" class="" src="{{zoom_iframe_url}}" width="100%" height="300px" allowfullscreen="" frameborder="0"></iframe>');
+    if (document.getElementById('autherize_zoom_button')) {
+        document.getElementById('autherize_zoom_button').parentNode.removeChild( document.getElementById('autherize_zoom_button'));
+    }
 }
   function zoom_creator_close_meeting() {
     {% if current_user == object.creator %}
@@ -3328,12 +3259,16 @@ if (  document.getElementById('display_zoom_iframe')) {
 
     }
     });
-
+// get rid of the autherization button
+if (document.getElementById('autherize_zoom_button')) {
+    document.getElementById('autherize_zoom_button').parentNode.removeChild( document.getElementById('autherize_zoom_button'));
+}
     {%else%}
     add_group_image();
     {%endif%}
 
   }
+
 
   //function to split url and get the second half
   function splitValue(value, index) {
@@ -3870,7 +3805,7 @@ $.ajax({
 }
   </script>
 
-<script>
+<script async>
 
 function load_user_likes(e) {
   load_user_likes_s = e.attributes["like"].value
@@ -4613,7 +4548,7 @@ function load_user_likes(e) {
 
   </script>
 <!-- for getting the values nessesary into the forms for posting -->
-<script type="text/javascript">
+<script async type="text/javascript">
   //iplementing infinite scrolling
     document.addEventListener("DOMContentLoaded", function(event) {
 
@@ -4641,7 +4576,7 @@ function load_user_likes(e) {
     });
   </script>
 
-  <script>
+  <script async>
     function close_Leave_Group_Modal() {
       document.getElementById('Leave_Group_Modal_button').click()
     }
@@ -4828,50 +4763,15 @@ function remove_category_s(element) {
 }
 </script>
 
-  <script>
+  <script async>
     //https://stackoverflow.com/questions/10899384/uploading-both-data-and-files-in-one-form-using-ajax
     //post submission
     $("form#data").submit(function(e) {
   e.preventDefault();
   var formData = new FormData(this);
 
-            try {
-              remove_alert_button()
-            } catch (e) {
-              console.log("no alert")
-            }
-            //place alert on users page
-            alert_footer=document.getElementById('alert_footer')
-            //clone the alert element
-            clone = document.getElementById('alert_footer_content')
-            //cloning the alert
-            clone = clone.cloneNode(true);
-            clone.id = "Post_sent_alert";
-            try {
-              alert_footer.appendChild(clone);
-              //$('#alert_footer').appendTo(clone).show('slow');
-            } catch (e) {
-            }
-            //change html attribues of the the new member link
-            post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-            post_sending.textContent = "Sending Post!"
+dispalay_alert_footer_loader("Sending Post...")
 
-            //Add spinner
-            //adding class for asthetics
-            document.getElementById(clone.id).classList.add("pl-0")
-            //get spinner
-            spinner = document.getElementById('black_spinner')
-            //clone spinner
-            spinner = spinner.cloneNode(true);
-            spinner.id = "loader_process";
-            //add the spinner to the flex box
-            button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-            try {
-              button.insertBefore(spinner, button.firstChild);
-
-              //$('#alert_footer').appendTo(clone).show('slow');
-            } catch (e) {
-            }
   $.ajax({
       url:"{% url 'core:group' slug=object.slug %}",
       type: 'POST',
@@ -4880,26 +4780,8 @@ function remove_category_s(element) {
         //put a function that waits for a set time then sends if this does not work
         if (data["created_post_false"] == "false") {
 
-          try {
-            remove_alert_button()
-          } catch (e) {
-            console.log("no alert")
-          }
-          //place alert on users page
-          alert_footer=document.getElementById('alert_footer')
-          //clone the alert element
-          clone = document.getElementById('alert_footer_content')
-          //cloning the alert
-          clone = clone.cloneNode(true);
-          clone.id = "Post_sent_alert";
-          try {
-            alert_footer.appendChild(clone);
-            //$('#alert_footer').appendTo(clone).show('slow');
-          } catch (e) {
-          }
-          //change html attribues of the the new member link
-          post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-          post_sending.textContent = "You just posted that..."
+        dispalay_alert_footer("You just posted that...")
+
         }else {
           //Send notification for post mentioning users
           site = "{{ request.build_absolute_uri }}"
@@ -4928,43 +4810,7 @@ function remove_category_s(element) {
 e.preventDefault();
 var formData = new FormData(this);
 
-        try {
-          remove_alert_button()
-        } catch (e) {
-          console.log("no alert")
-        }
-        //place alert on users page
-        alert_footer=document.getElementById('alert_footer')
-        //clone the alert element
-        clone = document.getElementById('alert_footer_content')
-        //cloning the alert
-        clone = clone.cloneNode(true);
-        clone.id = "Alert_sent_alert";
-        try {
-          alert_footer.appendChild(clone);
-          //$('#alert_footer').appendTo(clone).show('slow');
-        } catch (e) {
-        }
-        //change html attribues of the the new member link
-        post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-        post_sending.textContent = "Sending Alert!"
-
-        //Add spinner
-        //adding class for asthetics
-        document.getElementById(clone.id).classList.add("pl-0")
-        //get spinner
-        spinner = document.getElementById('black_spinner')
-        //clone spinner
-        spinner = spinner.cloneNode(true);
-        spinner.id = "loader_process";
-        //add the spinner to the flex box
-        button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-        try {
-          button.insertBefore(spinner, button.firstChild);
-
-          //$('#alert_footer').appendTo(clone).show('slow');
-        } catch (e) {
-        }
+dispalay_alert_footer_loader("Sending Alert!")
         //close the modal
         try {
             $('#modal_alert_button').click()
@@ -4999,44 +4845,7 @@ e.preventDefault();
 var formData = new FormData(this);
 $("#comment_close_modal").click()
 
-
-            try {
-              remove_alert_button()
-            } catch (e) {
-              console.log("no alert")
-            }
-            //place alert on users page
-            alert_footer=document.getElementById('alert_footer')
-            //clone the alert element
-            clone = document.getElementById('alert_footer_content')
-            //cloning the alert
-            clone = clone.cloneNode(true);
-            clone.id = "Post_sent_alert";
-            try {
-              alert_footer.appendChild(clone);
-              //$('#alert_footer').appendTo(clone).show('slow');
-            } catch (e) {
-            }
-            //change html attribues of the the new member link
-            post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-            post_sending.textContent = "Sending Comment!"
-
-            //Add spinner
-            //adding class for asthetics
-            document.getElementById(clone.id).classList.add("pl-0")
-            //get spinner
-            spinner = document.getElementById('black_spinner')
-            //clone spinner
-            spinner = spinner.cloneNode(true);
-            spinner.id = "loader_process";
-            //add the spinner to the flex box
-            button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-            try {
-              button.insertBefore(spinner, button.firstChild);
-
-              //$('#alert_footer').appendTo(clone).show('slow');
-            } catch (e) {
-            }
+dispalay_alert_footer_loader("Sending Comment...")
 
 $.ajax({
   url:"{% url 'core:group' slug=object.slug %}",
@@ -5045,26 +4854,7 @@ $.ajax({
   success: function (data) {
     if (data["created_post_false"] == "false") {
 
-      try {
-        remove_alert_button()
-      } catch (e) {
-        console.log("no alert")
-      }
-      //place alert on users page
-      alert_footer=document.getElementById('alert_footer')
-      //clone the alert element
-      clone = document.getElementById('alert_footer_content')
-      //cloning the alert
-      clone = clone.cloneNode(true);
-      clone.id = "Post_sent_alert";
-      try {
-        alert_footer.appendChild(clone);
-        //$('#alert_footer').appendTo(clone).show('slow');
-      } catch (e) {
-      }
-      //change html attribues of the the new member link
-      post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-      post_sending.textContent = "You just posted that..."
+dispalay_alert_footer("You just posted that")
     }else {
       site = "{{ request.build_absolute_uri }}"
       site=site.replace(/\/$/, "");
@@ -5094,43 +4884,7 @@ e.preventDefault();
 var formData = new FormData(this);
   $("#reply_close_modal").click()
 
-              try {
-                remove_alert_button()
-              } catch (e) {
-                console.log("no alert")
-              }
-              //place alert on users page
-              alert_footer=document.getElementById('alert_footer')
-              //clone the alert element
-              clone = document.getElementById('alert_footer_content')
-              //cloning the alert
-              clone = clone.cloneNode(true);
-              clone.id = "Post_sent_alert";
-              try {
-                alert_footer.appendChild(clone);
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
-              //change html attribues of the the new member link
-              post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-              post_sending.textContent = "Sending Comment!"
-
-              //Add spinner
-              //adding class for asthetics
-              document.getElementById(clone.id).classList.add("pl-0")
-              //get spinner
-              spinner = document.getElementById('black_spinner')
-              //clone spinner
-              spinner = spinner.cloneNode(true);
-              spinner.id = "loader_process";
-              //add the spinner to the flex box
-              button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-              try {
-                button.insertBefore(spinner, button.firstChild);
-
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
+dispalay_alert_footer_loader("Sending Comment...")
 
 $.ajax({
   url:"{% url 'core:group' slug=object.slug %}",
@@ -5139,26 +4893,8 @@ $.ajax({
   success: function (data) {
     if (data["created_post_false"] == "false") {
 
-      try {
-        remove_alert_button()
-      } catch (e) {
-        console.log("no alert")
-      }
-      //place alert on users page
-      alert_footer=document.getElementById('alert_footer')
-      //clone the alert element
-      clone = document.getElementById('alert_footer_content')
-      //cloning the alert
-      clone = clone.cloneNode(true);
-      clone.id = "Post_sent_alert";
-      try {
-        alert_footer.appendChild(clone);
-        //$('#alert_footer').appendTo(clone).show('slow');
-      } catch (e) {
-      }
-      //change html attribues of the the new member link
-      post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-      post_sending.textContent = "You just posted that..."
+dispalay_alert_footer("You just posted that...")
+
     }else {
       site = "{{ request.build_absolute_uri }}"
       site=site.replace(/\/$/, "");
@@ -5186,71 +4922,15 @@ $("form#data4").submit(function(e) {
 e.preventDefault();
 var formData = new FormData(this);
 //close modal
-  $("#update_stock_modal").click()
-
-              try {
-                remove_alert_button()
-              } catch (e) {
-                console.log("no alert")
-              }
-              //place alert on users page
-              alert_footer=document.getElementById('alert_footer')
-              //clone the alert element
-              clone = document.getElementById('alert_footer_content')
-              //cloning the alert
-              clone = clone.cloneNode(true);
-              clone.id = "update_stock_modal_portfolio";
-              try {
-                alert_footer.appendChild(clone);
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
-              //change html attribues of the the new member link
-              post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-              post_sending.textContent = "Updating"
-
-              //Add spinner
-              //adding class for asthetics
-              document.getElementById(clone.id).classList.add("pl-0")
-              //get spinner
-              spinner = document.getElementById('black_spinner')
-              //clone spinner
-              spinner = spinner.cloneNode(true);
-              spinner.id = "loader_process";
-              //add the spinner to the flex box
-              button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-              try {
-                button.insertBefore(spinner, button.firstChild);
-
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
+  $("#update_stock_modal").click();
+  dispalay_alert_footer_loader("Updating")
 
 $.ajax({
   url:"{% url 'core:group' slug=object.slug %}",
   type: 'POST',
   data: formData,
   success: function (data) {
-    try {
-      remove_alert_button()
-    } catch (e) {
-      console.log("no alert")
-    }
-    //place alert on users page
-    alert_footer=document.getElementById('alert_footer')
-    //clone the alert element
-    clone = document.getElementById('alert_footer_content')
-    //cloning the alert
-    clone = clone.cloneNode(true);
-    clone.id = "update_stock_modal_portfolio_success";
-    try {
-      alert_footer.appendChild(clone);
-      //$('#alert_footer').appendTo(clone).show('slow');
-    } catch (e) {
-    }
-    //change html attribues of the the new member link
-    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-    post_sending.textContent = "Updated Shares"
+dispalay_alert_footer("Updated Shares")
   },
   cache: false,
   contentType: false,
@@ -5265,43 +4945,7 @@ var formData = new FormData(this);
 //close modal
   $("#add_stock_to_watchlist_modal").click()
 
-              try {
-                remove_alert_button()
-              } catch (e) {
-                console.log("no alert")
-              }
-              //place alert on users page
-              alert_footer=document.getElementById('alert_footer')
-              //clone the alert element
-              clone = document.getElementById('alert_footer_content')
-              //cloning the alert
-              clone = clone.cloneNode(true);
-              clone.id = "add_stock_to_watchlist_modal_footer";
-              try {
-                alert_footer.appendChild(clone);
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
-              //change html attribues of the the new member link
-              post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-              post_sending.textContent = "Adding Stock(s) to Watchlist"
-
-              //Add spinner
-              //adding class for asthetics
-              document.getElementById(clone.id).classList.add("pl-0")
-              //get spinner
-              spinner = document.getElementById('black_spinner')
-              //clone spinner
-              spinner = spinner.cloneNode(true);
-              spinner.id = "loader_process";
-              //add the spinner to the flex box
-              button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-              try {
-                button.insertBefore(spinner, button.firstChild);
-
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
+dispalay_alert_footer_loader("Adding Stock(s) to Watchlist")
 
 $.ajax({
   url:"{% url 'core:group' slug=object.slug %}",
@@ -5322,27 +4966,8 @@ $.ajax({
              //Really weid quirk the select element will not behave properly
                  el.children[1].click()
               //clear select after post
-
-    try {
-      remove_alert_button()
-    } catch (e) {
-      console.log("no alert")
-    }
-    //place alert on users page
-    alert_footer=document.getElementById('alert_footer')
-    //clone the alert element
-    clone = document.getElementById('alert_footer_content')
-    //cloning the alert
-    clone = clone.cloneNode(true);
-    clone.id = "update_stock_modal_portfolio_success";
-    try {
-      alert_footer.appendChild(clone);
-      //$('#alert_footer').appendTo(clone).show('slow');
-    } catch (e) {
-    }
-    //change html attribues of the the new member link
-    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-    post_sending.textContent = '$'+data['message']+ " added to  watchlist(s)"
+    msg='$'+data['message']+ " added to  watchlist(s)"
+    dispalay_alert_footer(msg)
   },
   cache: false,
   contentType: false,
@@ -5356,44 +4981,7 @@ e.preventDefault();
 var formData = new FormData(this);
 //close modal
   $("#remove_stock_from_specific_watchlist_modal_button_close").click()
-
-              try {
-                remove_alert_button()
-              } catch (e) {
-                console.log("no alert")
-              }
-              //place alert on users page
-              alert_footer=document.getElementById('alert_footer')
-              //clone the alert element
-              clone = document.getElementById('alert_footer_content')
-              //cloning the alert
-              clone = clone.cloneNode(true);
-              clone.id = "remove_stock_from_specific_watchlist_alert";
-              try {
-                alert_footer.appendChild(clone);
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
-              //change html attribues of the the new member link
-              post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-              post_sending.textContent = "Removing Stock from Watchlist"
-
-              //Add spinner
-              //adding class for asthetics
-              document.getElementById(clone.id).classList.add("pl-0")
-              //get spinner
-              spinner = document.getElementById('black_spinner')
-              //clone spinner
-              spinner = spinner.cloneNode(true);
-              spinner.id = "loader_process";
-              //add the spinner to the flex box
-              button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-              try {
-                button.insertBefore(spinner, button.firstChild);
-
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
+              dispalay_alert_footer_loader("Removing Stock from Watchlist")
 
 $.ajax({
   url:"{% url 'core:group' slug=object.slug %}",
@@ -5407,28 +4995,8 @@ $.ajax({
   $('#remove_stock_from_specific_watchlist_ticker').val( "")
     $('#remove_stock_from_specific_watchlist_pk').val("")
               //clear select after post
-
-    try {
-      remove_alert_button()
-    } catch (e) {
-      console.log("no alert")
-    }
-    //place alert on users page
-    alert_footer=document.getElementById('alert_footer')
-    //clone the alert element
-    clone = document.getElementById('alert_footer_content')
-    //cloning the alert
-    clone = clone.cloneNode(true);
-    clone.id = "update_stock_modal_portfolio_success";
-    try {
-      alert_footer.appendChild(clone);
-      //$('#alert_footer').appendTo(clone).show('slow');
-    } catch (e) {
-    }
-    //change html attribues of the the new member link
-    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-    post_sending.textContent = '$'+data['message']+ " removed from  watchlist"
-
+msg = '$'+data['message']+ " removed from  watchlist"
+dispalay_alert_footer(msg)
     element=data['element_id']
     document.getElementById(element).style.display = "none";
   },
@@ -5444,46 +5012,7 @@ e.preventDefault();
 var formData = new FormData(this);
 //close modal
   $("#add_or_remove_stock_from_portfolio_modal_modal_button_close").click()
-
-              try {
-                remove_alert_button()
-              } catch (e) {
-                console.log("no alert")
-              }
-              //place alert on users page
-              alert_footer=document.getElementById('alert_footer')
-              //clone the alert element
-              clone = document.getElementById('alert_footer_content')
-              //cloning the alert
-              clone = clone.cloneNode(true);
-              clone.id = "add_or_remove_stock_from_portfolio_alert";
-              try {
-                alert_footer.appendChild(clone);
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
-
-              //change html attribues of the the new member link
-              post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-              post_sending.textContent = "Updating Portfolio"
-
-              //Add spinner
-              //adding class for asthetics
-              document.getElementById(clone.id).classList.add("pl-0")
-              //get spinner
-              spinner = document.getElementById('black_spinner')
-              //clone spinner
-              spinner = spinner.cloneNode(true);
-              spinner.id = "loader_process";
-              //add the spinner to the flex box
-              button =document.getElementById(clone.id).getElementsByTagName('div')[0]
-              try {
-                button.insertBefore(spinner, button.firstChild);
-
-                //$('#alert_footer').appendTo(clone).show('slow');
-              } catch (e) {
-              }
-
+dispalay_alert_footer_loader("Updating Portfolio")
 $.ajax({
   url:"{% url 'core:group' slug=object.slug %}",
   type: 'POST',
@@ -5494,30 +5023,7 @@ $.ajax({
     $('#add_or_remove_stock_from_portfolio_option').val("")
     $('#add_or_remove_stock_from_portfolio_ticker').val("")
 
-              //clear select after post
-
-    try {
-      remove_alert_button()
-    } catch (e) {
-      console.log("no alert")
-    }
-    //place alert on users page
-    alert_footer=document.getElementById('alert_footer')
-    //clone the alert element
-    clone = document.getElementById('alert_footer_content')
-    //cloning the alert
-    clone = clone.cloneNode(true);
-    clone.id = "update_stock_modal_portfolio_success";
-    try {
-      alert_footer.appendChild(clone);
-      //$('#alert_footer').appendTo(clone).show('slow');
-    } catch (e) {
-    }
-    //change html attribues of the the new member link
-    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-    post_sending.textContent = "Portfolio Updated!"
-
-
+    dispalay_alert_footer("Portfolio Updated!")
   },
   cache: false,
   contentType: false,
@@ -5528,7 +5034,7 @@ $.ajax({
 
     </script>
 
-<script>
+<script async>
 
 
 //notes to create function
@@ -5912,7 +5418,7 @@ display_element.src = ' '
  </script>
 
 
-  <script type="text/javascript">
+  <script async type="text/javascript">
 
     function get_at_usernames(e) {
       user_names = []
@@ -6147,7 +5653,7 @@ repost_modal_clear()
 
 
 
-<script>
+<script async>
 
 
 ////////////////////////Autocomplete for recipents //////////////////////////////
@@ -6255,7 +5761,7 @@ $('#message-text1').atwho({
 
 
 
-<script>
+<script async>
   //clicking on one of the options for member change
 function clicked_status_pending1() {
   user_modal_status = document.getElementById("user_modal_status")
@@ -6265,7 +5771,7 @@ function clicked_status_pending1() {
 
 }
 </script>
-<script>
+<script async>
   //clicking on one of the options for member change
 function clicked_status_pending2() {
   user_modal_status = document.getElementById("user_modal_status")
@@ -6275,7 +5781,7 @@ function clicked_status_pending2() {
 
 }
 </script>
-<script>
+<script async>
   //clicking on one of the options for member change
 function clicked_status_pending3() {
   user_modal_status = document.getElementById("user_modal_status")
@@ -6287,7 +5793,7 @@ function clicked_status_pending3() {
 </script>
 
 
-<script type="text/javascript">
+<script async type="text/javascript">
 
 // function is for when user clicks on the member link anchor. The function takes the data in the anchor html attribute and populates the modal
   function user_modal(clicked_id){
@@ -6366,7 +5872,7 @@ help_info.innerHTML = ""
 
 </script>
 
-<script type="text/javascript">
+<script async type="text/javascript">
 
   function search_member_group(){
 
@@ -6457,7 +5963,7 @@ timezone = day+", "+ h + ":" + m+ time_of_day;
 return timezone
 }
 </script>
-<script type="text/javascript">
+<script async type="text/javascript">
 
 
 
@@ -6465,19 +5971,23 @@ return timezone
 
 
 <!-- websocket -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js">
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js">
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
+<script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" type="text/css"/>
 
-<script>
+<script async>
     var current_user_username = "{{user}}"
     var groupName = {{groupName}};
     // open a channel to talk
     // document.addEventListener("DOMContentLoaded", function(event) {
+    ws_start='ws://'
+      if (window.location.protocol == 'https:') {
+          ws_start = 'wss://'
+      }
     var chatSocket = new ReconnectingWebSocket(
-        'ws://' + window.location.host +
+        ws_start + window.location.host +
         '/ws/group/'+ groupName + '/');
 
         chatSocket.onopen = function(event) {
@@ -7706,12 +7216,6 @@ if (view_group_post != 'null') {
               if (post_object['alert']=="true") {
                 console.log("anything in div",element_to_store_post.children.length)
                 element_to_store_alert=document.getElementById('alert_container_group')
-                          //place the alert as first if error try to append the alert
-                        // try {
-                        //   element_to_store_alert.insertBefore(clone, element_to_store_alert.firstChild);
-                        // } catch (e) {
-                        //   element_to_store_alert.appendChild(clone)
-                        // }
 
                         if (element_to_store_alert.children.length == 0) {
                             element_to_store_alert.appendChild(clone);
@@ -7719,26 +7223,7 @@ if (view_group_post != 'null') {
                             element_to_store_alert.insertBefore(clone, element_to_store_alert.firstChild);
                         }
                             //Place an alert to let the user know that there was an a group alert
-                                    try {
-                                      remove_alert_button()
-                                    } catch (e) {
-                                      // console.log("no alert")
-                                    }
-                                    //place alert on users page
-                                    alert_footer=document.getElementById('alert_footer')
-                                    //clone the alert element
-                                    clone = document.getElementById('alert_footer_content')
-                                    //cloning the alert
-                                    clone = clone.cloneNode(true);
-                                    clone.id = "group_lert";
-                                    try {
-                                      alert_footer.appendChild(clone);
-                                      //$('#alert_footer').appendTo(clone).show('slow');
-                                    } catch (e) {
-                                    }
-                                    //change html attribues of the the new member link
-                                    post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                    post_sending.textContent = "Group Alert!"
+                                  dispalay_alert_footer("Group Alert!")
                               //increase ticker
               }else {
                 console.log("anything in div",element_to_store_post.children.length)
@@ -7749,7 +7234,6 @@ if (view_group_post != 'null') {
                 }
                   // console.log("inserted")
               }
-
                   dost_pic_container_example= clone.getElementsByClassName('post-pic-container-example')[0]
                 // console.log(dost_pic_container_example);
                 //remove post in progress
@@ -7803,27 +7287,7 @@ if (user_adds_watchlist_with_same_name != 'null'){
               if({{new_member}}){
                 //banner here saying welcome to the group
                 //$('#member_alert_large_screen_modal').modal('toggle')
-                              try {
-                                remove_alert_button()
-                              } catch (e) {
-                                console.log("no alert")
-                              }
-                              //place alert on users page
-                              alert_footer=document.getElementById('alert_footer')
-                              //clone the alert element
-                              clone = document.getElementById('alert_footer_content')
-                              //cloning the alert
-                              clone = clone.cloneNode(true);
-                              clone.id = "remove_stock_from_specific_watchlist_alert";
-                              try {
-                                alert_footer.appendChild(clone);
-                                //$('#alert_footer').appendTo(clone).show('slow');
-                              } catch (e) {
-                              }
-                              //change html attribues of the the new member link
-                              post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                              post_sending.textContent = "Welcome to {{object.title|title}}"
-
+                              dispalay_alert_footer("Welcome to {{object.title|cap_title}}!")
               }else {
 
                       //check if the new member tag already exist if so don't create another tag
@@ -7832,27 +7296,8 @@ if (user_adds_watchlist_with_same_name != 'null'){
                       console.log(new_member_exist);
                       if (new_member_exist == null) {
                         //create a banner saying a new member has joined the group
-                        try {
-                          remove_alert_button()
-                        } catch (e) {
-                          console.log("no alert")
-                        }
-                        //place alert on users page
-                        alert_footer=document.getElementById('alert_footer')
-                        //clone the alert element
-                        clone = document.getElementById('alert_footer_content')
-                        //cloning the alert
-                        clone = clone.cloneNode(true);
-                        clone.id = "new_member_alert";
-                        try {
-                          alert_footer.appendChild(clone);
-                          //$('#alert_footer').appendTo(clone).show('slow');
-                        } catch (e) {
-                        }
-                        //change html attribues of the the new member link
-                        post_sending = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                        post_sending.textContent = user_username +" Has joined the group"
-
+                        messg = user_username +" Has joined the group"
+                        dispalay_alert_footer(messg)
                                 //id of the anchor element
                                 group_creator_member_anchor = "memberlink"+"{{group_creator}}"
 
@@ -8026,26 +7471,7 @@ if (user_adds_watchlist_with_same_name != 'null'){
                         if (current_user == user_username ) {
                                 //put an alert on persons screen
                                 // clear any previous alert
-                                try {
-                                  remove_alert_button()
-                                } catch (e) {
-                                  console.log("no alert")
-                                }
-                                //place alert on users page
-                                alert_footer=document.getElementById('alert_footer')
-                                //clone the alert element
-                                clone = document.getElementById('alert_footer_content')
-                                //cloning the alert
-                                clone = clone.cloneNode(true);
-                                clone.id = "delete_alert_content";
-                                try {
-                                  alert_footer.appendChild(clone);
-                                  //$('#alert_footer').appendTo(clone).show('slow');
-                                } catch (e) {
-                                }
-                                //change html attribues of the the new member link
-                                delete_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                delete_alert.textContent = "Post Deleted!"
+                                dispalay_alert_footer("Post Deleted!")
                               }
                             }
 
@@ -8057,32 +7483,12 @@ if (user_adds_watchlist_with_same_name != 'null'){
                             if (current_user == user_username ) {
                                     //put an alert on persons screen
                                     // clear any previous alert
-                                    try {
-                                      //div containing alert should fade out
-                                      //the alert inside of div should be delateated
-                                      remove_alert_button()
-                                    } catch (e) {
-                                      console.log("no alert")
-                                    }
-                                    //place alert on users page
-                                    alert_footer=document.getElementById('alert_footer')
-                                    //clone the alert element
-                                    clone = document.getElementById('alert_footer_content')
-                                    //cloning the alert
-                                    clone = clone.cloneNode(true);
-                                    clone.id = "archive_alert_content";
-                                    try {
-                                      alert_footer.appendChild(clone);
-                                    } catch (e) {
-                                    }
                                       if (server_reponse_post_comment_reply_action != 'null') {
                                         //change html attribues of the the new member link
-                                        archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                        archive_alert.textContent = server_reponse_post_comment_reply_action
+                                        dispalay_alert_footer(server_reponse_post_comment_reply_action)
                                       }else {
                                         //change html attribues of the the new member link
-                                        report_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                        report_alert.textContent = "Post Reported!"
+                                        dispalay_alert_footer("Post Reported!")
                                       }
                                   }
                             }
@@ -8094,32 +7500,12 @@ if (user_adds_watchlist_with_same_name != 'null'){
                             if (current_user == user_username ) {
                                     //put an alert on persons screen
                                     // clear any previous alert
-                                    try {
-                                      //div containing alert should fade out
-                                      //the alert inside of div should be delateated
-                                      remove_alert_button()
-                                    } catch (e) {
-                                      console.log("no alert")
-                                    }
-                                    //place alert on users page
-                                    alert_footer=document.getElementById('alert_footer')
-                                    //clone the alert element
-                                    clone = document.getElementById('alert_footer_content')
-                                    //cloning the alert
-                                    clone = clone.cloneNode(true);
-                                    clone.id = "archive_alert_content";
-                                    try {
-                                      alert_footer.appendChild(clone);
-                                    } catch (e) {
-                                    }
                                     if (server_reponse_post_comment_reply_action != 'null') {
                                       //change html attribues of the the new member link
-                                      archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                      archive_alert.textContent = server_reponse_post_comment_reply_action
+                                      dispalay_alert_footer(server_reponse_post_comment_reply_action)
                                     }else {
                                       //change html attribues of the the new member link
-                                      archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                      archive_alert.textContent = "Post Archived!"
+                                      dispalay_alert_footer("Post Archived!")
                                     }
                                 }
                         }
@@ -8215,26 +7601,7 @@ if (user_adds_watchlist_with_same_name != 'null'){
                         if (current_user == user_username ) {
                                 //put an alert on persons screen
                                 // clear any previous alert
-                                try {
-                                  remove_alert_button()
-                                } catch (e) {
-                                  console.log("no alert")
-                                }
-                                //place alert on users page
-                                alert_footer=document.getElementById('alert_footer')
-                                //clone the alert element
-                                clone = document.getElementById('alert_footer_content')
-                                //cloning the alert
-                                clone = clone.cloneNode(true);
-                                clone.id = "delete_alert_content";
-                                try {
-                                  alert_footer.appendChild(clone);
-                                  //$('#alert_footer').appendTo(clone).show('slow');
-                                } catch (e) {
-                                }
-                                //change html attribues of the the new member link
-                                delete_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                delete_alert.textContent = "Comment Deleted!"
+                                dispalay_alert_footer("Comment Deleted!")
                               }
                             }
 
@@ -8246,32 +7613,12 @@ if (user_adds_watchlist_with_same_name != 'null'){
                             if (current_user == user_username ) {
                                     //put an alert on persons screen
                                     // clear any previous alert
-                                    try {
-                                      //div containing alert should fade out
-                                      //the alert inside of div should be delateated
-                                      remove_alert_button()
-                                    } catch (e) {
-                                      console.log("no alert")
-                                    }
-                                    //place alert on users page
-                                    alert_footer=document.getElementById('alert_footer')
-                                    //clone the alert element
-                                    clone = document.getElementById('alert_footer_content')
-                                    //cloning the alert
-                                    clone = clone.cloneNode(true);
-                                    clone.id = "archive_alert_content";
-                                    try {
-                                      alert_footer.appendChild(clone);
-                                    } catch (e) {
-                                    }
                                       if (server_reponse_post_comment_reply_action != 'null') {
                                         //change html attribues of the the new member link
-                                        archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                        archive_alert.textContent = server_reponse_post_comment_reply_action
+                                        dispalay_alert_footer(server_reponse_post_comment_reply_action)
                                       }else {
                                         //change html attribues of the the new member link
-                                        report_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                        report_alert.textContent = "Comment Reported!"
+                                        dispalay_alert_footer("Comment Reported!")
                                       }
                                   }
                             }
@@ -8281,34 +7628,10 @@ if (user_adds_watchlist_with_same_name != 'null'){
                         //display alert only on the current users page
                             current_user = "{{user}}"
                             if (current_user == user_username ) {
-                                    //put an alert on persons screen
-                                    // clear any previous alert
-                                    try {
-                                      //div containing alert should fade out
-                                      //the alert inside of div should be delateated
-                                      remove_alert_button()
-                                    } catch (e) {
-                                      console.log("no alert")
-                                    }
-                                    //place alert on users page
-                                    alert_footer=document.getElementById('alert_footer')
-                                    //clone the alert element
-                                    clone = document.getElementById('alert_footer_content')
-                                    //cloning the alert
-                                    clone = clone.cloneNode(true);
-                                    clone.id = "archive_alert_content";
-                                    try {
-                                      alert_footer.appendChild(clone);
-                                    } catch (e) {
-                                    }
                                     if (server_reponse_post_comment_reply_action != 'null') {
-                                      //change html attribues of the the new member link
-                                      archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                      archive_alert.textContent = server_reponse_post_comment_reply_action
+                                      dispalay_alert_footer(server_reponse_post_comment_reply_action)
                                     }else {
-                                      //change html attribues of the the new member link
-                                      archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                      archive_alert.textContent = "Comment Archived!"
+                                      dispalay_alert_footer("Comment Archived!")
                                     }
                                 }
                         }
@@ -8401,28 +7724,7 @@ if (user_adds_watchlist_with_same_name != 'null'){
                         //display alert only on the current users page
                         current_user = "{{user}}"
                         if (current_user == user_username ) {
-                                //put an alert on persons screen
-                                // clear any previous alert
-                                try {
-                                  remove_alert_button()
-                                } catch (e) {
-                                  console.log("no alert")
-                                }
-                                //place alert on users page
-                                alert_footer=document.getElementById('alert_footer')
-                                //clone the alert element
-                                clone = document.getElementById('alert_footer_content')
-                                //cloning the alert
-                                clone = clone.cloneNode(true);
-                                clone.id = "delete_alert_content";
-                                try {
-                                  alert_footer.appendChild(clone);
-                                  //$('#alert_footer').appendTo(clone).show('slow');
-                                } catch (e) {
-                                }
-                                //change html attribues of the the new member link
-                                delete_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                delete_alert.textContent = "Comment Deleted!"
+                                dispalay_alert_footer("Comment Deleted!")
                               }
                             }
 
@@ -8432,34 +7734,10 @@ if (user_adds_watchlist_with_same_name != 'null'){
                         //display alert only on the current users page
                             current_user = "{{user}}"
                             if (current_user == user_username ) {
-                                    //put an alert on persons screen
-                                    // clear any previous alert
-                                    try {
-                                      //div containing alert should fade out
-                                      //the alert inside of div should be delateated
-                                      remove_alert_button()
-                                    } catch (e) {
-                                      console.log("no alert")
-                                    }
-                                    //place alert on users page
-                                    alert_footer=document.getElementById('alert_footer')
-                                    //clone the alert element
-                                    clone = document.getElementById('alert_footer_content')
-                                    //cloning the alert
-                                    clone = clone.cloneNode(true);
-                                    clone.id = "archive_alert_content";
-                                    try {
-                                      alert_footer.appendChild(clone);
-                                    } catch (e) {
-                                    }
                                       if (server_reponse_post_comment_reply_action != 'null') {
-                                        //change html attribues of the the new member link
-                                        archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                        archive_alert.textContent = server_reponse_post_comment_reply_action
+                                         dispalay_alert_footer(server_reponse_post_comment_reply_action)
                                       }else {
-                                        //change html attribues of the the new member link
-                                        report_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                        report_alert.textContent = "Comment Reported!"
+                                         dispalay_alert_footer("Comment Reported!")
                                       }
                                   }
                             }
@@ -8469,34 +7747,10 @@ if (user_adds_watchlist_with_same_name != 'null'){
                         //display alert only on the current users page
                             current_user = "{{user}}"
                             if (current_user == user_username ) {
-                                    //put an alert on persons screen
-                                    // clear any previous alert
-                                    try {
-                                      //div containing alert should fade out
-                                      //the alert inside of div should be delateated
-                                      remove_alert_button()
-                                    } catch (e) {
-                                      console.log("no alert")
-                                    }
-                                    //place alert on users page
-                                    alert_footer=document.getElementById('alert_footer')
-                                    //clone the alert element
-                                    clone = document.getElementById('alert_footer_content')
-                                    //cloning the alert
-                                    clone = clone.cloneNode(true);
-                                    clone.id = "archive_alert_content";
-                                    try {
-                                      alert_footer.appendChild(clone);
-                                    } catch (e) {
-                                    }
                                     if (server_reponse_post_comment_reply_action != 'null') {
-                                      //change html attribues of the the new member link
-                                      archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                      archive_alert.textContent = server_reponse_post_comment_reply_action
+                                      dispalay_alert_footer(server_reponse_post_comment_reply_action)
                                     }else {
-                                      //change html attribues of the the new member link
-                                      archive_alert = document.getElementById(clone.id).getElementsByTagName('p')[0]
-                                      archive_alert.textContent = "Comment Archived!"
+                                      dispalay_alert_footer("Comment Archived!")
                                     }
                                 }
                         }
@@ -9058,19 +8312,41 @@ if (x==0) {
 ///////End Section //////////
 
 ////////////////Remove the footer alert button////////
+
 function remove_alert_button(){
-        //try is needed so that the WebSocket does not close incase there is an error
-          try {
+  try {
+    alert_footer = document.getElementById('alert_footer')
+    console.log(alert_footer)
+    alert_footer.removeChild(alert_footer.childNodes[0]);
+  } catch (e) {
+  }
+}
 
-            alert_footer = document.getElementById('alert_footer')
-            console.log(alert_footer)
-            alert_footer.removeChild(alert_footer.childNodes[0]);
+function dispalay_alert_footer(message) {
+  try {
+    remove_alert_button()
+  } catch (e) {
+    console.log("no alert")
+  }
+  try {
+    content='<button id="alert_footer_content" class="btn btn-primary btn-lg btn-block waves-effect pr-0" onclick="remove_alert_button()"><div class="d-flex justify-content-start"><span><p>'+message+'</p></span> <span><i class="ui times icon ml-3" onclick="remove_alert_button()"></i></span></div></button>'
+    alert_footer.insertAdjacentHTML('beforeEnd', content);
+  } catch (e) {
+  }
+}
 
-          } catch (e) {
+function dispalay_alert_footer_loader(message) {
+  try {
+    remove_alert_button()
+  } catch (e) {
+    console.log("no alert")
+  }
+  try {
+    content='<button id="alert_footer_content" class="btn btn-primary btn-lg btn-block waves-effect pr-0 pl-0" onclick="remove_alert_button()"><div class="d-flex justify-content-start"><div class="spinner-border text-dark mx-2" role="status" id="loader_process"><span class="sr-only">Loading...</span></div><span><p>'+message+'</p></span> <span><i class="ui times icon ml-3" onclick="remove_alert_button()"></i></span></div></button>'
 
-          }
-
-
+    alert_footer.insertAdjacentHTML('beforeEnd', content);
+  } catch (e) {
+  }
 }
 
 //getting the element that contains the uploaded picture display and deleleteing the img url
@@ -9846,7 +9122,7 @@ if (action_note != 'watchlist') {
 
 
 </script>
-<script type="text/javascript">
+<script async type="text/javascript">
         var SETTINGS = {
             navBarTravelling: false,
             navBarTravelDirection: "",
@@ -10128,7 +9404,7 @@ if (action_note != 'watchlist') {
 
     </script>
 
-<script>
+<script async>
 function remove_group_alert_icon(){
   //update alert notification num
   //check if there is an alert

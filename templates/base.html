@@ -57,6 +57,27 @@
     color: #e7e7e7!important;
 }
       </style>
+
+
+
+    <script async type="text/javascript" src="{% static "dist/js/jquery-3.4.1.min.js" %}"></script>
+    <!-- Bootstrap tooltips -->
+    <script defer type="text/javascript"  src="{% static "dist/js/popper.min.js" %}"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script defer type="text/javascript"  src="{% static "dist/js/bootstrap.min.js" %}"></script>
+    <!-- MDB core JavaScript -->
+    <script defer type="text/javascript" src="{% static "dist/js/mdb.min.js" %}">
+    </script>
+    <script defer type="text/javascript"  src="{% static "js/steppers.min.js" %}"></script>
+
+
+
+
+    <!-- semantic ui -->
+    <script defer  type="text/javascript" src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    <script defer type="text/javascript"src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/dropdown.js"></script>
+
+
 </head>
 <body class="fixed-sn black-skin">
   {% block zoom_body %}
@@ -190,12 +211,7 @@
 
   {%block jqeury%}
   {%block other_content%}
-  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-  <script src="https://code.highcharts.com/highcharts.js"></script>
-  <script src="https://code.highcharts.com/highcharts-more.js"></script>
-<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
+
   <!-- for chartit -->
 
 
@@ -234,35 +250,18 @@
 
       <!-- Initializations -->
 
-      <script src="{% static "highlight.pack.js" %}"></script>
-      <script>hljs.initHighlightingOnLoad();
-      </script>
+
       <!-- JQuery -->
 
 
-<script type="text/javascript" src="{% static "dist/js/jquery-3.4.1.min.js" %}"></script>
-<!-- Bootstrap tooltips -->
-<script type="text/javascript"  src="{% static "dist/js/popper.min.js" %}"></script>
-<!-- Bootstrap core JavaScript -->
-<script type="text/javascript"  src="{% static "dist/js/bootstrap.min.js" %}"></script>
-<!-- MDB core JavaScript -->
-<script type="text/javascript" src="{% static "dist/js/mdb.min.js" %}">
-</script>
-<script type="text/javascript"  src="{% static "js/steppers.min.js" %}"></script>
+      <script defer  type="text/javascript">
+      // SideNav Initialization
+              $(document).ready(function () {
+                $(".button-collapse").sideNav();
 
-<script type="text/javascript">
-// SideNav Initialization
-        $(".button-collapse").sideNav();
-        $(document).ready(function () {
-      $('.stepper').mdbStepper();
-      })
+            $('.stepper').mdbStepper();
+            })
 
-</script>
-<!-- semantic ui -->
-<script  type="text/javascript" src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
-<script  type="text/javascript"src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/dropdown.js"></script>
-
-
-
+      </script>
 </body>
 </html>
