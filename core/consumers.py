@@ -3,15 +3,13 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.shortcuts import render, get_object_or_404, redirect
 import json
 from channels.layers import get_channel_layer
-from .models import (Item, OrderItem, Order,Stocks,
-User_Profile,Dividend,StockInfo,Article,
+from .models import (Item, OrderItem, Order,
+User_Profile,Dividend,Article,
 Post,Topic,Comments,GenGroup,GroupMember,CommentReply,
 Archive,PostArchive,CommentsArchive,CommentReplyArchive,
 PostViewCount,PostReport,PostLike,CommentsReport,
 CommentsLike,CommentReplyLike,CommentReplyReport,
-PostPicture, CommentsPicture, CommentReplyPicture,
-GroupWatchlist,WatchStockDetail,StockWatchlist,
-WatchlistDownload, File, GroupFileList, FileDownload,
+PostPicture, CommentsPicture, CommentReplyPicture, File, GroupFileList, FileDownload,
 PostUrl, WebsiteUrl,Notification, DividendWealthMembership,
 DividendWealthSubscription, UserProfileCards, Cards,
 DividendWealthConnectedAccount, DividendWealthConnectedAccountPayments,
@@ -104,27 +102,9 @@ class GroupConsumer(AsyncWebsocketConsumer):
             except KeyError:
                 event['post_comment_reply_action'] = 'null'
                 post_comment_reply_action = event['post_comment_reply_action']
-            #///Section is for removing a watchlist from the group
-            try:
-                stock_watchlist_remove = event['stock_watchlist_remove']
-            except KeyError:
-                event['stock_watchlist_remove'] = 'null'
-                stock_watchlist_remove = event['stock_watchlist_remove']
 
-            #/////Section is for copying a watchlist from a group
-            try:
-                stock_watchlist_add = event['stock_watchlist_add']
-            except KeyError:
-                event['stock_watchlist_add'] = 'null'
-                stock_watchlist_add = event['stock_watchlist_add']
-            #//////Section is for receiving stock slug to update shares in users portfolio
-            try:
-                stock_slug_update_portfolio = event['stock_slug_update_portfolio']
-            except KeyError:
-                event['stock_slug_update_portfolio'] = 'null'
-                stock_slug_update_portfolio = event['stock_slug_update_portfolio']
 
-            #//////Section is for receiving stock slug to update shares in users file to delete
+            #//////Section is for receiving  slug to update shares in users file to delete
             try:
                 delete_group_file_pk = event['delete_group_file_pk']
             except KeyError:
@@ -202,15 +182,7 @@ class GroupConsumer(AsyncWebsocketConsumer):
             #might want to move the function below to one of the try methods that triggers when user is on the page
             await database_sync_to_async(self.online_status_open)(user_username)
 
-            if stock_watchlist_remove != 'null':
-                await database_sync_to_async(self.remove_watchlist_from_group)(stock_watchlist_remove)
 
-            if stock_watchlist_add != 'null':
-                await database_sync_to_async(self.copy_watchlist_from_group)(stock_watchlist_add,user_username)
-
-            share_count_update = 'null'
-            if stock_slug_update_portfolio != 'null':
-                share_count_update = await database_sync_to_async(self.update_shares_user_portfolio)(stock_slug_update_portfolio,user_username)
 
             if delete_group_file_pk != 'null':
                 await database_sync_to_async(self.remove_file_from_group_files)(delete_group_file_pk)
@@ -250,13 +222,6 @@ class GroupConsumer(AsyncWebsocketConsumer):
                     #variables from post comment reply section
                     'post_comment_reply_action':post_comment_reply_action,
                     'server_reponse_post_comment_reply_action':server_reponse_post_comment_reply_action,
-
-                    #section is for telling the client which watchlist was added
-                    'stock_watchlist_add':stock_watchlist_add,
-
-                    #section is for updating the useres Shares
-                    'share_count_update': share_count_update,
-                    'stock_slug_update_portfolio':stock_slug_update_portfolio,
 
                     # section is for sending new member information
                     'new_member_information':new_member_information,
@@ -373,26 +338,6 @@ class GroupConsumer(AsyncWebsocketConsumer):
             event['view_group_reply'] = 'null'
             view_group_reply = event['view_group_reply']
 
-        #/////Section is for copying a watchlist from a group
-        try:
-            stock_watchlist_add = event['stock_watchlist_add']
-        except KeyError:
-            event['stock_watchlist_add'] = 'null'
-            stock_watchlist_add = event['stock_watchlist_add']
-
-        #/////Section is for updating share count for stock portfolio
-        try:
-            share_count_update = event['share_count_update']
-        except KeyError:
-            event['share_count_update'] = 'null'
-            share_count_update = event['share_count_update']
-
-        try:
-            stock_slug_update_portfolio = event['stock_slug_update_portfolio']
-        except KeyError:
-            event['stock_slug_update_portfolio'] = 'null'
-            stock_slug_update_portfolio = event['stock_slug_update_portfolio']
-
         try:
             notification_content = event['notification_content']
             print(notification_content)
@@ -414,13 +359,6 @@ class GroupConsumer(AsyncWebsocketConsumer):
             event['user_leave_manually'] = 'null'
             user_leave_manually = event['user_leave_manually']
 
-        # Section if for user adding a watchlist he already has with the same name
-
-        try:
-            user_adds_watchlist_with_same_name = event['user_adds_watchlist_with_same_name']
-        except KeyError:
-            event['user_adds_watchlist_with_same_name'] = 'null'
-            user_adds_watchlist_with_same_name = event['user_adds_watchlist_with_same_name']
 
         # Section is for getting varialble dealing with the oppening of the ifram
         try:
@@ -471,12 +409,7 @@ class GroupConsumer(AsyncWebsocketConsumer):
             #variable from reply VIEWS
             'view_group_reply' : view_group_reply,
 
-            #section is for telling the client which watchlist was added
-            'stock_watchlist_add':stock_watchlist_add,
 
-            #section is for updating the users shares
-            'share_count_update': share_count_update,
-            'stock_slug_update_portfolio': stock_slug_update_portfolio,
 
             #section is for sending notification content
             'notification_content': notification_content,
@@ -487,12 +420,10 @@ class GroupConsumer(AsyncWebsocketConsumer):
             # section if for user manually opting out of group
             'user_leave_manually':user_leave_manually,
 
-            # Section if for user adding a watchlist he already has with the same name
-            'user_adds_watchlist_with_same_name':user_adds_watchlist_with_same_name,
 
         # Section is for getting varialble dealing with the oppening of the ifram
             "zoom_load_iframe":zoom_load_iframe,
-            
+
             # Section is for sending information dealing with group closing
             "zoom_close_group_meeting":zoom_close_group_meeting
 
@@ -936,99 +867,6 @@ class GroupConsumer(AsyncWebsocketConsumer):
                             archive.commentreply.add(commentreply)
                             print("archived comment and created archive")
                             return "null"
-    #Section is for handling the removal of a watchlist from group
-    def remove_watchlist_from_group (self,watchlist_pk):
-        group = GenGroup.objects.filter(slug=self.room_name)[0]
-        pk =int(watchlist_pk)
-        #print(pk)
-        list=StockWatchlist.objects.filter(pk=pk)[0]
-        if GroupWatchlist.objects.filter(stockwatchlist=list,group=group ).exists():
-            instance =GroupWatchlist.objects.filter(stockwatchlist=list,group=group)
-            instance.delete()
-
-    #Section if for copying a given watchlist and making the same watchlist for the user
-    def copy_watchlist_from_group (self,watchlist_pk,username):
-        user = User_Profile.objects.filter(user__username=username)[0]
-        pk =int(watchlist_pk)
-        #print(pk)
-        list=StockWatchlist.objects.filter(pk=pk)[0]
-
-
-        # get list of watchlist user has
-        list_of_user_watchlist = StockWatchlist.objects.filter(creator=user)
-        # check if the name of the watchlist already exists
-        for user_list in list_of_user_watchlist:
-            if user_list.title.lower() == list.title.lower():
-                print("true")
-                channel_layer = get_channel_layer()
-                user_adds_watchlist_with_same_name =   {
-                'true':'true'
-                }
-                user_adds_watchlist_with_same_name = json.dumps(user_adds_watchlist_with_same_name)
-                async_to_sync(channel_layer.group_send)(self.room_name, {"type": "chat.message",
-                "user_adds_watchlist_with_same_name": user_adds_watchlist_with_same_name,
-                })
-                return
-        #add user to the people that have downloaded the watchlist
-        if WatchlistDownload.objects.filter(watchlist=list,downloader=user).exists():
-            x=1
-            print("already downloaded it")
-        else:
-             list.downloader.add(user)
-             #increment the number of downloads for the watchlist
-             num=list.downloaded +1
-             list.downloaded = num
-        list.save()
-
-        #copy stocks into the new watchlist
-        copy_watchlist =StockWatchlist.objects.create(creator=user,title=list.title,description=list.description,added=True,checked=False)
-        model_instances = WatchStockDetail.objects.filter(watchlist=list)
-        for item in model_instances:
-            copy_watchlist.stocks.add(item.stock)
-        copy_watchlist.save()
-
-        print("copied stocklist")
-
-        notification_action_statment="Copied your watchlist: "+ string.capwords(list.title)
-        if Notification.objects.filter(userprofile=list.creator,action_user=user,action_statement=notification_action_statment).exists():
-            pass
-        else:
-            notification_url = '#'
-            note_model= Notification.objects.create(userprofile=list.creator,action_user=user,action_statement=notification_action_statment,url=notification_url,type="post",action = "watchlist")
-            user.notification_count = user.notification_count +1
-            user.save()
-            # Section is for sending Async Notification
-            # get the image of the action user
-            if bool(note_model.action_user.profile_pic) != False:
-                action_user_profile_pic =  note_model.action_user.profile_pic.url
-            else:
-                action_user_profile_pic = 'false'
-
-            now = datetime.now()
-            time_post =now.strftime("%a, %I:%M:%S %p")
-            time_published = time_post
-
-            channel_layer = get_channel_layer()
-            notification_content =   {
-            'type': 'post',
-            'action': 'watchlist',
-            'userprofile_name':note_model.userprofile.user.username,
-            'action_user': note_model.action_user.user.username,
-            'action_user_profile_pic': action_user_profile_pic,
-            'action_statement': notification_action_statment,
-            'notification_url': notification_url,
-            'notification_pk': note_model.pk,
-            'notification_time': time_published,
-            }
-            notification_content = json.dumps(notification_content)
-            async_to_sync(channel_layer.group_send)(self.room_name, {"type": "chat.message",
-            "notification_content": notification_content,})
-
-    #Section is for updating the shares of the user's portfolio
-    def update_shares_user_portfolio (self,stock_slug,username):
-        user = User_Profile.objects.filter(user__username=username)[0]
-        stockinfo = StockInfo.objects.filter(stock__slug=stock_slug,userprofile=user)[0]
-        return str(stockinfo.quantity)
 
     #Section is for removing file from a group
     def remove_file_from_group_files (self, delete_group_file_pk):

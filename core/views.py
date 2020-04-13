@@ -4,14 +4,13 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import (Item, OrderItem, Order,Stocks,
-User_Profile,Dividend,StockInfo,Article,
+from .models import (Item, OrderItem, Order,
+User_Profile,Dividend,Article,
 Post,Topic,Comments,GenGroup,GroupMember,CommentReply,
 Archive,PostArchive,CommentsArchive,CommentReplyArchive,
 PostViewCount,PostReport,PostLike,CommentsReport,
 CommentsLike,CommentReplyLike,CommentReplyReport,
 PostPicture, CommentsPicture, CommentReplyPicture,
-GroupWatchlist,WatchStockDetail,StockWatchlist,
 WatchlistDownload, File, GroupFileList, FileDownload,
 PostUrl, WebsiteUrl,Notification, DividendWealthMembership,
 DividendWealthSubscription, UserProfileCards, Cards,
@@ -94,42 +93,7 @@ def rotate_image(filepath):
     pass
 
 
-
-
-
-"""
-def item_list(request):
-    context = {
-    'items': Item.objects.all()
-    }
-    return render(request, "home-page.html", context)
-"""
 # https://docs.djangoproject.com/en/3.0/topics/auth/default/
-class StockAutocomplete(autocomplete.Select2QuerySetView):
-    def get_queryset(self):
-        # Don't forget to filter out results depending on the visitor !
-
-        qs = Stocks.objects.all()
-
-        if self.q:
-            qs = qs.filter(Q(ticker__icontains=self.q) | Q(company_name__icontains=self.q))
-
-        return qs
-
-
-#text page for autocomplete
-class Autocom(generic.TemplateView):
-    template_name = 'autocomplete.html'
-
-    def get_context_data(self, *args, **kwargs):
-        # Just include the form
-
-        context = super(Autocom, self).get_context_data(*args, **kwargs)
-        stocks = Stocks.objects.all()
-        user = User_Profile.objects.filter(user=self.request.user)[0]
-        context['stocks'] = stocks
-        context['object_list']=StockInfo.objects.filter(userprofile =user).select_related()
-        return context
 
 class TestZoom(generic.TemplateView):
     template_name="zoom_test.html"
@@ -412,14 +376,8 @@ class DisplayZoom(generic.TemplateView):
             context['zoom_api_key'] = 'z9z40dCdTVaA73xCvuTjzQ'
             return context
 
-
-
-
-# article =  Article.objects.filter(
-#     Q(title__icontains=request) | Q(description__icontains=request) | Q(url__icontains=request)
-# ).order_by('-published').order_by('-pk')[:12]
 class Feed(generic.TemplateView):
-    #list of all the blogs posted as well as stock portfolio recommendations
+    #list of all the blogs posted
     template_name = "feed.html"
     def get(self, *args, **kwargs):
         group_infinite_scroll =self.request.GET.getlist('group_infinite_scroll') if 'group_infinite_scroll' in self.request.GET else None
@@ -429,10 +387,7 @@ class Feed(generic.TemplateView):
             last_group_pk=group_infinite_scroll[0]
             try:
                 self.request.session["group_search"]
-
-
                 group_list = GenGroup.objects.filter(published=True,pk__lt=int(last_group_pk),groupcategories__category__description__in= self.request.session['group_search']['categories'],creator__usercredential__credential__title__in=self.request.session['group_search']['credentials'],price__gte=float(self.request.session['group_search']['min_price'][0])*100,price__lte=float(self.request.session['group_search']['max_price'][0])*100).distinct().order_by('-pk')
-
             except:
                 # self.request.session["group_search"] = {'categories':'none','credentials':['none'],'price':['none','none']}
                 group_list = GenGroup.objects.filter(pk__lt=int(last_group_pk),published=True).select_related('creator').order_by('-pk')
@@ -1274,13 +1229,6 @@ class Feed(generic.TemplateView):
         context['financial_roles'] = FinancialRole.objects.all() #filter for active finacial roles
         # keep track of how often the fincal role is searched
 
-        # Section is for Stocks
-        stocks=Stocks.objects.all()
-        context['stocks'] = stocks
-
-        if self.request.user.is_authenticated:
-            user_owned_stocks= user.stock.all()
-            context['user_owned_stocks'] = user_owned_stocks
         return context
 
             #handeling post
@@ -1298,90 +1246,6 @@ class Feed(generic.TemplateView):
             }
             print("made it to post")
             return JsonResponse(data)
-
-
-class User_Profile_Page(generic.TemplateView):
-    template_name = 'user_profile.html'
-    def get_queryset(self):
-        #get current user accessing page
-        user = get_object_or_404(User_Profile, user=self.request.user)
-        #list of stocks order by slug feild
-        user.stock.order_by('slug').all()
-        #use intermidary model to get instances where user profile equal to current user
-        return StockInfo.objects.filter(userprofile =user).select_related()
-
-    def get_context_data(self, **kwargs):
-        """Checks to see if user has stocks or not"""
-        context = super(User_Profile_Page, self).get_context_data(**kwargs)
-        user = User_Profile.objects.filter(user=self.request.user)[0]
-        users = User_Profile.objects.all()
-        #post_qs2 = Post.object.filter(author=user)
-
-        #getting list of groups user is a member of or create_date
-        #can have a list of created vs joined groups
-        group_qs = GenGroup.objects.filter(
-            Q(creator=user) | Q(members=user)
-            ).distinct()
-        total_groups = len(group_qs)
-        context['groups'] =group_qs
-        context['total_groups'] = total_groups
-        context['users'] = users
-        print(group_qs)
-        #/////////////endsection
-
-        #paginating stock_list
-        stock_list = StockInfo.objects.filter(userprofile =user).select_related()
-        paginator = Paginator(stock_list,2)
-        page_request_var = 'page'
-        page = self.request.GET.get(page_request_var)
-        try:
-            paginated_queryset = paginator.page(page)
-        except PageNotAnInteger:
-            paginated_queryset = paginator.page(1)
-        except EmptyPage:
-            paginated_queryset = paginator.page(paginator.num_pages)
-        context['stock_list'] = paginated_queryset
-        context['page_request_var'] = page_request_var
-
-    #end section
-
-        #paginating posts
-        post_list = Spost_qs = user.post_set.all().order_by("-published").select_related() #want to profile affilited with user
-        paginator2 = Paginator(post_list,1)
-        page_request_var2 = 'posts'
-        posts = self.request.GET.get(page_request_var2)
-        try:
-            paginated_queryset2 = paginator2.page(posts)
-        except PageNotAnInteger:
-            paginated_queryset2 = paginator2.page(1)
-        except EmptyPage:
-            paginated_queryset2 = paginator2.page(paginator2.num_pages)
-        existing_post = post_list.exists()
-    #end section
-
-
-
-        context['posts'] = paginated_queryset2
-        context['post_request_var2'] = page_request_var2
-        context['existing_post'] = existing_post
-
-        return context
-#post section /////////////////////
-class Create_Post(generic.CreateView):
-    template_name = 'post_form.html'
-    form_class = PostForm
-    success_url = '/'
-
-    def form_valid(self, form,):
-        #problem saving a many to many feild because commit = to false
-         """Saves current user to the profile """
-         postform = form.save(commit=False)
-
-         postform.author = get_object_or_404(User_Profile, user=self.request.user)
-         postform.save()
-         form.save_m2m()
-         print(postform.stocks)
-         return HttpResponseRedirect(reverse('core:feed')) #home page
 
 class Detail_Post(generic.DetailView):
     queryset = Post.objects.select_related()
@@ -1427,9 +1291,6 @@ class Detail_Post(generic.DetailView):
 
         return context
 #post section /////////////////////
-class Create_Comment(generic.CreateView):
-    pass
-
 class Create_DividendWealthGroup(generic.TemplateView):
     template_name = "create_gen_group.html"
 
@@ -2168,21 +2029,11 @@ class Group_Landing_Page(generic.TemplateView):
                     url = reverse('core:group-landing', kwargs={'slug': group.slug,})
                     return HttpResponseRedirect(url)
 
-
-    # Previous solution for creating group
-    # def form_valid(self, form,):
-    #      """Saves current user to the profile """
-    #      groupform = form.save(commit=False)
-    #      groupform.creator = get_object_or_404(User_Profile, user=self.request.user)
-    #      groupform.save()
-    #      return HttpResponseRedirect(reverse('core:user_dashboard')) #home page
-
 class Detail_Group(generic.DetailView):
     model = GenGroup
     template_name = "group_detail.html"
 
     def get(self, *args, **kwargs):
-        print(self.request)
         similar_group_slug=self.request.GET.getlist('similar_group_slug') if 'similar_group_slug' in self.request.GET else None
         # section veariabels for loading more comments
         load_more_comments_post_id =self.request.GET.getlist('load_more_comments_post_id') if 'load_more_comments_post_id' in self.request.GET else None
@@ -2198,13 +2049,6 @@ class Detail_Group(generic.DetailView):
         # Section is for getting more files
         group_infinite_file_scroll =self.request.GET.getlist('group_infinite_file_scroll') if 'group_infinite_file_scroll' in self.request.GET else None
 
-        # Section is for getting more stocks
-        group_infinite_watchlist_scroll = self.request.GET.getlist('group_infinite_watchlist_scroll') if 'group_infinite_watchlist_scroll' in self.request.GET else None
-        # Section if for loading stocks to wath list
-        watchlist_stocks = self.request.GET.getlist('watchlist_stocks') if 'watchlist_stocks' in self.request.GET else None
-
-        # section is to load posts of stocks
-        watchlist_stock_slug_load_post = self.request.GET.getlist('watchlist_stock_slug_load_post') if 'watchlist_stock_slug_load_post' in self.request.GET else None
 
         if similar_group_slug != None:
             similar_group_slug=similar_group_slug[0]
@@ -2248,13 +2092,7 @@ class Detail_Group(generic.DetailView):
                         reicpients_name_url.append('#')
                     else:
                         print("nope user recipents")
-                #add stocks to post if any
-                stock_name_url=[]
-                for stock in comment.stocks.all():
-                    if Stocks.objects.filter(pk=stock.pk).exists():
-                        stock_to_add = Stocks.objects.filter(pk=stock.pk)[0]
-                        stock_name_url.append(stock_to_add.ticker)
-                        stock_name_url.append(stock_to_add.get_absolute_url())
+
                 #add photo to post if any
 
                 url_of_photo_id = []
@@ -2288,10 +2126,7 @@ class Detail_Group(generic.DetailView):
                 # time_post =now.strftime("%a, %I:%M:%S %p")
                 time_published_post = time_post
 
-                if comment.stocks.all():
-                    stock_list_post = stock_name_url
-                else:
-                    stock_list_post = 'false'
+
 
                 content_post = comment.contents
 
@@ -2328,7 +2163,6 @@ class Detail_Group(generic.DetailView):
                     "user_name_post": user_name_post,
                     # "comments_on_post": comments_on_post,
                     "time_published_post": time_published_post,
-                    "stock_list_post": stock_list_post,
                     # "title_of_post": title_of_post,
                     "content_post": content_post,
                     "url_of_photo_id_post":url_of_photo_id_post,
@@ -2391,13 +2225,7 @@ class Detail_Group(generic.DetailView):
                         reicpients_name_url.append('#')
                     else:
                         print("nope user recipents")
-                #add stocks to post if any
-                stock_name_url=[]
-                for stock in comment.stocks.all():
-                    if Stocks.objects.filter(pk=stock.pk).exists():
-                        stock_to_add = Stocks.objects.filter(pk=stock.pk)[0]
-                        stock_name_url.append(stock_to_add.ticker)
-                        stock_name_url.append(stock_to_add.get_absolute_url())
+
                 #add photo to post if any
 
                 url_of_photo_id = []
@@ -2436,11 +2264,6 @@ class Detail_Group(generic.DetailView):
                 # time_post =now.strftime("%a, %I:%M:%S %p")
                 time_published_post = time_post
 
-                if comment.stocks.all():
-                    stock_list_post = stock_name_url
-                else:
-                    stock_list_post = 'false'
-
                 content_post = comment.contents
 
                 if comment.commentreplypicture_set.all():
@@ -2471,7 +2294,6 @@ class Detail_Group(generic.DetailView):
                     "user_name_post": user_name_post,
                     # "comments_on_post": comments_on_post,
                     "time_published_post": time_published_post,
-                    "stock_list_post": stock_list_post,
                     # "title_of_post": title_of_post,
                     "content_post": content_post,
                     "url_of_photo_id_post":url_of_photo_id_post,
@@ -2661,283 +2483,6 @@ class Detail_Group(generic.DetailView):
             }
             return JsonResponse(data)
 
-        if group_infinite_watchlist_scroll != None:
-            # int will be zero if there are no files
-            last_watchlist_pk=group_infinite_watchlist_scroll[0]
-            current_group = get_object_or_404(GenGroup, slug=self.kwargs['slug'])
-            group_watchlist_count = GroupWatchlist.objects.filter(group=current_group,stockwatchlist__pk__lt=int(last_watchlist_pk)).count()
-            print("watchlist pk",last_watchlist_pk)
-            paginator = 4
-            group_watchlist_count= group_watchlist_count - paginator
-            if group_watchlist_count <= 0:
-                get_more= "false"
-            else:
-                get_more= "true"
-            watchlist_list = GroupWatchlist.objects.filter(group=current_group,stockwatchlist__pk__lt=int(last_watchlist_pk)).order_by('-pk')[:paginator]
-            watchlist_list_collection = []
-            current_user = User_Profile.objects.filter(user=self.request.user)[0]
-            current_member=GroupMember.objects.filter(group=current_group,userprofile=current_user)[0]
-            current_member_status = current_member.member_status
-            user_watchlist = StockWatchlist.objects.filter(creator=current_user)
-            for list in watchlist_list:
-                # group_file pk
-                watchlist_pk = list.stockwatchlist.pk
-                print(watchlist_pk)
-                # user picture
-                if bool(list.stockwatchlist.creator.profile_pic) != False:
-                    user_profile_pic_url =  list.stockwatchlist.creator.profile_pic.url
-                else:
-                    user_profile_pic_url = 'false'
-                # url to user
-                url_to_user = '#'
-                # file title
-                watchlist_title =string.capwords(list.stockwatchlist.title)
-                # file description
-                watchlist_description = list.stockwatchlist.description
-                # watchlist_download
-                watchlist_download = list.stockwatchlist.downloaded
-                # user owns WatchList
-                user_owns_list = 'false'
-                if list.stockwatchlist in user_watchlist:
-                # does watchlist belong to user or is user creator or admin
-                    user_owns_list = 'true'
-                else:
-                    user_owns_list = 'false'
-                if current_member_status == 'a' or  current_member_status == 'd':
-                    admin_or_creator = 'true'
-                else:
-                    admin_or_creator = 'false'
-
-                list_info = {
-                    #file id
-                    "watchlist_pk" : watchlist_pk,
-                    "user_profile_pic_url" : user_profile_pic_url,
-                    "url_to_user": url_to_user,
-                    "watchlist_title": watchlist_title,
-                    "watchlist_description": watchlist_description,
-                    "admin_or_creator": admin_or_creator,
-                    "watchlist_download": watchlist_download,
-                    "user_owns_list":user_owns_list,
-                }
-
-                list_info = json.dumps(list_info)
-                watchlist_list_collection.append(list_info)
-
-            watchlist_list_collection = json.dumps(watchlist_list_collection)
-            data = {
-             'watchlist_list_collection': watchlist_list_collection,
-             'get_more':get_more
-            }
-            return JsonResponse(data)
-
-        if watchlist_stocks != None:
-            # int will be zero if there are no files
-            watchlist_pk=watchlist_stocks[0]
-            current_group = get_object_or_404(GenGroup, slug=self.kwargs['slug'])
-
-            stock_detail_list = WatchStockDetail.objects.filter(watchlist__pk=int(watchlist_pk))
-            stock_list_collection = []
-            current_user = User_Profile.objects.filter(user=self.request.user)[0]
-            current_member=GroupMember.objects.filter(group=current_group,userprofile=current_user)[0]
-            current_member_status = current_member.member_status
-            user_watchlist = StockWatchlist.objects.filter(creator=current_user)
-            user_owned_stocks= current_user.stock.all()
-
-            stock_list_creator = stock_detail_list[0].watchlist.creator.user.username
-            stock_list_date_created= stock_detail_list[0].watchlist.created_date
-            for stockinfo in stock_detail_list:
-                watchlist_pk = stockinfo.watchlist.pk
-                # WatchStockDetail pk
-                stockinfo_pk = stockinfo.pk
-                print(stockinfo_pk)
-                # stock absolute urls
-                stock_url = stockinfo.stock.get_absolute_url()
-                # stock company name
-                stock_company_name = string.capwords(stockinfo.stock.company_name)
-                # username
-                username=current_user.user.username
-                # watchlist_title
-                watchlist_title = stockinfo.watchlist.title.title()
-                # stock creator
-                if current_user == stockinfo.watchlist.creator:
-                    stock_creator = "true"
-                else:
-                    stock_creator = "false"
-
-                username_created_stocklist=stockinfo.watchlist.creator.user.username
-                # date add stock
-
-                # stock_date = datetime.date(year_month_day[0], year_month_day[1], year_month_day[2])
-                stock_date_added = stockinfo.date_added.strftime(" %B %d, %Y")
-                # date watchlist created
-                watchlist_created = stockinfo.watchlist.created_date.strftime(" %B %d, %Y")
-                # stock ticker
-                stock_ticker = stockinfo.stock.ticker
-                # updated date
-                stock_update_date = "Oct 16, 1:45PM"
-                # stock price
-                stock_price = stockinfo.stock.price
-                # stock_slug
-                stock_slug = stockinfo.stock.slug
-                # stock dividend Yeild
-                stock_yeild = stockinfo.stock.dividend_yeild
-                # months
-                stock_months = stockinfo.stock.get_months_display()
-                # company img
-                company_image = "https://mdbootstrap.com/img/Photos/Others/intro1.jpg"
-                # company profile
-                company_profile = "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil odit magnam minima, soluta doloribus reiciendis molestiae placeat unde eos molestias. Quisquam aperiam, pariatur. Tempora, placeat ratione porro voluptate odit minima at ipsum sit amet."
-                # user ouns stock
-                user_owns_stock = 'false'
-                if stockinfo.stock in user_owned_stocks:
-                    user_owns_stock = 'true'
-                # creator of stock list
-
-
-                list_info = {
-                    #file id
-                    "stockinfo_pk" : stockinfo_pk,
-                    "stock_url" : stock_url,
-                    "stock_company_name": stock_company_name,
-                    "username": username,
-                    "stock_creator": stock_creator,
-                    "stock_date_added": stock_date_added,
-                    "stock_ticker": stock_ticker,
-                    "watchlist_pk": watchlist_pk,
-                    "stock_update_date" : stock_update_date,
-                    "stock_price" : stock_price,
-                    "stock_slug": stock_slug,
-                    "stock_yeild": stock_yeild,
-                    "stock_months": stock_months,
-                    "company_image": company_image,
-                    "company_profile": company_profile,
-                    "watchlist_title":watchlist_title,
-                    "watchlist_created":watchlist_created,
-                    "user_owns_stock": user_owns_stock,
-                    "username_created_stocklist":username_created_stocklist,
-                }
-
-                list_info = json.dumps(list_info)
-                stock_list_collection.append(list_info)
-
-            stock_list_collection = json.dumps(stock_list_collection)
-            data = {
-             'stock_list_collection': stock_list_collection,
-             'stock_list_creator':stock_list_creator,
-             'stock_list_date_created':stock_list_date_created
-
-            }
-            return JsonResponse(data)
-
-        if watchlist_stock_slug_load_post != None:
-            paginator = 5
-            # https://chartio.com/resources/tutorials/how-to-filter-for-empty-or-null-values-in-a-django-queryset/
-            # filtering for
-            comments_to_load = Post.objects.filter(stocks__slug=watchlist_stock_slug_load_post[0], repost__isnull=True, hidden=False).order_by('-pk')[:paginator]
-            comment_list= []
-            for comment in comments_to_load:
-                print(comment)
-                # print("comment beng created at the moment",comment.pk)
-                reicpients_name_url=[]
-                # find recipients associated with the comment
-                for user in comment.recipients.all():
-                    if User_Profile.objects.filter(pk=user.pk).exists():
-                        recipient = User_Profile.objects.filter(pk=user.pk)[0]
-                        reicpients_name_url.append(recipient.user.username)
-                        reicpients_name_url.append('#')
-                    else:
-                        print("nope user recipents")
-                #add stocks to post if any
-                stock_name_url=[]
-                for stock in comment.stocks.all():
-                    if Stocks.objects.filter(pk=stock.pk).exists():
-                        stock_to_add = Stocks.objects.filter(pk=stock.pk)[0]
-                        stock_name_url.append(stock_to_add.ticker)
-                        stock_name_url.append(stock_to_add.get_absolute_url())
-                #add photo to post if any
-
-                url_of_photo_id = []
-                comment_pics = PostPicture.objects.filter(post__pk=comment.id)
-                for document in comment_pics:
-                        url_of_photo_id.append(document.post_picture.url)
-                        url_of_photo_id.append(document.pk)
-
-                # packaging the Comment to send to channels in json format
-                #kkeping post_id for simplicity
-                post_id = comment.id
-                #know which post to put comment under
-                current_post_id = load_more_comments_post_id
-
-                user = comment.author
-
-                if bool(user.profile_pic) != False:
-                    user_profile_pic_url_post =  user.profile_pic.url
-                else:
-                    user_profile_pic_url_post = 'false'
-
-                user_name_post = user.user.username
-
-                #time_published_post = created_post.published
-                now = datetime.now()
-                time_post =now.strftime("%a, %I:%M:%S %p")
-                time_published_post = time_post
-
-                if comment.stocks.all():
-                    stock_list_post = stock_name_url
-                else:
-                    stock_list_post = 'false'
-
-                content_post = comment.content
-
-                if comment.postpicture_set.all():
-                    url_of_photo_id_post = url_of_photo_id
-                else:
-                    url_of_photo_id_post = 'false'
-
-                if comment.recipients.all():
-                    reicpients_name_url_post = reicpients_name_url
-                else:
-                    reicpients_name_url_post = 'false'
-
-                comment_like = "1"
-
-                reply = "false"
-
-                url_to_detail_view_of_post = comment.get_absolute_url()
-                comment_like_user = "false"
-
-
-                view_group_comment = {
-                    #Comment id
-                    "post_id" : post_id,
-                    #Post id
-                    "url_to_detail_view_of_post":url_to_detail_view_of_post,
-
-                    "current_post_id" : current_post_id,
-                    "user_profile_pic_url_post":user_profile_pic_url_post,
-                    "user_name_post": user_name_post,
-                    # "comments_on_post": comments_on_post,
-                    "time_published_post": time_published_post,
-                    "stock_list_post": stock_list_post,
-                    # "title_of_post": title_of_post,
-                    "content_post": content_post,
-                    "url_of_photo_id_post":url_of_photo_id_post,
-                    "reicpients_name_url_post": reicpients_name_url_post,
-                    "comment_like":comment_like,
-                    "reply": reply,
-                    "alert": "false",
-                    "comment_like_user":comment_like_user
-                }
-
-                view_group_comment = json.dumps(view_group_comment)
-                comment_list.append(view_group_comment)
-
-            comment_list=json.dumps(comment_list)
-            data = {
-             'comment_list': comment_list,
-            }
-            return JsonResponse(data)
-
         # if stripe code is not available then go to regular page
         return super(Detail_Group, self).get(self.request, *args, **kwargs)
 
@@ -2972,14 +2517,6 @@ class Detail_Group(generic.DetailView):
         user.online_status = 'o'
         user.save()
         # self.request.session['username']= 'something esle'
-        #get list of all the stocks_qun
-        #using for tickers
-        stocks =Stocks.objects.all()
-        context["stocks"] = stocks
-
-        #List of stocks user owns to compare against watchlist
-        user_owned_stocks= user.stock.all()
-        context["user_owned_stocks"] = user_owned_stocks
 
         #paginating alert list
         alert_list= Post.objects.filter(group=current_group,hidden=False,alert=True).prefetch_related('author','post_comment__recipients','post_comment__author','post_comment__commentreply_set','post_comment__commentreply_set__recipients','post_comment__commentreply_set__author').order_by('-published')
@@ -3044,31 +2581,6 @@ class Detail_Group(generic.DetailView):
             new_member= "true"
             context['new_member'] = new_member
 
-
-        #WatchList  for group
-        watchlist = GroupWatchlist.objects.filter(group=current_group).order_by('-pk')
-        paginator_watchlist = Paginator(watchlist,5)
-        page_request_var_watchlist = 'pa'
-        page_watchlist = self.request.GET.get(page_request_var_watchlist)
-        try:
-            paginated_queryset_watchlist = paginator_watchlist.page(page_watchlist)
-        except PageNotAnInteger:
-            paginated_queryset_watchlist = paginator_watchlist.page(1)
-        except EmptyPage:
-            paginated_queryset_watchlist = paginator_watchlist.page(paginator_watchlist.num_pages)
-        context['watchlist'] = paginated_queryset_watchlist
-        context['page_request_var_watchlist'] = page_request_var_watchlist
-                    # watchlistt = GroupWatchlist.objects.filter(group=current_group)[0]
-                    # print(watchlistt.stockwatchlist.watchstockdetail_set.all()[0].stock.post_set.all())
-
-                    # print(watchlist)
-                    #
-                    # print(watchlist.stockwatchlist.stocks.all())
-
-        #Users_watchlist #note can use value and to make faster
-        user_watchlist = StockWatchlist.objects.filter(creator=user)
-        context['user_watchlist'] = user_watchlist
-
         #get the name of the group group creator
         group_creator =current_group.creator.user.username
         context['group_creator'] = group_creator
@@ -3116,33 +2628,7 @@ class Detail_Group(generic.DetailView):
         #//documentation.onesignal.com/docs
         #https://mkaz.blog/code/python-string-format-cookbook/
         # group_time_spent = self.request.GET.getlist('group_time_spent') if 'group_time_spent' in self.request.GET else None
-        # if group_time_spent != None:
-        #     member = GroupMember.objects.filter(group=current_group,userprofile=user)[0]
-        #
-        #     then=member.joined
-        #     this_moment=timezone.now()
-        #     time_since_joining_group=this_moment- then
-        #     member.timespent_in_group += (int(group_time_spent[0])/1000)
-        #     # print("session time",int(group_time_spent[0])/1000)
-        #     # print("time since joining group",time_since_joining_group.total_seconds())
-        #     # print("time spent int group",member.timespent_in_group)
-        #     percentage_of_time_meber_in_group=member.timespent_in_group/time_since_joining_group.total_seconds()
-        #     # print("percentage of time in group",percentage_of_time_meber_in_group)
-        #     percentage_of_time_meber_in_group=percentage_of_time_meber_in_group*100
-        #     percentage_of_time_meber_in_group="{:.0f}".format(percentage_of_time_meber_in_group)
-        #     print("percentage value",percentage_of_time_meber_in_group)
-        #     member.in_group_time = percentage_of_time_meber_in_group
-        #     member.save()
 
-        # else:
-        #     member = GroupMember.objects.filter(group=current_group,userprofile=user)[0]
-        #     then=member.joined
-        #     this_moment=timezone.now()
-        #     time_since_joining_group=this_moment- then
-        #     percentage_of_time_meber_in_group=member.timespent_in_group/time_since_joining_group.total_seconds()
-        #     percentage_of_time_meber_in_group=percentage_of_time_meber_in_group*100
-        #     percentage_of_time_meber_in_group="{:.0f}".format(percentage_of_time_meber_in_group)
-        #     print("percentage value",percentage_of_time_meber_in_group)
         context["group_admin_zoom_account_linked"] = "true" if user.zoom_account_linked == True else "false"
         # Zoom JTW
         context['apiSecret'] = 'kHrPcargyNAliZfiYgYZlqBXtdK9WxZCwfYJ'
@@ -3219,12 +2705,10 @@ class Detail_Group(generic.DetailView):
                 comment=None
 
             #///Section filters post
-            stocks = None
             reicpients = None
             if comment != None:
-                #variables for recipients and stocks
+                #variables for recipients
                 reicpients = []
-                stocks = []
                 attached_url = []
                 # filter post for users
                 #split the string on space
@@ -3237,16 +2721,10 @@ class Detail_Group(generic.DetailView):
                 # get the length of the post filter variable
                 list_lenght= len(post_list_to_filter)
                 #print(list_lenght)
-                #loop through the post filter variable check for recipents, stocks, and if long word
+                #loop through the post filter variable check for recipents,  and if long word
                 for word in range(list_lenght):
                     # the for loop goes through the loop once to much so try statment is here
                     try:
-                        #filter Message for stocks
-                        if "$" in post_list_to_filter[word]:
-                            stock = post_list_to_filter[word].split('$')
-                            print(stock)
-                            stocks.append(stock[1])
-                            # print(stocks)
                         # filtering for user
                         if "@" in post_list_to_filter[word]:
                             reicpient = post_list_to_filter[word].split('@')
@@ -3267,9 +2745,8 @@ class Detail_Group(generic.DetailView):
                         pass
                 #join the filtered list back together
                 comment=' '.join(post_list_to_filter)
-                #set is to make sure evey user and stock is unique
+                #set is to make sure evey user
                 reicpients = set(reicpients)
-                stocks = set(stocks)
 
             if group != None and comment != None:
 
@@ -3294,15 +2771,7 @@ class Detail_Group(generic.DetailView):
                                 reicpients_name_url.append(recipient.user.username)
                                 reicpients_name_url.append('#')
                         #print(created_post.recipients.all())
-                    #add stocks to post if any
-                    stock_name_url=[]
-                    if stocks != None:
-                        for stock in stocks:
-                            if Stocks.objects.filter(ticker__iexact=stock).exists():
-                                stock_to_add = Stocks.objects.filter(ticker__iexact=stock)[0]
-                                created_post.stocks.add(stock_to_add)
-                                stock_name_url.append(stock_to_add.ticker)
-                                stock_name_url.append(stock_to_add.get_absolute_url())
+
                     #add photo to post if any
                     file=None
                     photo = file
@@ -3344,10 +2813,7 @@ class Detail_Group(generic.DetailView):
                     now = datetime.now()
                     time_post =now.strftime("%a, %I:%M:%S %p")
                     time_published_post = time_post
-                    if created_post.stocks.all():
-                        stock_list_post = stock_name_url
-                    else:
-                        stock_list_post = 'false'
+
 
                     if created_post.title != None:
                         title_of_post = created_post.title
@@ -3380,7 +2846,6 @@ class Detail_Group(generic.DetailView):
                         "user_name_post": user_name_post,
                         "comments_on_post": comments_on_post,
                         "time_published_post": time_published_post,
-                        "stock_list_post": stock_list_post,
                         "title_of_post": title_of_post,
                         "content_post": content_post,
                         "url_of_photo_id_post":url_of_photo_id_post,
@@ -3467,257 +2932,6 @@ class Detail_Group(generic.DetailView):
             print(HttpResponseRedirect(url))
             return HttpResponseRedirect(url)
 
-        #////Section is for add_or_remove_stock_from_portfolio//////////////////
-        #print(add_or_remove_stock_from_portfolio)
-        add_or_remove_stock_from_portfolio= self.request.POST.getlist('add_or_remove_stock_from_portfolio') if 'add_or_remove_stock_from_portfolio' in self.request.POST else None
-        if add_or_remove_stock_from_portfolio != None:
-            try:
-                option=add_or_remove_stock_from_portfolio[0]
-            except IndexError:
-                option=None
-
-            try:
-                ticker=add_or_remove_stock_from_portfolio[1]
-            except IndexError:
-                ticker=None
-
-            try:
-                quantity=add_or_remove_stock_from_portfolio[2]
-            except IndexError:
-                quantity=None
-
-            if option != None:
-                if option == 'add':
-                    if StockInfo.objects.filter(stock__ticker__icontains=ticker,userprofile=user).exists():
-                        print('stock already in portfolio')
-                    else:
-
-                        stock=Stocks.objects.filter(ticker__icontains=ticker)[0]
-                        StockInfo.objects.create(stock=stock, quantity=int(quantity),userprofile=user)
-
-                if option == 'remove':
-                    stock=Stocks.objects.filter(ticker__icontains=ticker)[0]
-                    if StockInfo.objects.filter(stock=stock,userprofile=user).exists():
-                        StockInfo.objects.filter(stock=stock,userprofile=user)[0].delete()
-
-                data = {
-                 'message': 'nothing',
-
-                }
-                return JsonResponse(data)
-        #////Section is for removing stock from watchlist
-        remove_stock_from_watchlist = self.request.POST.getlist('remove_stock_from_watchlist') if 'remove_stock_from_watchlist' in self.request.POST else None
-        if remove_stock_from_watchlist != None:
-            try:
-                watchlist_pk=remove_stock_from_watchlist[1]
-            except IndexError:
-                watchlist_pk=None
-
-            try:
-                ticker=remove_stock_from_watchlist[2]
-            except IndexError:
-                ticker=None
-
-            try:
-                element=remove_stock_from_watchlist[3]
-            except IndexError:
-                element=None
-
-            if element != None:
-
-                pk =int(watchlist_pk)
-
-                if WatchStockDetail.objects.filter(pk=pk).exists():
-                    print('here2')
-                    pending_watchlist=WatchStockDetail.objects.filter(pk=pk)[0].delete()
-                    data = {
-                     'message': ticker,
-                     'element_id': element,
-                    }
-
-                    return JsonResponse(data)
-        #//// Section is for adding stocks to watchlists
-        watchlist_add_stocks = self.request.POST.getlist('watchlist_add_stocks') if 'watchlist_add_stocks' in self.request.POST else None
-        if watchlist_add_stocks != None:
-            try:
-                add_stock_watchlist_slug=self.request.POST.getlist('add_stock_watchlist_slug')[0]
-
-            except IndexError:
-                add_stock_watchlist_slug=None
-
-            # check to see if there are any watchlist to update
-            if len(watchlist_add_stocks) !=0:
-                #grab the stock that we want to add
-                stock = Stocks.objects.filter(slug=add_stock_watchlist_slug)[0]
-                list_of_watchlist_that_has_stocks = []
-
-                #iterate through watchlists selected and check conditions
-                for list in watchlist_add_stocks:
-                    #check if the watchlist exists
-                    if StockWatchlist.objects.filter(creator=user,title__iexact=list).exists():
-                        #grab the watchlists
-                        pending_list = StockWatchlist.objects.filter(creator=user,title__iexact=list)[0]
-                        #check if the watchlist has the stock iin it
-                        if WatchStockDetail.objects.filter(stock=stock,watchlist=pending_list).exists():
-                            #if watchlist has the stocks add the name of the watchlist to watchlist not to be edited list
-                            list_of_watchlist_that_has_stocks.append(pending_list.title)
-                            print('stock already exists in list')
-                        else:
-                            print('created new stock for list')
-                            #if watchlist does not have the stock create a new model instance
-                            WatchStockDetail.objects.create(stock=stock,watchlist=pending_list)
-
-
-                data = {
-                'message': add_stock_watchlist_slug
-                }
-
-                return JsonResponse(data)
-
-        #//////Section Update stock portfolio shares
-        update_stock_porfolio_list = self.request.POST.getlist('update_stock_porfolio_list') if 'update_stock_porfolio_list' in self.request.POST else None
-        if update_stock_porfolio_list != None:
-            try:
-                share_count=update_stock_porfolio_list[0]
-                share_count = int(share_count)
-            except IndexError:
-                share_count=None
-
-            try:
-                stock_slug=update_stock_porfolio_list[1]
-            except IndexError:
-                stock_slug=None
-
-            if stock_slug != None:
-                stockinfo = StockInfo.objects.filter(userprofile=user, stock__slug=stock_slug)[0]
-                stockinfo.quantity = share_count
-                stockinfo.save()
-                url = reverse('core:group', kwargs={'slug': self.kwargs['slug'],})
-                object = "grouppost"#add_on
-                id = "#"+object
-                url = url + id
-                print(HttpResponseRedirect(url))
-                return HttpResponseRedirect(url)
-
-        #//////Section Post Watchlist
-
-        post_watchlist = self.request.POST.getlist('watchlist_post') if 'watchlist_post' in self.request.POST else None
-        if post_watchlist != None:
-            already_in_list = []
-            not_in_group_list =[]
-
-            #if we recieved values
-            if len(post_watchlist)!=0:
-                print( "inhere")
-                #for every value
-                for list in post_watchlist:
-                    #check if empty or None
-                    if list != "" or list != None:
-                        #check if value exist if so check if it is a list already associatied with the group
-                        if StockWatchlist.objects.filter(creator=user, title=list).exists():
-                             list = StockWatchlist.objects.filter(creator=user, title=list)[0]
-                             if GroupWatchlist.objects.filter(stockwatchlist=list,group=current_group).exists():
-                                 list_not_to_add = list.title
-                                 already_in_list.append(list_not_to_add)
-                            #if value is not associated add it to the group
-                             else:
-                                 list_to_add =list.title
-                                 not_in_group_list.append(list_to_add)
-                                 current_group.stock_watchlist.add(list)
-                if len(already_in_list)!=0:
-                    list_of_watchlist=", ".join(already_in_list)
-                    user_info=list_of_watchlist+ " is already part your groups watchlist!"
-                    messages.info(request, user_info)
-                else:
-                    list_of_watchlist=", ".join(not_in_group_list)
-                    user_info=list_of_watchlist+ " added to your groups watchlist!"
-                    messages.info(request, user_info)
-                url = reverse('core:group', kwargs={'slug': self.kwargs['slug'],})
-                object = "grouppost"#add_on
-                id = "#"+object
-                url = url + id
-                print(HttpResponseRedirect(url))
-                return HttpResponseRedirect(url)
-
-        #///////////////////////
-        #//Section Create WatchList
-        create_watchlist = self.request.POST.getlist('create_watchlist') if 'create_watchlist' in self.request.POST else None
-        if create_watchlist != None:
-            print(create_watchlist)
-            try:
-                watchlist_title=create_watchlist[0]
-
-            except IndexError:
-                watchlist_title=None
-
-            try:
-                watchlist_descr=create_watchlist[1]
-            except IndexError:
-                watchlist_descr=None
-
-            try:
-                watchlist_stocks=create_watchlist[2]
-            except IndexError:
-                watchlist_stocks=None
-
-            try:
-                watchlist_groups=create_watchlist[3]
-            except IndexError:
-                watchlist_groups=None
-
-            if watchlist_stocks != None:
-                created_watch_list = StockWatchlist.objects.create(creator=user, description=watchlist_descr,title =watchlist_title)
-                #filter stock_list
-                stock_list =watchlist_stocks.strip()
-                stock_list= stock_list.split("$")
-                while("" in stock_list) :
-                    stock_list.remove("")
-
-                stock_list_y = []
-                for stock in stock_list:
-
-                    stock_listS=stock.strip()
-                    stock_list_y.append(stock_listS)
-
-                stock_list = stock_list_y
-                stock_list = set(stock_list)
-
-
-                for stock in stock_list:
-                    if Stocks.objects.filter(ticker__icontains=stock).exists():
-                        stock_to_add = Stocks.objects.filter(ticker__icontains=stock)[0]
-                        created_watch_list.stocks.add(stock_to_add)
-
-                if watchlist_groups != None:
-                    #filter group_list
-                    group_list = watchlist_groups.strip()
-                    group_list = group_list.split(",")
-                    while("" in group_list) :
-                        group_list.remove("")
-
-                    group_list_y = []
-                    for group in group_list:
-
-                        group_listS=group.strip()
-                        group_list_y.append(group_listS)
-
-                    group_list = group_list_y
-                    group_list = set(group_list)
-
-                    for group in group_list:
-                        if GenGroup.objects.filter(title__icontains=group).exists():
-                            group_watchlist = GenGroup.objects.filter(title__icontains=group)[0]
-                            group_watchlist.stock_watchlist.add(created_watch_list)
-
-
-                url = reverse('core:group', kwargs={'slug': self.kwargs['slug'],})
-                object = "grouppost"#add_on
-                id = "#"+object
-                url = url + id
-                print(HttpResponseRedirect(url))
-                return HttpResponseRedirect(url)
-
-
         #////////Section handles creation of Post
         #when user post to a Post model
         #get the file attached to the post
@@ -3741,12 +2955,10 @@ class Detail_Group(generic.DetailView):
                 comment=None
 
             #///Section filters post
-            stocks = None
             reicpients = None
             if comment != None:
-                #variables for recipients and stocks
+                #variables for recipients and
                 reicpients = []
-                stocks = []
                 attached_url = []
                 # filter post for users
                 #split the string on space
@@ -3759,16 +2971,11 @@ class Detail_Group(generic.DetailView):
                 # get the length of the post filter variable
                 list_lenght= len(post_list_to_filter)
                 #print(list_lenght)
-                #loop through the post filter variable check for recipents, stocks, and if long word
+                #loop through the post filter variable check for recipents,  and if long word
                 for word in range(list_lenght):
                     # the for loop goes through the loop once to much so try statment is here
                     try:
-                        #filter Message for stocks
-                        if "$" in post_list_to_filter[word]:
-                            stock = post_list_to_filter[word].split('$')
-                            print(stock)
-                            stocks.append(stock[1])
-                            # print(stocks)
+
                         # filtering for user
                         if "@" in post_list_to_filter[word]:
                             reicpient = post_list_to_filter[word].split('@')
@@ -3790,9 +2997,8 @@ class Detail_Group(generic.DetailView):
                         pass
                 #join the filtered list back together
                 comment=' '.join(post_list_to_filter)
-                #set is to make sure evey user and stock is unique
+                #set is to make sure evey user and  is unique
                 reicpients = set(reicpients)
-                stocks = set(stocks)
                 attached_url = attached_url
 
             if group != None and comment != None:
@@ -3822,15 +3028,7 @@ class Detail_Group(generic.DetailView):
                                 notification_user_list.append(recipient.user.username)
                                 reicpients_name_url.append('#')
                         #print(created_post.recipients.all())
-                    #add stocks to post if any
-                    stock_name_url=[]
-                    if stocks != None:
-                        for stock in stocks:
-                            if Stocks.objects.filter(ticker__iexact=stock).exists():
-                                stock_to_add = Stocks.objects.filter(ticker__iexact=stock)[0]
-                                created_post.stocks.add(stock_to_add)
-                                stock_name_url.append(stock_to_add.ticker)
-                                stock_name_url.append(stock_to_add.get_absolute_url())
+
                     #add photo to post if any
                     photo = file
                     url_of_photo_id = []
@@ -3873,10 +3071,7 @@ class Detail_Group(generic.DetailView):
                     now = datetime.now()
                     time_post =now.strftime("%a, %I:%M:%S %p")
                     time_published_post = time_post
-                    if created_post.stocks.all():
-                        stock_list_post = stock_name_url
-                    else:
-                        stock_list_post = 'false'
+
 
                     if created_post.title != None:
                         title_of_post = created_post.title
@@ -3908,7 +3103,6 @@ class Detail_Group(generic.DetailView):
                         "user_name_post": user_name_post,
                         "comments_on_post": comments_on_post,
                         "time_published_post": time_published_post,
-                        "stock_list_post": stock_list_post,
                         "title_of_post": title_of_post,
                         "content_post": content_post,
                         "url_of_photo_id_post":url_of_photo_id_post,
@@ -3968,12 +3162,10 @@ class Detail_Group(generic.DetailView):
                 response=None
 
             #///Section filters Repost
-            stocks = None
             reicpients = None
             if response != None:
-                #variables for recipients and stocks
+                #variables for recipients and
                 reicpients = []
-                stocks = []
                 # filter post for users
                 #split the string on space
                 post_list_to_filter = response.split()
@@ -3985,16 +3177,10 @@ class Detail_Group(generic.DetailView):
                 # get the length of the post filter variable
                 list_lenght= len(post_list_to_filter)
                 #print(list_lenght)
-                #loop through the post filter variable check for recipents, stocks, and if long word
+                #loop through the post filter variable check for recipents, , and if long word
                 for word in range(list_lenght):
                     # the for loop goes through the loop once to much so try statment is here
                     try:
-                        #filter Message for stocks
-                        if "$" in post_list_to_filter[word]:
-                            stock = post_list_to_filter[word].split('$')
-                            print(stock)
-                            stocks.append(stock[1])
-                            # print(stocks)
                         # filtering for user
                         if "@" in post_list_to_filter[word]:
                             reicpient = post_list_to_filter[word].split('@')
@@ -4011,10 +3197,8 @@ class Detail_Group(generic.DetailView):
                         pass
                 #join the filtered list back together
                 response=' '.join(post_list_to_filter)
-                #set is to make sure evey user and stock is unique
+                #set is to make sure evey user a
                 reicpients = set(reicpients)
-                stocks = set(stocks)
-
 
             if postid != None and response != None:
                 current_post = get_object_or_404(Post, pk=postid)
@@ -4039,11 +3223,7 @@ class Detail_Group(generic.DetailView):
                                 recipient = User_Profile.objects.filter(user__username__iexact=user)[0]
                                 repost.recipients.add(recipient)
                         print(repost.recipients.all())
-                    if stocks != None:
-                        for stock in stocks:
-                            if Stocks.objects.filter(ticker__iexact=stock).exists():
-                                stock_to_add = Stocks.objects.filter(ticker__iexact=stock)[0]
-                                repost.stocks.add(stock_to_add)
+
                     id = repost.pk
                     add_on = str(id)
                     # https://stackoverflow.com/questions/11531715/django-go-to-id-tag-inside-html
@@ -4105,12 +3285,10 @@ class Detail_Group(generic.DetailView):
                 response=None
 
             #///Section filters Reply
-            stocks = None
             reicpients = None
             if response != None:
-                #variables for recipients and stocks
+                #variables for recipients and
                 reicpients = []
-                stocks = []
                 # filter post for users
                 #split the string on space
                 post_list_to_filter = response.split()
@@ -4122,16 +3300,11 @@ class Detail_Group(generic.DetailView):
                 # get the length of the post filter variable
                 list_lenght= len(post_list_to_filter)
                 #print(list_lenght)
-                #loop through the post filter variable check for recipents, stocks, and if long word
+                #loop through the post filter variable check for recipents, and if long word
                 for word in range(list_lenght):
                     # the for loop goes through the loop once to much so try statment is here
                     try:
-                        #filter Message for stocks
-                        if "$" in post_list_to_filter[word]:
-                            stock = post_list_to_filter[word].split('$')
-                            print(stock)
-                            stocks.append(stock[1])
-                            # print(stocks)
+
                         # filtering for user
                         if "@" in post_list_to_filter[word]:
                             reicpient = post_list_to_filter[word].split('@')
@@ -4148,9 +3321,8 @@ class Detail_Group(generic.DetailView):
                         pass
                 #join the filtered list back together with space inbetween list elements
                 response=' '.join(post_list_to_filter)
-                #set is to make sure evey user and stock is unique
+                #set is to make sure evey user and  is unique
                 reicpients = set(reicpients)
-                stocks = set(stocks)
 
             if commentid != None and postid != None and response != None:
                 current_post = get_object_or_404(Post, pk=postid)
@@ -4180,15 +3352,7 @@ class Detail_Group(generic.DetailView):
                                 reicpients_name_url.append('#')
                             else:
                                 print('user does not exist')
-                    #add stocks to post if any
-                    stock_name_url=[]
-                    if stocks != None:
-                        for stock in stocks:
-                            if Stocks.objects.filter(ticker__iexact=stock).exists():
-                                stock_to_add = Stocks.objects.filter(ticker__iexact=stock)[0]
-                                Reply.stocks.add(stock_to_add)
-                                stock_name_url.append(stock_to_add.ticker)
-                                stock_name_url.append(stock_to_add.get_absolute_url())
+
                     photo = file
                     url_of_photo_id = []
                     if photo != None:
@@ -4202,7 +3366,6 @@ class Detail_Group(generic.DetailView):
                             url_of_photo_id.append(document.pk)
                     current_post.comment_count = count+1
                     current_post.save()
-
 
                     # packaging the Comment to send to channels in json format
                     #kkeping post_id for simplicity
@@ -4226,10 +3389,7 @@ class Detail_Group(generic.DetailView):
                     time_post =now.strftime("%a, %I:%M:%S %p")
                     time_published_post = time_post
 
-                    if Reply.stocks.all():
-                        stock_list_post = stock_name_url
-                    else:
-                        stock_list_post = 'false'
+
 
                     content_post = Reply.contents
 
@@ -4254,7 +3414,6 @@ class Detail_Group(generic.DetailView):
                     "user_name_post": user_name_post,
                     # "comments_on_post": comments_on_post,
                     "time_published_post": time_published_post,
-                    "stock_list_post": stock_list_post,
                     # "title_of_post": title_of_post,
                     "content_post": content_post,
                     "url_of_photo_id_post":url_of_photo_id_post,
@@ -4323,12 +3482,7 @@ class Detail_Group(generic.DetailView):
                 comment=None
 
             #///Section filters Comment
-            stocks = None
-            reicpients = None
-            if comment != None:
-                #variables for recipients and stocks
-                reicpients = []
-                stocks = []
+
                 # filter post for users
                 #split the string on space
                 post_list_to_filter = comment.split()
@@ -4340,16 +3494,11 @@ class Detail_Group(generic.DetailView):
                 # get the length of the post filter variable
                 list_lenght= len(post_list_to_filter)
                 #print(list_lenght)
-                #loop through the post filter variable check for recipents, stocks, and if long word
+                #loop through the post filter variable check for recipents, , and if long word
                 for word in range(list_lenght):
                     # the for loop goes through the loop once to much so try statment is here
                     try:
-                        #filter Message for stocks
-                        if "$" in post_list_to_filter[word]:
-                            stock = post_list_to_filter[word].split('$')
-                            print(stock)
-                            stocks.append(stock[1])
-                            # print(stocks)
+
                         # filtering for user
                         if "@" in post_list_to_filter[word]:
                             reicpient = post_list_to_filter[word].split('@')
@@ -4366,9 +3515,8 @@ class Detail_Group(generic.DetailView):
                         pass
                 #join the filtered list back together with space inbetween list elements
                 comment=' '.join(post_list_to_filter)
-                #set is to make sure evey user and stock is unique
+                #set is to make sure evey user
                 reicpients = set(reicpients)
-                stocks = set(stocks)
 
 
             if post != None and comment != None:
@@ -4396,15 +3544,7 @@ class Detail_Group(generic.DetailView):
                                 reicpients_name_url.append('#')
                             else:
                                 print('user does not exist')
-                    #add stocks to post if any
-                    stock_name_url=[]
-                    if stocks != None:
-                        for stock in stocks:
-                            if Stocks.objects.filter(ticker__iexact=stock).exists():
-                                stock_to_add = Stocks.objects.filter(ticker__iexact=stock)[0]
-                                Reply.stocks.add(stock_to_add)
-                                stock_name_url.append(stock_to_add.ticker)
-                                stock_name_url.append(stock_to_add.get_absolute_url())
+
                     #add photo to post if any
                     photo = file
                     url_of_photo_id = []
@@ -4438,10 +3578,7 @@ class Detail_Group(generic.DetailView):
                     time_post =now.strftime("%a, %I:%M:%S %p")
                     time_published_post = time_post
 
-                    if Reply.stocks.all():
-                        stock_list_post = stock_name_url
-                    else:
-                        stock_list_post = 'false'
+
 
                     content_post = Reply.contents
 
@@ -4464,7 +3601,6 @@ class Detail_Group(generic.DetailView):
                         "user_name_post": user_name_post,
                         # "comments_on_post": comments_on_post,
                         "time_published_post": time_published_post,
-                        "stock_list_post": stock_list_post,
                         # "title_of_post": title_of_post,
                         "content_post": content_post,
                         "url_of_photo_id_post":url_of_photo_id_post,
@@ -4726,8 +3862,6 @@ class Detail_Group(generic.DetailView):
             data = {"data":"none"}
 
             return JsonResponse(data)
-
-
 
 class Membership_Choice(generic.TemplateView):
     template_name = 'membership_choice.html'
@@ -5401,36 +4535,6 @@ class DividendWealthAccount(generic.TemplateView):
         url = reverse('core:user_dashboard')
         return HttpResponseRedirect(url)
 
-
-class Stocks_Create(generic.CreateView):
-    template_name = 'stock_form.html'
-    form_class = StocksModelForm
-    queryset = Stocks.objects.all()
-    success_url = '/'
-
-class Stocks_Delete(generic.DeleteView):
-    model = StockInfo
-    success_url = reverse_lazy('core:user_dashboard')
-    template_name ='stockinfo_confirm_delete.html'
-
-
-class Stocks_Detail(generic.DetailView):
-    model = Stocks
-    template_name = 'stocks_detailview.html'
-
-    def get_context_data(self, **kwargs):
-        """Checks to see if user has stocks or not"""
-        context = super(Stocks_Detail, self).get_context_data(**kwargs)
-        user = User_Profile.objects.filter(user=self.request.user)[0]
-        #check to see if the current user has the stock in his possesion already
-        order_qs = user.stock.filter(slug=self.kwargs['slug']) #only want order that is nto completed
-        x = order_qs.exists()
-        print(x)
-        context['stocks'] = order_qs
-
-        return context
-
-
 class User_Profile_Create(generic.CreateView):
     template_name = 'user_profile_form.html'
     form_class = User_profile_form
@@ -5445,60 +4549,8 @@ class User_Profile_Create(generic.CreateView):
          User_Profile.save()
          return HttpResponseRedirect(reverse('core:user_dashboard')) #home page
 
+class User_Dashboard(generic.TemplateView):
 
-
-class Update_Stock_User(generic.UpdateView):
-    template_name = 'create_stock_user.Html'
-    form_class = Stock_profile_form
-
-    def form_valid(self, form,):
-         """Saves current user to the profile """
-         stock_user = form.save(commit=False)
-         # user = get_object_or_404(User_Profile, user=self.request.user)
-         # id =user.id
-         # stock = get_object_or_404(Stocks,id=self.kwargs['id'])
-         #
-         # stock_user.userprofile_id = id # use your own profile here
-         # stock_user.stock = stock
-         #making sure that the quantity of stock stays above 0
-         if stock_user.quantity <1:
-             #post a message saying if you want to remove stock from your portfolio click remove stock
-             stock_user.quantity =1
-
-         stock_user.save()
-         return HttpResponseRedirect(reverse('core:user_dashboard')) #home page
-
-    def get_queryset(self):
-        #get current user accessing page
-        user = get_object_or_404(User_Profile, user=self.request.user)
-        #list of stocks order by slug feild
-        user.stock.order_by('slug').all()
-        #use intermidary model to get instances where user profile equal to current user
-        return StockInfo.objects.filter(userprofile =user).select_related()
-
-class Create_Stock_User(generic.CreateView):
-    template_name = 'create_stock_user.Html'
-    form_class = Stock_profile_form
-
-    def form_valid(self, form,):
-         """Saves current user to the profile """
-         stock_user = form.save(commit=False)
-         user = get_object_or_404(User_Profile, user=self.request.user)
-         id =user.id
-         stock = get_object_or_404(Stocks,slug=self.kwargs['slug'])
-
-         stock_user.userprofile_id = id # use your own profile here
-         stock_user.stock = stock
-         stock_user.save()
-         return HttpResponseRedirect(reverse('core:user_dashboard')) #home page
-
-
-class User_Dashboard(generic.ListView):
-
-    """
-    context = super(User_Dashboard, self).get_context_data(**kwargs)
-    user = UserProfile.objects.filter(user=self.request.user)[0]
-    stock = user.stock.order_by('slug').all() """
     login_url ='/accounts/login'
     redirect_field_name = '/user_dashboard'
     template_name='user_dashboard.html'
@@ -5513,7 +4565,7 @@ class User_Dashboard(generic.ListView):
             url = reverse('core:feed')
             return HttpResponseRedirect(url)
 
-        print("lknvkld nsdkls nfk",self.request.get_host() )
+        print("host",self.request.get_host() )
         stripeOAUTH = self.request.GET.getlist('code') if 'code' in self.request.GET else None
         if stripeOAUTH != None:
             user = User_Profile.objects.filter(user=self.request.user)[0]
@@ -5524,22 +4576,11 @@ class User_Dashboard(generic.ListView):
         # if stripe code is not available then go to regular page
         return super(User_Dashboard, self).get(self.request, *args, **kwargs)
 
-    def get_queryset(self):
-
-        #get current user accessing page
-        user,create =  User_Profile.objects.get_or_create(user=self.request.user)
-        #list of stocks order by slug feild
-        user.stock.order_by('slug').all()
-        #use intermidary model to get instances where user profile equal to current user
-        return StockInfo.objects.filter(userprofile =user).select_related()
-
     def get_context_data(self, **kwargs):
         context = super(User_Dashboard, self).get_context_data(**kwargs)
         #user = User_Profile.objects.filter(user=self.request.user)[0]
         user,create = User_Profile.objects.get_or_create(user=self.request.user)
         #using
-        stock = user.stock.order_by('slug').all()
-
         # Get List of groups User has made
         if GenGroup.objects.filter(creator=user).exists():
             user_created_groups = GenGroup.objects.filter(creator=user)
@@ -5550,215 +4591,13 @@ class User_Dashboard(generic.ListView):
             messages.info(self.request, "You have unpublished groups!")
             # could create a notification that linked to the group
 
-        #m =StockInfo.objects.filter(userprofile =user).aggregate(income=Sum('stock__dividend__dividend_amount',output_field=FloatField()))
-#get the last 4 dividend entries for each stock user owns
-        #/////////////////////////////////succesful annotation
-        #qs = Dividend.objects.all()[:3]
-        #p =StockInfo.objects.filter(userprofile =user,stock__dividend__date__gt=datetime.date(2018, 8, 24)).aggregate(income=Sum(F('quantity')*F('stock__dividend__dividend_amount'),output_field=FloatField()))
-        #q =StockInfo.objects.filter(userprofile =user).filter(stock__dividend__date__gt=datetime.date(2018, 8, 24)).aggregate(income=Sum(F('quantity')*F('stock__dividend__dividend_amount'),output_field=FloatField()))
-
-
-        queryset = StockInfo.objects.filter(userprofile =user).filter(stock__dividend__date__gt=datetime(year=2018,month=8,day=24))
-        #using
-        stock_count = len(StockInfo.objects.filter(userprofile =user))
-        # stock dividend ammount
-        x =StockInfo.objects.filter(userprofile =user).filter(stock__dividend__date__gt=datetime(year=2018,month=8,day=24)).aggregate(dividend_income=Sum(F('quantity')*F('stock__dividend__dividend_amount'),output_field=FloatField()))
-
-
-        # stock Protfolio cost
-        y =StockInfo.objects.filter(userprofile =user).aggregate(stock_portfolio=Sum(F('quantity')*F('stock__price'),output_field=FloatField()))
-
-
-        #print(x)
-        #print(queryset)
-        #print(y)
-        #/////////////////////////////////
-        #protfolio dividend yeild
-        if x['dividend_income'] is None:
-            z ='None'
-            x['dividend_income'] ='none'
-            y['stock_portfolio'] = 'none'
-        else:
-            z= (x['dividend_income']/y['stock_portfolio'] )*100
-            user.current_dividend_income = x['dividend_income']
-            user.percentage_difference_between_dividend_income_wanted =((user.estimated_dividend_income_wanted - user.current_dividend_income) / user.estimated_dividend_income_wanted)*100
-            user.percentage_of_estimated_income_reached = ((user.current_dividend_income/ user.estimated_dividend_income_wanted))*100
-            income_wanted = user.percentage_difference_between_dividend_income_wanted
-            income_reached = user.percentage_of_estimated_income_reached
-            user.save()
-        #print(z)
-            #/////////////////////////////////
-            #manipulating
-        ds = PivotDataPool(
-        series=[
-        {'options': {
-            #https://stackoverflow.com/questions/9750330/how-to-convert-integer-into-date-object-python, datetime was messed up from previous iteration changed it to current form the code above that contain date time needs to be changed
-            #important read above
-            'source':  StockInfo.objects.filter(userprofile =user).filter(stock__dividend__date__gt=datetime(year=2018,month=8,day=24)),#.order_by('stock__dividend__month_int')
-            'categories': ['stock__dividend__month'],
-            'legend_by': ['stock__company_name',],
-            },
-            'terms': {
-                'Dividend Income': Sum(F('quantity')*F('stock__dividend__dividend_amount'),output_field=FloatField())}}],
-                )
-
-        chart_1 = PivotChart(
-                  datasource=ds,
-                  series_options=[
-                    {'options': {
-                       'type': 'column',
-                       'stacking': True,
-                       'xAxis': 0,
-                       'yAxis': 0},
-                     'terms': ['Dividend Income']}],
-                     chart_options={
-            'title': {
-                'text': 'Dividend Income by Month'
-            },
-            'xAxis': {
-                'title': {
-                    'text': 'Month'
-                }
-            },'yAxis': {
-                'title': {
-                    'text': 'Dividend Income'
-                }
-            }
-
-
-        })
-
-        ds1 = DataPool(
-                series=[{
-                    'options': {
-                        'source': User_Profile.objects.filter(user=self.request.user)
-                    },
-                    'terms': [
-                        'percentage_difference_between_dividend_income_wanted',
-                        'percentage_of_estimated_income_reached',
-                    ]
-                }]
-        )
-
-
-        chart_2 = Chart(
-                datasource=ds1,
-                series_options=[{
-                    'options': {
-                        'type': 'pie',
-                        'stacking': False
-                    },
-                    'terms': {
-
-                        'percentage_of_estimated_income_reached':['percentage_difference_between_dividend_income_wanted']
-
-                    }
-                }],
-                chart_options={
-                    'title': {
-                        'text': ' '
-                    }
-                }
-
-        )
-
-
-        context['stocks_qun'] = stock
-        context['user'] = user
-        try:
-            context['income_wanted'] = income_wanted
-        except UnboundLocalError:
-            context['income_wanted'] = 1
-
-        try:
-            context['income_reached'] = income_reached
-        except:
-            context['income_reached'] = .5
-        try:
-            context['protfolio_ammount'] = y['stock_portfolio']
-        except:
-            context['protfolio_ammount'] = 0
-
-        try:
-            context['dividend_income'] = x['dividend_income']
-        except:
-            context['dividend_income'] = x['dividend_income']
-
-        try:
-            context['portfolio_yeild'] =z
-        except:
-            context['portfolio_yeild'] =0
-
-        try:
-            context['chart_list'] = [chart_1,chart_2]
-        except:
-            context['chart_list'] = [chart_1,chart_2]
-
-        try:
-            context['stock_count'] = stock_count
-        except:
-            context['stock_count'] = 0
-
-
-
-
         return context
-
-
-#do not overwrite ds from the first chart
-
-
-        #////////////////////////////////
-        #I don't know why it is not working
-        #dividend incom chart
-
-
-
-        #////////////////////////////////
-
-
-
-
-
-
-
-
 
 class User_Profile_Update(generic.UpdateView):
     template_name = 'user_profile_form.html'
     form_class = User_profile_form
     success_url = '/'
     queryset = User_Profile.objects.all()
-
-def add_stock_to_user(request,slug):
-    stock = get_object_or_404(Stocks,slug=slug)
-    user = get_object_or_404(User_Profile, user=self.request.user)
-    stockinfo,created = StockInfo.objects.get_or_create(userprofile=user,stock =stock)
-    stockinfo.save()
-
-class SearchResultsView(generic.ListView):
-    model = Stocks
-    template_name = 'search_results.html'
-
-    def get_queryset(self): # new
-        query = self.request.GET.get('q')
-        object_list = Stocks.objects.filter(
-            Q(ticker__icontains=query) | Q(company_name__icontains=query)
-        )
-        return object_list
-
-    def get_context_data(self, **kwargs):
-        """Checks to see if user has stocks or not"""
-        query = self.request.GET.get('q')
-        context = super(SearchResultsView, self).get_context_data(**kwargs)
-        user = User_Profile.objects.filter(user=self.request.user)[0]
-        order_qs = user.stock.filter(Q(ticker__icontains=query) | Q(company_name__icontains=query)) #only want order that is nto completed
-        x = order_qs.exists()
-        print(x)
-        context['stocks'] = order_qs
-        return context
-
-
 
 
 def add_to_cart(request,slug):
