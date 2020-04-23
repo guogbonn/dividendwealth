@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load include_by_ajax_tags %}
+{% load custom_tags %}
+<script  src="https://unpkg.com/scrollbooster@2/dist/scrollbooster.min.js"></script>
+
+{% block content %}
+    {% include_by_ajax "feed.html" placeholder_template_name="main_loader.html" %}
+
+{% endblock %}

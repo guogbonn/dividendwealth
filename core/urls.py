@@ -5,7 +5,8 @@ from . import views
 app_name = 'core'
 
 urlpatterns = [
-
+# page for practice circle canvas and netflix scroller
+path('menu/',views.HtmlPractice.as_view(), name='practice'),
 path('userprofile/create/',views.User_Profile_Create.as_view(), name = 'user_create'),
 path('userprofile/update/<slug>/',views.User_Profile_Update.as_view(), name = 'user_update'),
 
@@ -29,12 +30,11 @@ path('group/<slug>/landing-page/',views.Group_Landing_Page.as_view(), name ='gro
 
 path('feed/',views.Feed.as_view(), name ='feed'),
 #<int:pk>
-
+path('ajax/',views.TestAjax.as_view(), name='ajax'),
 # page for user to choose membership
 path('memberships/',views.Membership_Choice.as_view(), name ='membership_choice'),
 #page for user account
 path('account/<username>/',views.DividendWealthAccount.as_view(), name ='user_account'),
-
 
 #useful test zone below
 ]

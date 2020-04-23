@@ -32,7 +32,12 @@ INSTALLED_APPS = [
     'crispy_forms',
     #https://fosstack.com/how-to-set-up-tinymce-in-django-app/
     'tinymce',
+    'include_by_ajax',
+    'sass_processor',
+    "compressor",
+
     'core'
+
 ]
 
 
@@ -45,6 +50,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'htmlmin.middleware.HtmlMinifyMiddleware',
+    'htmlmin.middleware.MarkRequestMiddleware',
+
 ]
 
 ROOT_URLCONF = 'p_ecommerce.urls'
@@ -170,3 +178,14 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'ogbonnaya83512@gmail.com'
 EMAIL_HOST_PASSWORD = 'guogbonn'
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # other finders..
+    'compressor.finders.CompressorFinder',
+    'sass_processor.finders.CssFinder',
+)
+
+COMPRESS_ENABLED = True
+HTML_MINIFY = True

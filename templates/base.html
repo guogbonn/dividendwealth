@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
+    {% load sass_tags %}
+
+    <link href="{% sass_src 'scss/loader.scss' %}" rel="stylesheet" type="text/css" />
       <!-- Font Awesome -->
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
       <!-- Bootstrap core CSS -->
@@ -16,7 +19,7 @@
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/dropdown.css">
 
       <link rel="stylesheet" href="{% static "css/steppers.min.css" %}">
-
+      <script type="text/javascript" src="{% static "js/loader.js" %}"></script>
       <title>Dividend Wealth</title>
       <link rel="shortcut icon" type="image/jpg"href="{% static "img/logo.jpg" %}">
       {% block head_title %}{% endblock %}
@@ -33,6 +36,24 @@
     src="https://code.jquery.com/jquery-1.12.4.min.js"
     integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
     crossorigin="anonymous"></script> -->
+
+    <style media="screen" type="text/css">
+  .layer1_class {  z-index: 1; top: 100px; left: 0px; visibility: visible; }
+  .layer2_class { visibility: hidden }
+</style>
+<script>
+//https://codepen.io/colinhorn/pen/zdNMVy
+  function downLoad(){
+    if (document.all){
+        document.all["layer1"].style.visibility="hidden";
+        document.all["layer2"].style.visibility="visible";
+    } else if (document.getElementById){
+        node = document.getElementById("layer1").style.visibility='hidden';
+        node = document.getElementById("layer2").style.visibility='visible';
+    }
+  }
+</script>
+
       <style type="text/css">
       .button-boder-radius{
         border-radius: .28571429rem;
@@ -69,6 +90,7 @@
     <script defer type="text/javascript" src="{% static "dist/js/mdb.min.js" %}">
     </script>
     <script defer type="text/javascript"  src="{% static "js/steppers.min.js" %}"></script>
+    <script  type="text/javascript" src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
 
 
@@ -79,7 +101,20 @@
 
 
 </head>
-<body class="fixed-sn black-skin">
+<body onload="downLoad()" class="fixed-sn black-skin layer1_class">
+
+  <div id="layer1" class="layer1_class">
+    <div class="e-loadholder">
+    	<div class="m-loader">
+    		<span class="e-text">Loading</span>
+    	</div>
+    </div>
+    <div id="particleCanvas-Blue"></div>
+    <div id="particleCanvas-White"></div>
+  </div>
+<div id="layer2" class="layer2_class">
+
+
   {% block zoom_body %}
   <!--Double navigation-->
   <!-- SideNav slide-out button -->
@@ -222,7 +257,8 @@
 {% endif%}
 
 
-
+{%block parac%}
+{%endblock parac%}
   {% block content  %}
   {% endblock content %}
 
@@ -238,30 +274,13 @@
   {%endblock jqeury%}
 
 
-      <!--Footer-->
-      <!--Footer-->
-
-      <!--/.Footer-->
-
-
-      <!-- SCRIPTS -->
-      <!-- JQuery -->
-
-
-      <!-- Initializations -->
-
-
-      <!-- JQuery -->
-
-
       <script defer  type="text/javascript">
       // SideNav Initialization
               $(document).ready(function () {
                 $(".button-collapse").sideNav();
-
             $('.stepper').mdbStepper();
             })
-
       </script>
+      </div>
 </body>
 </html>

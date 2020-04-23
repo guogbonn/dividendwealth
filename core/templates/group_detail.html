@@ -1,6 +1,6 @@
 {%extends "base.html" %}
-<!-- scroller -->
-<!-- https://benfrain.com/playground/scroller.html -->
+
+
 
 {% block notification_bell%}
 {%if current_user.notification_count == 0 %}
@@ -12,10 +12,11 @@
 
 
 {% block content  %}
-{%load crispy_forms_tags%}
 {% load custom_tags %}
+{% load compress %}
+{% compress css inline %}
 {%load static%}
-<style type="text/css">
+  <style type="text/css">
 .profile-img-constraint{
   max-height: 28px!important;
   max-width: 28px!important;
@@ -518,7 +519,7 @@ font-weight: bold !important;
     text-align: center;
 }
 </style>
-
+{%endcompress%}
 <!-- turn of other blue outline elements of bootstrap4
 https://stackoverflow.com/questions/8622686/how-come-i-cant-remove-the-blue-textarea-border-in-twitter-bootstrap-->
 <!-- textarea:hover,
@@ -539,16 +540,13 @@ label:focus,
 <script src="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/js/jquery.atwho.min.js"></script>
 <script src="https://cdn.rawgit.com/ichord/Caret.js/master/dist/jquery.caret.min.js"></script>
 <link href="https://cdn.rawgit.com/ichord/At.js/801c87dc/dist/css/jquery.atwho.css" rel="stylesheet"> -->
-
 <script  src="{% static 'js/emojionearea.min.js' %}"></script>
 <script src="{% static 'js/jquery.atwho.min.js' %}"></script>
 <script src="{% static 'js/jquery.caret.min.js' %}"></script>
-<link href="{% static 'css/jquery.atwho.css' %}" rel="stylesheet">
-    <!-- Page Content -->
-    {% load static %}
-    <script src="{% static 'js/waypoints-master/lib/jquery.waypoints.min.js' %}"></script>
-    <script src="{% static 'js/waypoints-master/lib/shortcuts/infinite.js' %}"></script>
 
+<link href="{% static 'css/jquery.atwho.css' %}" rel="stylesheet">
+
+    <!-- Page Content -->
 
 <div class="container">
   <!-- Jumbotron -->
@@ -2440,8 +2438,8 @@ and upon doing so preloading the form with the correct data -->
 many to many list template django upto -->
 <!-- {% for new in news|slice:":3" %} {%endfor%}-->
 <!-- ///////////////////////////////////////////////////////////////////////////////////////////Do Not Touch -->
-
-<script async>
+{%compress js inline%}
+<script >
   ///////////////////////////Zoom Section////////////////
   //when user clicks create meeting send a request to create zoom meeting
   function zoom_create_meeting() {
@@ -2661,7 +2659,7 @@ if (  document.getElementById('display_zoom_iframe')) {
                         }  }  })  }  }  })
                       })
   </script>
-<script async>
+<script >
 function load_user_likes(e) {
   load_user_likes_s = e.attributes["like"].value
   $.ajax({
@@ -3201,7 +3199,12 @@ function load_user_likes(e) {
   }
   </script>
 <!-- for getting the values nessesary into the forms for posting -->
-<script async type="text/javascript">
+
+    <script src="{% static 'js/waypoints-master/lib/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'js/waypoints-master/lib/shortcuts/infinite.js' %}"></script>
+
+
+<script  type="text/javascript">
   //iplementing infinite scrolling
     document.addEventListener("DOMContentLoaded", function(event) {
     var infinite = new Waypoint.Infinite({
@@ -3223,7 +3226,7 @@ function load_user_likes(e) {
     });
     });
   </script>
-  <script async>
+  <script >
     function close_Leave_Group_Modal() {
       document.getElementById('Leave_Group_Modal_button').click()
     }
@@ -3284,7 +3287,7 @@ $.ajax({
 });
 }
 </script>
-  <script async>
+  <script >
     //https://stackoverflow.com/questions/10899384/uploading-both-data-and-files-in-one-form-using-ajax
     //post submission
     $("form#data").submit(function(e) {
@@ -3420,7 +3423,7 @@ dispalay_alert_footer("You just posted that...")
 });
 });
     </script>
-<script async>
+<script>
 //notes to create function
   //click on tab
   // take me to the post that was just posted
@@ -3716,7 +3719,7 @@ display_element.src = ' '
   display_element.src = element.src
 }
  </script>
-  <script async type="text/javascript">
+  <script  type="text/javascript">
     function get_at_usernames(e) {
       user_names = []
         list_of_users=  cln.getElementsByClassName('user-tag')
@@ -3884,7 +3887,7 @@ repost_modal_clear()
       }
 ///////////////////////////////////Clearing modal on attribute change///////////
 </script>
-<script async>
+<script >
 ////////////////////////Autocomplete for recipents //////////////////////////////
 // Initialize author field
 //When user clicks on a feild we focus on the feild get the id of the feild and change the variables names
@@ -3939,7 +3942,7 @@ $('#message-text1').atwho({
 });
 /////////////////End Repost///////////////////////
 </script>
-<script async>
+<script >
   //clicking on one of the options for member change
 function clicked_status_pending1() {
   user_modal_status = document.getElementById("user_modal_status")
@@ -3948,7 +3951,7 @@ function clicked_status_pending1() {
     help_info.innerHTML = "To save click Submit Change "
 }
 </script>
-<script async>
+<script >
   //clicking on one of the options for member change
 function clicked_status_pending2() {
   user_modal_status = document.getElementById("user_modal_status")
@@ -3957,7 +3960,7 @@ function clicked_status_pending2() {
     help_info.innerHTML = "To save click Submit Change "
 }
 </script>
-<script async>
+<script >
   //clicking on one of the options for member change
 function clicked_status_pending3() {
   user_modal_status = document.getElementById("user_modal_status")
@@ -3966,7 +3969,7 @@ function clicked_status_pending3() {
     help_info.innerHTML = "To save click Submit Change "
 }
 </script>
-<script async type="text/javascript">
+<script  type="text/javascript">
 // function is for when user clicks on the member link anchor. The function takes the data in the anchor html attribute and populates the modal
   function user_modal(clicked_id){
         console.log(clicked_id)
@@ -4019,7 +4022,7 @@ help_info = document.getElementById("status_help_info")
 help_info.innerHTML = ""
 }
 </script>
-<script async type="text/javascript">
+<script  type="text/javascript">
   function search_member_group(){
     try{
       //get the value of the search element feild
@@ -4082,12 +4085,15 @@ timezone = day+", "+ h + ":" + m+ time_of_day;
 return timezone
 }
 </script>
+{%endcompress%}
+
 <!-- websocket -->
-<script async src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js">
-</script>
-<script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
+{%load static%}
+<script  src="{% static "js/reconnecting-websocket.js" %}"></script>
+<script  type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" type="text/css"/>
-<script async>
+{%compress js inline%}
+<script defer>
     var current_user_username = "{{user}}"
     var groupName = {{groupName}};
     // open a channel to talk
@@ -6246,7 +6252,7 @@ if (action_note != 'watchlist') {
     };
 
 </script>
-<script async type="text/javascript">
+<script  type="text/javascript">
 var SETTINGS = {
 navBarTravelling: false,
 navBarTravelDirection: "",
@@ -6499,7 +6505,7 @@ exports.reset = reset;
 }));
     </script>
 
-<script async>
+<script >
 function remove_group_alert_icon(){
         group_alert_header=  document.getElementById('pills-home-tab')
       group_alert_container_count=  document.getElementById('notification_alert_count')
@@ -6520,4 +6526,5 @@ function remove_group_alert_icon(){
          board_alert_container.style.display = 'none'
     }
 </script>
+{%endcompress%}
 {% endblock %}

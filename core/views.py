@@ -376,6 +376,21 @@ class DisplayZoom(generic.TemplateView):
             context['zoom_api_key'] = 'z9z40dCdTVaA73xCvuTjzQ'
             return context
 
+class TestAjax(generic.TemplateView):
+    template_name = "alert_email.html"
+    def get_context_data(self, *args, **kwargs):
+        # Just include the form
+        context = super(TestAjax, self).get_context_data(*args, **kwargs)
+        context["hello"] = "jk it worked"
+        return context
+    def post(self, *args, **kwargs):
+        return
+    def get(self, *args, **kwargs):
+        return super(TestAjax, self).get(self.request, *args, **kwargs)
+
+class HtmlPractice(generic.TemplateView):
+    template_name = "practicehtml.html"
+
 class Feed(generic.TemplateView):
     #list of all the blogs posted
     template_name = "feed.html"
@@ -1084,123 +1099,125 @@ class Feed(generic.TemplateView):
         list_of_groups = GenGroup.objects.filter(published=True)
         context['group_list_2'] = list_of_groups
         # Section is for articles
-        topics_for_dividend_wealth_news = ["+stocks","+millionare","+building+wealth","+personal+budgeting","+income+investing","+dividend+income","+financial+planning","+early+retirement","+passive+income","+money+mistake","+personal+finance"]
-        topic_choice_index = random.randint(0, len(topics_for_dividend_wealth_news)-1)
-        # topic_choice_index = 1
-        article_list = []
-        creating_article_database = False
-        creating_new_article = False
-        paginator = 17
-        parse_time =datetime.now()-timedelta(minutes=15)
-        # see if we have any article in the data base with current query
-        if Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).exists():
-            data_base_article_count=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).distinct().count()
-            if data_base_article_count >= paginator:
-                # have enough articles
-                print("not creating more")
-                print("query category",topics_for_dividend_wealth_news[topic_choice_index])
-                article_list=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).distinct().order_by('-published')[:paginator]
-            else:
-                # not enough articles create more
-                article_list=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).distinct().order_by('-published')[:paginator]
-                print("have articles in database but not enough creating more")
-                print("query category",topics_for_dividend_wealth_news[topic_choice_index])
-                unfilled = paginator - data_base_article_count
+        # topics_for_dividend_wealth_news = ["+stocks","+millionare","+building+wealth","+personal+budgeting","+income+investing","+dividend+income","+financial+planning","+early+retirement","+passive+income","+money+mistake","+personal+finance"]
+        # topic_choice_index = random.randint(0, len(topics_for_dividend_wealth_news)-1)
+        # # topic_choice_index = 1
+        # article_list = []
+        # creating_article_database = False
+        # creating_new_article = False
+        # paginator = 17
+        # parse_time =datetime.now()-timedelta(minutes=15)
+        # # see if we have any article in the data base with current query
+        # if Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).exists():
+        #     data_base_article_count=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).distinct().count()
+        #     if data_base_article_count >= paginator:
+        #         # have enough articles
+        #         print("not creating more")
+        #         print("query category",topics_for_dividend_wealth_news[topic_choice_index])
+        #         article_list=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).distinct().order_by('-published')[:paginator]
+        #     else:
+        #         # not enough articles create more
+        #         article_list=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).distinct().order_by('-published')[:paginator]
+        #         print("have articles in database but not enough creating more")
+        #         print("query category",topics_for_dividend_wealth_news[topic_choice_index])
+        #         unfilled = paginator - data_base_article_count
+        #
+        #         print("left unfiled",unfilled)
+        #         print("articlelist before",article_list)
+        #
+        #         article_list=list(article_list)
+        #         # print("articlelist turned to list",article_list)
+        #         news_api_url = ('https://newsapi.org/v2/top-headlines?'
+        #                         'q={}&'
+        #                         'language=en&'
+        #                         'sortBy=publishedAt&'
+        #                         'apiKey=3cdfd0dd582e4740a2c5cd76ee42089d')
+        #         news_api_response = requests.get(news_api_url.format(topics_for_dividend_wealth_news[topic_choice_index])).json()
+        #         total_num_articles = news_api_response["totalResults"]
+        #         # range starts at 0
+        #         print("got more articles from api")
+        #         if total_num_articles == 0:
+        #             print("tried to get more articles on the subject however there are none",news_api_response)
+        #             print("total hits:", news_api_response["totalResults"])
+        #             creating_article_database =True
+        #             pass
+        #         else:
+        #             for x in range(paginator):
+        #                 if x == total_num_articles or x == unfilled:
+        #                     print(x)
+        #                     print("broke")
+        #                     print("total number of articles",total_num_articles)
+        #                     print("unfilled",unfilled)
+        #                     creating_article_database =True
+        #
+        #                     break
+        #                 datestrip = news_api_response['articles'][x]['publishedAt']
+        #                 datestrip =datestrip.split('T')
+        #                 datestrip= datestrip[0]
+        #                 datestrip = parse_date(datestrip)
+        #                 created_article,create_date = Article.objects.get_or_create(source=news_api_response['articles'][x]['source']['name'], title=news_api_response['articles'][x]['title'], description=news_api_response['articles'][x]['description'],
+        #                 url=news_api_response['articles'][x]['url'],urltoimage =news_api_response['articles'][x]['urlToImage'], author =news_api_response['articles'][x]['author'],published =datestrip,query_cat=topics_for_dividend_wealth_news[topic_choice_index] )
+        #                 print("article was created or not",create_date)
+        #                 article_list.append(created_article)
+        #             print(article_list)
+        #             print("end of sequence")
+        #
+        # else:
+        #
+        #     news_api_url = ('https://newsapi.org/v2/everything?'
+        #                     'q={}&'
+        #                     'language=en&'
+        #                     'sortBy=publishedAt&'
+        #                     'apiKey=3cdfd0dd582e4740a2c5cd76ee42089d')
+        #     news_api_response = requests.get(news_api_url.format(topics_for_dividend_wealth_news[topic_choice_index])).json()
+        #     print("creating new set of articles")
+        #     print("query category",topics_for_dividend_wealth_news[topic_choice_index])
+        #     total_num_articles = news_api_response["totalResults"]
+        #
+        #     total_num_articles=total_num_articles
+        #     # range starts at 0
+        #     if total_num_articles == 0:
+        #         creating_new_article = True
+        #         pass
+        #     else:
+        #         for x in range(paginator):
+        #             if x == total_num_articles:
+        #                 print("total articels",total_num_articles)
+        #                 creating_new_article = True
+        #                 break
+        #             datestrip = news_api_response['articles'][x]['publishedAt']
+        #             datestrip =datestrip.split('T')
+        #             datestrip= datestrip[0]
+        #             datestrip = parse_date(datestrip)
+        #             created_article,create_date = Article.objects.get_or_create(source=news_api_response['articles'][x]['source']['name'], title=news_api_response['articles'][x]['title'], description=news_api_response['articles'][x]['description'],
+        #             url=news_api_response['articles'][x]['url'],urltoimage =news_api_response['articles'][x]['urlToImage'], author =news_api_response['articles'][x]['author'],published =datestrip,query_cat=topics_for_dividend_wealth_news[topic_choice_index] )
+        #             print("article was created or not",create_date)
+        #             article_list.append(created_article)
+        # # could combine the two if statements
+        # if len(article_list) < paginator:
+        #     if creating_new_article == True:
+        #         print("creating_new_article section")
+        #         # filter for articles just created
+        #         article_count=len(article_list)
+        #         unfilled=paginator-article_count
+        #         queried_articles=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time)
+        #         article_list_all = Article.objects.exclude(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).order_by('-published')[:unfilled]
+        #         article_list = queried_articles | article_list_all
+        #         article_list=article_list.distinct()
+        #         article_list=list(article_list)
+        #
+        #
+        #     if creating_article_database == True:
+        #         print("creating_article_database section")
+        #         article_count=len(article_list)
+        #         unfilled=paginator-article_count
+        #         queried_articles=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time)
+        #         article_list_all = Article.objects.exclude(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).order_by('-published')[:unfilled]
+        #         article_list = queried_articles | article_list_all
+        #         article_list=article_list.distinct()
+        #         article_list=list(article_list)
 
-                print("left unfiled",unfilled)
-                print("articlelist before",article_list)
-
-                article_list=list(article_list)
-                # print("articlelist turned to list",article_list)
-                news_api_url = ('https://newsapi.org/v2/top-headlines?'
-                                'q={}&'
-                                'language=en&'
-                                'sortBy=publishedAt&'
-                                'apiKey=3cdfd0dd582e4740a2c5cd76ee42089d')
-                news_api_response = requests.get(news_api_url.format(topics_for_dividend_wealth_news[topic_choice_index])).json()
-                total_num_articles = news_api_response["totalResults"]
-                # range starts at 0
-                print("got more articles from api")
-                if total_num_articles == 0:
-                    print("tried to get more articles on the subject however there are none",news_api_response)
-                    print("total hits:", news_api_response["totalResults"])
-                    creating_article_database =True
-                    pass
-                else:
-                    for x in range(paginator):
-                        if x == total_num_articles or x == unfilled:
-                            print(x)
-                            print("broke")
-                            print("total number of articles",total_num_articles)
-                            print("unfilled",unfilled)
-                            creating_article_database =True
-
-                            break
-                        datestrip = news_api_response['articles'][x]['publishedAt']
-                        datestrip =datestrip.split('T')
-                        datestrip= datestrip[0]
-                        datestrip = parse_date(datestrip)
-                        created_article,create_date = Article.objects.get_or_create(source=news_api_response['articles'][x]['source']['name'], title=news_api_response['articles'][x]['title'], description=news_api_response['articles'][x]['description'],
-                        url=news_api_response['articles'][x]['url'],urltoimage =news_api_response['articles'][x]['urlToImage'], author =news_api_response['articles'][x]['author'],published =datestrip,query_cat=topics_for_dividend_wealth_news[topic_choice_index] )
-                        print("article was created or not",create_date)
-                        article_list.append(created_article)
-                    print(article_list)
-                    print("end of sequence")
-
-        else:
-
-            news_api_url = ('https://newsapi.org/v2/everything?'
-                            'q={}&'
-                            'language=en&'
-                            'sortBy=publishedAt&'
-                            'apiKey=3cdfd0dd582e4740a2c5cd76ee42089d')
-            news_api_response = requests.get(news_api_url.format(topics_for_dividend_wealth_news[topic_choice_index])).json()
-            print("creating new set of articles")
-            print("query category",topics_for_dividend_wealth_news[topic_choice_index])
-            total_num_articles = news_api_response["totalResults"]
-
-            total_num_articles=total_num_articles
-            # range starts at 0
-            if total_num_articles == 0:
-                creating_new_article = True
-                pass
-            else:
-                for x in range(paginator):
-                    if x == total_num_articles:
-                        print("total articels",total_num_articles)
-                        creating_new_article = True
-                        break
-                    datestrip = news_api_response['articles'][x]['publishedAt']
-                    datestrip =datestrip.split('T')
-                    datestrip= datestrip[0]
-                    datestrip = parse_date(datestrip)
-                    created_article,create_date = Article.objects.get_or_create(source=news_api_response['articles'][x]['source']['name'], title=news_api_response['articles'][x]['title'], description=news_api_response['articles'][x]['description'],
-                    url=news_api_response['articles'][x]['url'],urltoimage =news_api_response['articles'][x]['urlToImage'], author =news_api_response['articles'][x]['author'],published =datestrip,query_cat=topics_for_dividend_wealth_news[topic_choice_index] )
-                    print("article was created or not",create_date)
-                    article_list.append(created_article)
-        # could combine the two if statements
-        if len(article_list) < paginator:
-            if creating_new_article == True:
-                print("creating_new_article section")
-                # filter for articles just created
-                article_count=len(article_list)
-                unfilled=paginator-article_count
-                queried_articles=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time)
-                article_list_all = Article.objects.exclude(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).order_by('-published')[:unfilled]
-                article_list = queried_articles | article_list_all
-                article_list=article_list.distinct()
-                article_list=list(article_list)
-
-
-            if creating_article_database == True:
-                print("creating_article_database section")
-                article_count=len(article_list)
-                unfilled=paginator-article_count
-                queried_articles=Article.objects.filter(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time)
-                article_list_all = Article.objects.exclude(query_cat=topics_for_dividend_wealth_news[topic_choice_index],created_date__gte=parse_time).order_by('-published')[:unfilled]
-                article_list = queried_articles | article_list_all
-                article_list=article_list.distinct()
-                article_list=list(article_list)
+        article_list=Article.objects.all().order_by("-created_date")[:18]
         article_list_carousel = article_list[:3]
 
         article_list_featured= article_list[3:5]
@@ -1216,7 +1233,7 @@ class Feed(generic.TemplateView):
         context['article_list_scroller2'] = article_list_scroller2
         context['article_list_carousel'] = article_list_carousel
         context['article_list_featured'] = article_list_featured
-        context['query'] = string.capwords(topics_for_dividend_wealth_news[topic_choice_index].replace("-", " "))
+        # context['query'] = string.capwords(topics_for_dividend_wealth_news[topic_choice_index].replace("-", " "))
         # Section is for Profile sc
         default_background_url = static('img/logo.jpg')
         context['default_background_url'] = default_background_url
